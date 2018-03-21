@@ -40,7 +40,7 @@ Useful links
 Credits
 ~~~~~~~
 
-Author:
+Contributors:
 
 - Stéphane Bidoul (`ACSONE <http://acsone.eu/>`_)
 
