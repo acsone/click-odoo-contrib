@@ -1,0 +1,52 @@
+click-odoo-contrib
+==================
+
+.. image:: https://img.shields.io/badge/license-LGPL--3-blue.svg
+   :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
+   :alt: License: LGPL-3
+.. image:: https://badge.fury.io/py/click-odoo.svg
+    :target: http://badge.fury.io/py/click-odoo
+
+``click-odoo-contrib`` is a set of scripts based on click-odoo_.
+
+.. contents::
+
+Scripts
+~~~~~~~
+
+click-odoo-uninstall
+--------------------
+
+.. code::
+
+  Usage: click-odoo-uninstall [OPTIONS]
+
+  Options:
+    -m, --modules TEXT   Comma-separated list of modules to uninstall
+                         [required]
+    ...
+  
+Useful links
+~~~~~~~~~~~~
+
+- pypi page: https://pypi.python.org/pypi/click-odoo-contrib
+- code repository: https://github.com/acsone/click-odoo-contrib
+- report issues at: https://github.com/acsone/click-odoo-contrib/issues
+
+.. _click-odoo: https://pypi.python.org/pypi/click-odoo
+
+Credits
+~~~~~~~
+
+Author:
+
+- Stéphane Bidoul (`ACSONE <http://acsone.eu/>`_)
+
+Maintainer
+~~~~~~~~~~
+
+.. image:: https://www.acsone.eu/logo.png
+   :alt: ACSONE SA/NV
+   :target: https://www.acsone.eu
+
+This project is maintained by ACSONE SA/NV.
