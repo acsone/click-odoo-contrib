@@ -24,10 +24,13 @@ click-odoo-uninstall
   Usage: click-odoo-uninstall [OPTIONS]
 
   Options:
-    -m, --modules TEXT   Comma-separated list of modules to uninstall
-                         [required]
+    -c, --config PATH    ...
+    -d, --database TEXT  ...
     ...
-  
+    -m, --modules TEXT   Comma-separated list of modules to uninstall
+			 [required]
+    --help               Show this message and exit.
+    
 Useful links
 ~~~~~~~~~~~~
 
