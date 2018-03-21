@@ -4,10 +4,12 @@ click-odoo-contrib
 .. image:: https://img.shields.io/badge/license-LGPL--3-blue.svg
    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
    :alt: License: LGPL-3
-.. image:: https://badge.fury.io/py/click-odoo.svg
-    :target: http://badge.fury.io/py/click-odoo
+.. image:: https://badge.fury.io/py/click-odoo-contrib.svg
+    :target: http://badge.fury.io/py/click-odoo-contrib
 
-``click-odoo-contrib`` is a set of scripts based on click-odoo_.
+``click-odoo-contrib`` is a set of useful Odoo maintenance functions.
+They are available as CLI scripts (based on click-odoo_), as well
+as composable python functions.
 
 .. contents::
 
