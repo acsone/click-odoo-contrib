@@ -60,3 +60,7 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# pycharm dev env
+.idea/
+.ropeproject/
