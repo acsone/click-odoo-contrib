@@ -9,3 +9,4 @@ Changes
 --------------------
 - first alpha
 - click-odoo-uninstall
+- click-odoo-upgrade
