@@ -4,15 +4,13 @@ import logging
 
 import click
 import click_odoo
-
-import openerp.tools
-
+from click_odoo import odoo
 
 _logger = logging.getLogger(__name__)
 
 
 @click.command()
-@click_odoo.env_options()
+@click_odoo.env_options(with_rollback=False)
 @click.option('--i18n-overwrite', is_flag=True,
               help="Overwrite existing translations")
 @click.option('--upgrade-all', is_flag=True,
@@ -28,7 +26,7 @@ def main(env, i18n_overwrite, upgrade_all):
         else:
             _logger.warning(
                 "upgrade_changed_checksum not found, performing -u base")
-        openerp.tools.config['overwrite_existing_translations'] = \
+        odoo.tools.config['overwrite_existing_translations'] = \
             i18n_overwrite
         Imm.update_list()
         Imm.search([('name', '=', 'base')]).button_upgrade()
