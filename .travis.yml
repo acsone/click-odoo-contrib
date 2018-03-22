@@ -21,7 +21,7 @@ jobs:
         distributions: "sdist bdist_wheel"
         skip_upload_docs: true
         on:
-          repo: acsone/click-odoo
+          repo: acsone/click-odoo-contrib
           branch: master
           tags: true
  
