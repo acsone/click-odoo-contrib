@@ -30,6 +30,21 @@ click-odoo-uninstall
     -m, --modules TEXT   Comma-separated list of modules to uninstall
 			 [required]
     --help               Show this message and exit.
+
+click-odoo-upgrade
+--------------------
+
+.. code::
+
+  Usage: click-odoo-upgrade [OPTIONS]
+
+  Options:
+    -c, --config PATH    ...
+    -d, --database TEXT  ...
+    ...
+    --i18n-overwrite     Overwrite existing translations
+    --upgrade-all        Force a complete upgrade (-u base)
+    --help               Show this message and exit.
     
 Useful links
 ~~~~~~~~~~~~
@@ -46,6 +61,7 @@ Credits
 Contributors:
 
 - Stéphane Bidoul (`ACSONE <http://acsone.eu/>`_)
+- Thomas Binsfeld (`ACSONE <http://acsone.eu/>`_)
 
 Maintainer
 ~~~~~~~~~~
