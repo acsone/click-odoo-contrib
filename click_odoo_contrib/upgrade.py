@@ -4,8 +4,7 @@ import logging
 
 import click
 import click_odoo
-
-import openerp.tools
+import click_odoo.odoo.tools
 
 
 _logger = logging.getLogger(__name__)
