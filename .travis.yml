@@ -1,24 +1,32 @@
-sudo: false
 language: python
 
-python:
-  - "2.7"
-  - "3.5"
+stages:
+  - name: test
+  - name: deploy
+    if: tag IS present
 
+jobs:
+  include:
+    - stage: test
+      python: 2.7
+    - stage: test
+      python: 3.5
+    - stage: deploy
+      script: echo "Deploy to PyPi"
+      deploy:
+        provider: pypi
+        user: acsbidoul
+        password:
+          secure: "IRtM6sbi3R1hUbqsUIavE3Li2AnmgRWfSgCoqaiF3pLCk8buT7Z6+05w1wd81bkuY0/McfZDeVv9ea3g0/xWFf4GUPN8aL5QN/A2lMDbrlE505zYboBy0zApLRfL6e51dO5wr3jcTwMrZKFUfUjOPlD0hqH12NoEeq0NPUBjsXAfzmf3oJmykzR8A+LuLoBJ8SiB3P075Gwb24CoGOaYhWByCkW8/RhJCkXzqgyKNex6R9r8DRi7aMphxkmpxCz2Vx97vPZEvLPROJmS/WcauIbrl+sEdboAIlHWrYzuUIWVaJjUpqjVsnN5/qTf9isxNRu5Q7MAkpyeqOhmKBfnuQE4e3a1In4bbicu8KEWv5Lx1FFnPwd/cImrzQEmuo39snC963o4MHDvi7WWQuRizw3X+1vqx5ZYHxTQ6DgONkMQm3iozsyi4rXb2uyGEASc796WF609slkdibdxPcFsw6VqGCvIPqgv3tBIBnMF5NEH/RNgULOAuaUDR4SUsGRnFM6LzIZ/JstBwLgvLyPenTiVKn/KscZxIix1Uvd7NCffH+1lCgNgVKlfTpfA7CzQsbTucWNjjHummUvI97tbz0LN17AviAjxkRfNb9bQaf55pxcsjRGUeJOeyEvxMwYUV5sjQ0I1CLAzl5hbuJQXUqloLn6Xrgo2/mm7ZO4/SbM="
+        distributions: "sdist bdist_wheel"
+        skip_upload_docs: true
+        on:
+          repo: acsone/click-odoo
+          branch: master
+          tags: true
+ 
 install:
   - pip install tox-travis
 
 script:
   - tox
-
-deploy:
-  provider: pypi
-  user: acsbidoul
-  password:
-    secure: ""
-  distributions: "sdist bdist_wheel"
-  skip_upload_docs: true
-  on:
-    repo: acsone/click-odoo-contrib
-    branch: master
-    tags: true
