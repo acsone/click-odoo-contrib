@@ -33,6 +33,10 @@ def main(env, i18n_overwrite, upgrade_all):
         env.cr.commit()
         env['base.module.upgrade'].upgrade_module()
         env.cr.commit()
+        # save installed checksums after regular upgrade
+        if hasattr(Imm, '_save_installed_checksums'):
+            Imm._save_installed_checksums()
+            env.cr.commit()
 
 
 if __name__ == '__main__':
