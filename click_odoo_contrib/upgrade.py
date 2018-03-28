@@ -9,13 +9,7 @@ from click_odoo import odoo
 _logger = logging.getLogger(__name__)
 
 
-@click.command()
-@click_odoo.env_options(with_rollback=False)
-@click.option('--i18n-overwrite', is_flag=True,
-              help="Overwrite existing translations")
-@click.option('--upgrade-all', is_flag=True,
-              help="Force a complete upgrade (-u base)")
-def main(env, i18n_overwrite, upgrade_all):
+def upgrade(env, i18n_overwrite=False, upgrade_all=False):
     Imm = env['ir.module.module']
     if hasattr(Imm, 'upgrade_changed_checksum') and not upgrade_all:
         Imm.upgrade_changed_checksum(
@@ -37,6 +31,16 @@ def main(env, i18n_overwrite, upgrade_all):
         if hasattr(Imm, '_save_installed_checksums'):
             Imm._save_installed_checksums()
             env.cr.commit()
+
+
+@click.command()
+@click_odoo.env_options(with_rollback=False)
+@click.option('--i18n-overwrite', is_flag=True,
+              help="Overwrite existing translations")
+@click.option('--upgrade-all', is_flag=True,
+              help="Force a complete upgrade (-u base)")
+def main(env, i18n_overwrite, upgrade_all):
+    upgrade(env, i18n_overwrite, upgrade_all)
 
 
 if __name__ == '__main__':
