@@ -14,10 +14,11 @@ def uninstall(env, module_names):
     ])
     _logger.info("uninstalling %s", modules.mapped('name'))
     modules.button_immediate_uninstall()
+    env.cr.commit()
 
 
 @click.command()
-@click_odoo.env_options()
+@click_odoo.env_options(with_rollback=False)
 @click.option('--modules', '-m', required=True,
               help="Comma-separated list of modules to uninstall")
 def main(env, modules):
