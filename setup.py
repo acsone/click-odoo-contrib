@@ -27,7 +27,7 @@ setup(
     author_email='info@acsone.eu',
     url='http://github.com/acsone/setuptools-odoo',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: '
         'GNU Lesser General Public License v3 or later (LGPLv3+)',

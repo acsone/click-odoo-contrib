@@ -49,7 +49,7 @@ click-odoo-upgrade
 Useful links
 ~~~~~~~~~~~~
 
-- pypi page: https://pypi.python.org/pypi/click-odoo-contrib
+- pypi page: https://pypi.org/project/click-odoo-contrib
 - code repository: https://github.com/acsone/click-odoo-contrib
 - report issues at: https://github.com/acsone/click-odoo-contrib/issues
 
