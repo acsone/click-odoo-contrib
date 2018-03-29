@@ -25,7 +25,7 @@ setup(
     license='LGPLv3+',
     author='ACSONE SA/NV',
     author_email='info@acsone.eu',
-    url='http://github.com/acsone/setuptools-odoo',
+    url='http://github.com/acsone/click-odoo-contrib',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
