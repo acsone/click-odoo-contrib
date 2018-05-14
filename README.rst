@@ -16,6 +16,44 @@ as composable python functions.
 Scripts
 ~~~~~~~
 
+click-odoo-initdb
+------------------
+
+.. code::
+
+  Usage: click-odoo-initdb [OPTIONS]
+
+    Create an Odoo database with pre-installed modules.
+
+    Almost like standard Odoo does, except this manages a cache of database
+    templates with the exact same addons installed. This is mostly intended to
+    save time when running tests.
+
+  Options:
+    -c, --config PATH         ...
+    ...
+    -n, --new-database TEXT   Name of new database to create, possibly from
+                              cache. If absent, only the cache trimming
+                              operation is executed.
+    -m, --modules TEXT        Comma separated list of addons to install.
+                              [default: base]
+    --demo / --no-demo        Load Odoo demo data.  [default: True]
+    --cache / --no-cache      Use a cache of database templates with the exact
+                              same addons installed. Disabling this option also
+                              disables all other cache-related operations such
+                              as max-age or size.  [default: True]
+    --cache-prefix TEXT       Prefix to use when naming cache template databases
+                              (max 8 characters). CAUTION: all databases named
+                              like {prefix}-____________-% will eventually be
+                              dropped by the cache control mechanism, so choose
+                              the prefix wisely.  [default: cache]
+    --cache-max-age INTEGER   Drop cache templates that have not been used for
+                              more than N days. Use -1 to disable.  [default:
+                              10]
+    --cache-max-size INTEGER  Keep N most recently used cache templates. Use -1
+                              to disable. Use 0 to empty cache.  [default: 10]
+    --help                    Show this message and exit.
+
 click-odoo-uninstall
 --------------------
 

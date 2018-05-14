@@ -5,6 +5,10 @@ Changes
 .. ----------
 .. -
 
+1.0.0 (unreleased)
+------------------
+- add click-odoo-initdb
+
 1.0.0b3 (2018-05-17)
 --------------------
 - be more robust in rare case button_upgrade fails silently
