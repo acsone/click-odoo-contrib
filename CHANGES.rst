@@ -5,6 +5,10 @@ Changes
 .. ----------
 .. -
 
+1.0.0b3 (unreleased)
+--------------------
+- be more robust in rare case button_upgrade fails silently
+
 1.0.0b2 (2018-03-28)
 --------------------
 - uninstall: commit and hide --rollback
