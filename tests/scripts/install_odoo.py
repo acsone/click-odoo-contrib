@@ -5,7 +5,7 @@ import sys
 
 
 odoo_series = sys.argv[1]
-odoo_dir = os.path.join(os.environ['VIRTUAL_ENV'], 'src', 'odoo')
+odoo_dir = sys.argv[2]
 
 
 def odoo_installed():
