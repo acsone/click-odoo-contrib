@@ -20,7 +20,7 @@ setup(
         'setuptools-scm',
     ],
     install_requires=[
-        'click-odoo>=1.0.0b3',
+        'click-odoo>=1.0.0',
     ],
     license='LGPLv3+',
     author='ACSONE SA/NV',
