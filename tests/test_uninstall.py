@@ -3,14 +3,9 @@
 
 from click.testing import CliRunner
 
-from click_odoo import odoo, OdooEnvironment
+from click_odoo import OdooEnvironment
 
 from click_odoo_contrib.uninstall import main
-
-# This hack is necessary because the way CliRunner patches
-# stdout is not compatible with the Odoo logging initialization
-# mechanism. Logging is therefore tested with subprocesses.
-odoo.netsvc._logger_init = True
 
 
 def test_uninstall(odoodb):
