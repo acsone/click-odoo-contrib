@@ -41,5 +41,6 @@ setup(
         click-odoo-uninstall=click_odoo_contrib.uninstall:main
         click-odoo-upgrade=click_odoo_contrib.upgrade:main
         click-odoo-initdb=click_odoo_contrib.initdb:main
+        click-odoo-makepot=click_odoo_contrib.makepot:main
     ''',
 )
