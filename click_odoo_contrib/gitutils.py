@@ -4,14 +4,14 @@
 import subprocess
 
 
-def commit_if_needed(paths, message):
+def commit_if_needed(paths, message, cwd='.'):
     cmd = ['git', 'add'] + paths
-    subprocess.check_call(cmd)
+    subprocess.check_call(cmd, cwd=cwd)
     cmd = ['git', 'diff', '--quiet', '--exit-code', '--cached', '--'] + paths
-    r = subprocess.call(cmd)
+    r = subprocess.call(cmd, cwd=cwd)
     if r != 0:
         cmd = ['git', 'commit', '-m', message, '--'] + paths
-        subprocess.check_call(cmd)
+        subprocess.check_call(cmd, cwd=cwd)
         return True
     else:
         return False
