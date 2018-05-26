@@ -3,6 +3,8 @@
 
 import os
 
+import pytest
+
 from click_odoo_contrib import manifest
 
 
@@ -39,3 +41,8 @@ def test_manifest_expand_dependencies_auto_install():
     assert 'auth_crypt' in res  # web is autoinstall
     assert 'web' in res  # web is autoinstall
     assert 'base_import' in res  # base_import is indirect autoinstall
+
+
+def test_manifest_expand_dependencies_not_found():
+    with pytest.raises(manifest.ModuleNotFound):
+        manifest.expand_dependencies(['not_a_module'])
