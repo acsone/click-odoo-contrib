@@ -26,17 +26,23 @@ def test_manifest_find_addons_uninstallable():
 
 
 def test_manifest_expand_dependencies():
-    res = manifest.expand_dependencies(['contacts', 'base_import'])
-    assert 'contacts' in res
+    res = manifest.expand_dependencies(
+        ['auth_signup', 'base_import'],
+    )
+    assert 'auth_signup' in res
+    assert 'mail' in res  # dependency of auth_signup
     assert 'base_import' in res
     assert 'base' in res  # obviously
-    assert 'web' in res  # base_import depends on it
+    assert 'web' in res  # base_import depends on web
     assert 'auth_crypt' not in res
 
 
 def test_manifest_expand_dependencies_auto_install():
-    res = manifest.expand_dependencies(['contacts'], include_auto_install=True)
-    assert 'contacts' in res
+    res = manifest.expand_dependencies(
+        ['auth_signup'],
+        include_auto_install=True,
+    )
+    assert 'auth_signup' in res
     assert 'base' in res  # obviously
     assert 'auth_crypt' in res  # web is autoinstall
     assert 'web' in res  # web is autoinstall
