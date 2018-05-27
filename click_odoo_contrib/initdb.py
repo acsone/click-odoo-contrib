@@ -319,7 +319,7 @@ def main(env, new_database, modules, demo,
             if cache_max_size >= 0:
                 dbcache.trim_size(cache_max_size)
             if cache_max_age >= 0:
-                dbcache.trim_age(timedelta(seconds=cache_max_age * 86400))
+                dbcache.trim_age(timedelta(days=cache_max_age))
 
 
 if __name__ == '__main__':  # pragma: no cover
