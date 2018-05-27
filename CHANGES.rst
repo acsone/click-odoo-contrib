@@ -5,6 +5,11 @@ Changes
 .. ----------
 .. -
 
+1.0.1 (2018-05-27)
+------------------
+- better documentation
+- fix: initdb now takes auto_install modules into account
+
 1.0.0 (2018-05-27)
 ------------------
 - add click-odoo-initdb
