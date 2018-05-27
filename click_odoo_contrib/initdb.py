@@ -289,9 +289,14 @@ def main(env, new_database, modules, demo,
          cache, cache_prefix, cache_max_age, cache_max_size):
     """ Create an Odoo database with pre-installed modules.
 
-    Almost like standard Odoo does, except this manages a cache
-    of database templates with the exact same addons installed.
-    This is mostly intended to save time when running tests.
+    Almost like standard Odoo does with the -i option,
+    except this script manages a cache of database templates with
+    the exact same addons installed. This is particularly useful to
+    save time when initializing test databases.
+
+    Cached templates are identified by computing a sha1
+    checksum of modules provided with the -m option, including their
+    dependencies and corresponding auto_install modules.
     """
     if new_database:
         check_dbname(new_database)

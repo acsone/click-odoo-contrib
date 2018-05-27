@@ -25,32 +25,38 @@ click-odoo-initdb
 
     Create an Odoo database with pre-installed modules.
 
-    Almost like standard Odoo does, except this manages a cache of database
-    templates with the exact same addons installed. This is mostly intended to
-    save time when running tests.
+    Almost like standard Odoo does with the -i option, except this script
+    manages a cache of database templates with the exact same addons
+    installed. This is particularly useful to save time when initializing test
+    databases.
+
+    Cached templates are identified by computing a sha1 checksum of modules
+    provided with the -m option, including their dependencies and
+    corresponding auto_install modules.
 
   Options:
     -c, --config PATH         ...
     ...
     -n, --new-database TEXT   Name of new database to create, possibly from
-                              cache. If absent, only the cache trimming
-                              operation is executed.
+			      cache. If absent, only the cache trimming
+			      operation is executed.
     -m, --modules TEXT        Comma separated list of addons to install.
-                              [default: base]
+			      [default: base]
     --demo / --no-demo        Load Odoo demo data.  [default: True]
     --cache / --no-cache      Use a cache of database templates with the exact
-                              same addons installed. Disabling this option also
-                              disables all other cache-related operations such
-                              as max-age or size.  [default: True]
+			      same addons installed. Disabling this option also
+			      disables all other cache-related operations such
+			      as max-age or size.  [default: True]
     --cache-prefix TEXT       Prefix to use when naming cache template databases
-                              (max 8 characters). CAUTION: all databases named
-                              like {prefix}-____________-% will eventually be
-                              dropped by the cache control mechanism, so choose
-                              the prefix wisely.  [default: cache]
+			      (max 8 characters). CAUTION: all databases named
+			      like {prefix}-____________-% will eventually be
+			      dropped by the cache control mechanism, so choose
+			      the prefix wisely.  [default: cache]
     --cache-max-age INTEGER   Drop cache templates that have not been used for
-                              more than N days. Use -1 to disable.  [default: 30]
+			      more than N days. Use -1 to disable.  [default:
+			      30]
     --cache-max-size INTEGER  Keep N most recently used cache templates. Use -1
-                              to disable. Use 0 to empty cache.  [default: 5]
+			      to disable. Use 0 to empty cache.  [default: 5]
     --help                    Show this message and exit.
 
 click-odoo-uninstall
