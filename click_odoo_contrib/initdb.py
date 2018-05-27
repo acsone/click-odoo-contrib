@@ -74,7 +74,7 @@ def _walk(top, exclude_patterns=EXCLUDE_PATTERNS):
 def addons_hash(module_names, with_demo):
     h = hashlib.sha1()
     h.update('!demo={}!'.format(int(bool(with_demo))).encode('utf8'))
-    for module_name in sorted(expand_dependencies(module_names)):
+    for module_name in sorted(expand_dependencies(module_names, True)):
         module_path = odoo.modules.get_module_path(module_name)
         h.update(module_name.encode('utf8'))
         for filepath in _walk(module_path):
