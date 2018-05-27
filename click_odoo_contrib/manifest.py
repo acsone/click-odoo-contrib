@@ -53,8 +53,6 @@ def expand_dependencies(module_names, include_auto_install=False):
     """ Return a set of module names with their transitive
     dependencies.  This method does not need an Odoo database,
     but requires the addons path to be initialized.
-
-    Caveat: auto_install modules are not added automatically.
     """
 
     def add_deps(name):
