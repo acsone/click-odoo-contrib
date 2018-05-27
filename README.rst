@@ -48,10 +48,9 @@ click-odoo-initdb
                               dropped by the cache control mechanism, so choose
                               the prefix wisely.  [default: cache]
     --cache-max-age INTEGER   Drop cache templates that have not been used for
-                              more than N days. Use -1 to disable.  [default:
-                              10]
+                              more than N days. Use -1 to disable.  [default: 30]
     --cache-max-size INTEGER  Keep N most recently used cache templates. Use -1
-                              to disable. Use 0 to empty cache.  [default: 10]
+                              to disable. Use 0 to empty cache.  [default: 5]
     --help                    Show this message and exit.
 
 click-odoo-uninstall

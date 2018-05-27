@@ -277,11 +277,11 @@ class DbCache:
                    "{prefix}-____________-% will eventually be dropped "
                    "by the cache control mechanism, so choose the "
                    "prefix wisely.")
-@click.option('--cache-max-age', default=10, show_default=True,
+@click.option('--cache-max-age', default=30, show_default=True,
               type=int,
               help="Drop cache templates that have not been used for "
                    "more than N days. Use -1 to disable.")
-@click.option('--cache-max-size', default=10, show_default=True,
+@click.option('--cache-max-size', default=5, show_default=True,
               type=int,
               help="Keep N most recently used cache templates. Use "
                    "-1 to disable. Use 0 to empty cache.")
