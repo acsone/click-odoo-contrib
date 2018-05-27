@@ -81,6 +81,9 @@ click-odoo-upgrade
 
   Usage: click-odoo-upgrade [OPTIONS]
 
+    Upgrade an Odoo database (odoo -u), taking advantage of
+    module_auto_update's upgrade_changed_checksum method if present.
+
   Options:
     -c, --config PATH    ...
     -d, --database TEXT  ...

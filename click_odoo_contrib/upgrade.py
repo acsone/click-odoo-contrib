@@ -64,6 +64,10 @@ def upgrade(env, i18n_overwrite=False, upgrade_all=False):
 @click.option('--upgrade-all', is_flag=True,
               help="Force a complete upgrade (-u base)")
 def main(env, i18n_overwrite, upgrade_all):
+    """ Upgrade an Odoo database (odoo -u), 
+    taking advantage of module_auto_update's
+    upgrade_changed_checksum method if present.
+    """
     upgrade(env, i18n_overwrite, upgrade_all)
 
 
