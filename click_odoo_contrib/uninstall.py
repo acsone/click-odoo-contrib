@@ -28,5 +28,5 @@ def main(env, modules):
     uninstall(env, module_names)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

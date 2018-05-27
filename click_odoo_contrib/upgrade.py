@@ -67,5 +67,5 @@ def main(env, i18n_overwrite, upgrade_all):
     upgrade(env, i18n_overwrite, upgrade_all)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

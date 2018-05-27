@@ -322,5 +322,5 @@ def main(env, new_database, modules, demo,
                 dbcache.trim_age(timedelta(seconds=cache_max_age * 86400))
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
