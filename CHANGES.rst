@@ -5,7 +5,7 @@ Changes
 .. ----------
 .. -
 
-1.0.0 (unreleased)
+1.0.0 (2018-05-27)
 ------------------
 - add click-odoo-initdb
 
