@@ -5,6 +5,11 @@ Changes
 .. ----------
 .. -
 
+1.0.2 (2018-05-29)
+------------------
+- fix: initdb now stores attachments in database when cache is enabled,
+  so databases created from cache do not miss the filestore
+
 1.0.1 (2018-05-27)
 ------------------
 - better documentation

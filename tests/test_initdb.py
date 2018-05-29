@@ -171,6 +171,12 @@ def test_create_cmd(dbcache):
                 ('state', '=', 'installed'),
             ])
             assert m, "auth_signup module not installed"
+            env.cr.execute("""
+                SELECT COUNT(*) FROM ir_attachment
+                WHERE store_fname IS NOT NULL
+            """)
+            assert env.cr.fetchone()[0] == 0, \
+                "some attachments are not stored in db"
     finally:
         _dropdb(TEST_DBNAME_NEW)
     # try again, from cache this time
