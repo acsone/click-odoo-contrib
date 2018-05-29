@@ -157,12 +157,12 @@ def test_dbcache_trim_age(pgdb, dbcache):
 
 def test_create_cmd(dbcache):
     assert dbcache.size == 0
-    result = CliRunner().invoke(main, [
-        '--cache-prefix', TEST_PREFIX,
-        '-n', TEST_DBNAME_NEW,
-        '-m', 'auth_signup',
-    ])
     try:
+        result = CliRunner().invoke(main, [
+            '--cache-prefix', TEST_PREFIX,
+            '-n', TEST_DBNAME_NEW,
+            '-m', 'auth_signup',
+        ])
         assert result.exit_code == 0
         assert dbcache.size == 1
         with click_odoo.OdooEnvironment(database=TEST_DBNAME_NEW) as env:
@@ -196,12 +196,12 @@ def test_create_cmd(dbcache):
 
 def test_create_cmd_nocache(dbcache):
     assert dbcache.size == 0
-    result = CliRunner().invoke(main, [
-        '--no-cache',
-        '-n', TEST_DBNAME_NEW,
-        '-m', 'auth_signup',
-    ])
     try:
+        result = CliRunner().invoke(main, [
+            '--no-cache',
+            '-n', TEST_DBNAME_NEW,
+            '-m', 'auth_signup',
+        ])
         assert result.exit_code == 0
         assert dbcache.size == 0
         with click_odoo.OdooEnvironment(database=TEST_DBNAME_NEW) as env:
