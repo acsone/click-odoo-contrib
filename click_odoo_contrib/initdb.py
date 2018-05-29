@@ -35,20 +35,48 @@ def check_cache_prefix(cache_prefix):
             "Invalid cache prefix name '{}'".format(cache_prefix))
 
 
-def odoo_createdb(dbname, demo, module_names):
-    odoo.service.db._create_empty_database(dbname)
-    odoo.tools.config['init'] = dict.fromkeys(module_names, 1)
-    odoo.tools.config['without_demo'] = not demo
-    if odoo.release.version_info[0] < 10:
-        Registry = odoo.modules.registry.RegistryManager
+@contextlib.contextmanager
+def _patch_ir_attachment_store(force_db_storage):
+
+    @odoo.api.model
+    def _db_storage(self):
+        return 'db'
+
+    if not force_db_storage:
+        yield
     else:
-        Registry = odoo.modules.registry.Registry
-    Registry.new(dbname, force_demo=demo, update_module=True)
-    _logger.info(click.style(
-        "Created new Odoo database {dbname}.".format(**locals()),
-        fg='green',
-    ))
-    odoo.sql_db.close_db(dbname)
+        # make sure attachments created during db initialization
+        # are stored in database, so we get something consistent
+        # when recreating the db by copying the cached template
+        if odoo.release.version_info[0] < 10:
+            from openerp.addons.base.ir.ir_attachment import \
+                ir_attachment as IrAttachment
+        else:
+            from odoo.addons.base.ir.ir_attachment import \
+                IrAttachment
+        orig = IrAttachment._storage
+        IrAttachment._storage = _db_storage
+        try:
+            yield
+        finally:
+            IrAttachment._storage = orig
+
+
+def odoo_createdb(dbname, demo, module_names, force_db_storage):
+    with _patch_ir_attachment_store(force_db_storage):
+        odoo.service.db._create_empty_database(dbname)
+        odoo.tools.config['init'] = dict.fromkeys(module_names, 1)
+        odoo.tools.config['without_demo'] = not demo
+        if odoo.release.version_info[0] < 10:
+            Registry = odoo.modules.registry.RegistryManager
+        else:
+            Registry = odoo.modules.registry.Registry
+        Registry.new(dbname, force_demo=demo, update_module=True)
+        _logger.info(click.style(
+            "Created new Odoo database {dbname}.".format(**locals()),
+            fg='green',
+        ))
+        odoo.sql_db.close_db(dbname)
 
 
 def _fnmatch(filename, patterns):
@@ -270,7 +298,10 @@ class DbCache:
               help="Use a cache of database templates with the exact "
                    "same addons installed. Disabling this option "
                    "also disables all other cache-related operations "
-                   "such as max-age or size.")
+                   "such as max-age or size. Note: when the cache is "
+                   "enabled, all attachments created during database "
+                   "initialization are stored in database instead "
+                   "of the default Odoo file store.")
 @click.option('--cache-prefix', default='cache', show_default=True,
               help="Prefix to use when naming cache template databases "
                    "(max 8 characters). CAUTION: all databases named like "
@@ -303,7 +334,7 @@ def main(env, new_database, modules, demo,
     module_names = [m.strip() for m in modules.split(',')]
     if not cache:
         if new_database:
-            odoo_createdb(new_database, demo, module_names)
+            odoo_createdb(new_database, demo, module_names, False)
         else:
             _logger.info(
                 "Cache disabled and no new database name provided. "
@@ -319,7 +350,7 @@ def main(env, new_database, modules, demo,
                         fg='green', bold=True,
                     ))
                 else:
-                    odoo_createdb(new_database, demo, module_names)
+                    odoo_createdb(new_database, demo, module_names, True)
                     dbcache.add(new_database, hashsum)
             if cache_max_size >= 0:
                 dbcache.trim_size(cache_max_size)
