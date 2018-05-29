@@ -192,3 +192,29 @@ def test_create_cmd(dbcache):
             assert dbcache.size == 1
         finally:
             _dropdb(TEST_DBNAME_NEW)
+
+
+def test_create_cmd_nocache(dbcache):
+    assert dbcache.size == 0
+    result = CliRunner().invoke(main, [
+        '--no-cache',
+        '-n', TEST_DBNAME_NEW,
+        '-m', 'auth_signup',
+    ])
+    try:
+        assert result.exit_code == 0
+        assert dbcache.size == 0
+        with click_odoo.OdooEnvironment(database=TEST_DBNAME_NEW) as env:
+            m = env['ir.module.module'].search([
+                ('name', '=', 'auth_signup'),
+                ('state', '=', 'installed'),
+            ])
+            assert m, "auth_signup module not installed"
+            env.cr.execute("""
+                SELECT COUNT(*) FROM ir_attachment
+                WHERE store_fname IS NULL
+            """)
+            assert env.cr.fetchone()[0] == 0, \
+                "some attachments are not stored in filestore"
+    finally:
+        _dropdb(TEST_DBNAME_NEW)
