@@ -16,8 +16,8 @@ as composable python functions.
 Scripts
 ~~~~~~~
 
-click-odoo-initdb
-------------------
+click-odoo-initdb (beta)
+------------------------
 
 .. code::
 
@@ -59,8 +59,8 @@ click-odoo-initdb
 			      to disable. Use 0 to empty cache.  [default: 5]
     --help                    Show this message and exit.
 
-click-odoo-uninstall
---------------------
+click-odoo-uninstall (stable)
+-----------------------------
 
 .. code::
 
@@ -74,8 +74,8 @@ click-odoo-uninstall
 			 [required]
     --help               Show this message and exit.
 
-click-odoo-upgrade
---------------------
+click-odoo-upgrade (stable)
+---------------------------
 
 .. code::
 
