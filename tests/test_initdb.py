@@ -218,3 +218,11 @@ def test_create_cmd_nocache(dbcache):
                 "some attachments are not stored in filestore"
     finally:
         _dropdb(TEST_DBNAME_NEW)
+
+
+def test_dbcache_add_concurrency(pgdb, dbcache):
+    assert dbcache.size == 0
+    dbcache.add(pgdb, TEST_HASH1)
+    assert dbcache.size == 1
+    dbcache.add(pgdb, TEST_HASH1)
+    assert dbcache.size == 1
