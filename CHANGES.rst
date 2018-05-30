@@ -5,6 +5,11 @@ Changes
 .. ----------
 .. -
 
+1.0.3 (unrelased)
+-----------------
+- fix: handle situations where two initdb start at the same time
+  ending up with an "already exists" error when creating the cached template
+
 1.0.2 (2018-05-29)
 ------------------
 - fix: initdb now stores attachments in database when cache is enabled,
