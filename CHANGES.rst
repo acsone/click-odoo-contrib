@@ -5,7 +5,7 @@ Changes
 .. ----------
 .. -
 
-1.0.3 (unrelased)
+1.0.3 (2018-05-30)
 -----------------
 - fix: handle situations where two initdb start at the same time
   ending up with an "already exists" error when creating the cached template
