@@ -214,6 +214,13 @@ class DbCache:
         else:
             return None
 
+    def _touch(self, template_name, hashsum):
+        # change the template date (MRU mechanism)
+        assert template_name.endswith(hashsum)
+        new_template_name = self._make_new_template_name(hashsum)
+        if template_name != new_template_name:
+            self._rename_db(template_name, new_template_name)
+
     def create(self, new_database, hashsum):
         """ Create a new database from a cached template matching hashsum """
         with self._lock():
@@ -222,17 +229,18 @@ class DbCache:
                 return False
             else:
                 self._create_db_from_template(new_database, template_name)
-                # change the template data (MRU mechanism)
-                new_template_name = self._make_new_template_name(hashsum)
-                if template_name != new_template_name:
-                    self._rename_db(template_name, new_template_name)
+                self._touch(template_name, hashsum)
                 return True
 
     def add(self, new_database, hashsum):
         """ Create a new cached template """
         with self._lock():
-            new_template_name = self._make_new_template_name(hashsum)
-            self._create_db_from_template(new_template_name, new_database)
+            template_name = self._find_template(hashsum)
+            if template_name:
+                self._touch(template_name, hashsum)
+            else:
+                new_template_name = self._make_new_template_name(hashsum)
+                self._create_db_from_template(new_template_name, new_database)
 
     @property
     def size(self):
