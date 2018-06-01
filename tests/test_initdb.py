@@ -2,7 +2,10 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 from datetime import timedelta, datetime
+import os
 import subprocess
+import sys
+import textwrap
 
 from click.testing import CliRunner
 import mock
@@ -21,6 +24,11 @@ TEST_HASH3 = 'c' * DbCache.HASH_SIZE
 TODAY = datetime(2018, 5, 10)
 TODAY_MINUS_2 = datetime(2018, 5, 8)
 TODAY_MINUS_4 = datetime(2018, 5, 6)
+ADDONS_PATH = ','.join([
+    os.path.join(click_odoo.odoo.__path__[0], 'addons'),
+    os.path.join(click_odoo.odoo.__path__[0], '..', 'addons'),
+    os.path.join(os.path.dirname(__file__), 'data', 'addons'),
+])
 
 
 def _dropdb(dbname):
@@ -155,7 +163,7 @@ def test_dbcache_trim_age(pgdb, dbcache):
         assert dbcache.size == 0
 
 
-def test_create_cmd(dbcache):
+def test_create_cmd_cache(dbcache, tmpdir):
     assert dbcache.size == 0
     try:
         result = CliRunner().invoke(main, [
@@ -181,15 +189,39 @@ def test_create_cmd(dbcache):
         _dropdb(TEST_DBNAME_NEW)
     # try again, from cache this time
     with mock.patch.object(initdb, 'odoo_createdb') as m:
-        result = CliRunner().invoke(main, [
-            '--cache-prefix', TEST_PREFIX,
-            '--new-database', TEST_DBNAME_NEW,
-            '--modules', 'auth_signup',
-        ])
         try:
+            result = CliRunner().invoke(main, [
+                '--cache-prefix', TEST_PREFIX,
+                '--new-database', TEST_DBNAME_NEW,
+                '--modules', 'auth_signup',
+            ])
             assert result.exit_code == 0
             assert m.call_count == 0
             assert dbcache.size == 1
+        finally:
+            _dropdb(TEST_DBNAME_NEW)
+        # now run again, with a new addon in path
+        # and make sure the list of modules has been updated
+        # after creating the database from cache
+        odoo_cfg = tmpdir / 'odoo.cfg'
+        odoo_cfg.write(textwrap.dedent("""\
+            [options]
+            addons_path = {}
+        """.format(ADDONS_PATH)))
+        cmd = [
+            sys.executable,
+            '-m', 'click_odoo_contrib.initdb',
+            '-c', str(odoo_cfg),
+            '--cache-prefix', TEST_PREFIX,
+            '--new-database', TEST_DBNAME_NEW,
+            '--modules', 'auth_signup',
+        ]
+        try:
+            subprocess.check_call(cmd)
+            with click_odoo.OdooEnvironment(database=TEST_DBNAME_NEW) as env:
+                assert env['ir.module.module'].search([
+                    ('name', '=', 'addon1'),
+                ]), "module addon1 not present in new database"
         finally:
             _dropdb(TEST_DBNAME_NEW)
 

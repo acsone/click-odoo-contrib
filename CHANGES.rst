@@ -5,6 +5,12 @@ Changes
 .. ----------
 .. -
 
+1.0.4 (unreleased)
+------------------
+- update module list after creating a database from cache, useful when
+  we are creating a database in an environment where modules have
+  been added since the template was created
+
 1.0.3 (2018-05-30)
 -----------------
 - fix: handle situations where two initdb start at the same time

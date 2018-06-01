@@ -112,6 +112,11 @@ def addons_hash(module_names, with_demo):
     return h.hexdigest()
 
 
+def refresh_module_list(dbname):
+    with click_odoo.OdooEnvironment(database=dbname) as env:
+        env['ir.module.module'].update_list()
+
+
 class DbCache:
     """ Manage a cache of db templates.
 
@@ -357,6 +362,7 @@ def main(env, new_database, modules, demo,
                         "Found matching database template! ✨ 🍰 ✨",
                         fg='green', bold=True,
                     ))
+                    refresh_module_list(new_database)
                 else:
                     odoo_createdb(new_database, demo, module_names, True)
                     dbcache.add(new_database, hashsum)
