@@ -115,8 +115,8 @@ def addons_hash(module_names, with_demo):
 class DbCache:
     """ Manage a cache of db templates.
 
-    Templates are named prefix-YYYYMMDD-hashsum, where
-    YYYYMMDD is the date when the given hashsum has last been
+    Templates are named prefix-YYYYmmddHHMM-hashsum, where
+    YYYYmmddHHMM is the date and time when the given hashsum has last been
     used for that prefix.
     """
 
