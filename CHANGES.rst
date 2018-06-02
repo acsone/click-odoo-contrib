@@ -5,7 +5,7 @@ Changes
 .. ----------
 .. -
 
-1.0.4 (unreleased)
+1.0.4 (2018-06-02)
 ------------------
 - update module list after creating a database from cache, useful when
   we are creating a database in an environment where modules have
