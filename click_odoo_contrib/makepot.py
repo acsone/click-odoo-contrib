@@ -74,12 +74,12 @@ def export_pot(env, module, addons_dir, commit):
         gitutils.commit_if_needed(
             [pot_filepath],
             "[UPD] {}.pot".format(addon_name),
-            cwd=addon_dir,
+            cwd=addons_dir,
         )
         gitutils.commit_if_needed(
             [i18n_path],
             "[UPD] {} {}.po".format(addon_name, '/'.join(module_languages)),
-            cwd=addon_dir,
+            cwd=addons_dir,
         )
 
 
