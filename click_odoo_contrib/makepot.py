@@ -1,7 +1,10 @@
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
+import base64
 import os
+import re
+import subprocess
 
 import click
 import click_odoo
@@ -9,16 +12,74 @@ import click_odoo
 from . import manifest
 from . import gitutils
 
+LINE_PATTERNS_TO_REMOVE = [
+    r'"POT-Creation-Date:.*?"[\n\r]',
+    r'"PO-Revision-Date:.*?"[\n\r]',
+]
 
-def export_pot(env, addon_name, addons_dir, commit):
+PO_FILE_EXT = '.po'
+POT_FILE_EXT = '.pot'
+
+
+def export_pot(env, module, addons_dir, commit):
+    addon_name = module.name
     addon_dir = os.path.join(addons_dir, addon_name)
-    pot_filename = os.path.join(addon_dir, addon_name + '.pot')
-    # TODO
-    gitutils.commit_if_needed(
-        pot_filename,
-        "[UPD] {}.pot".format(addon_name),
-        cwd=addon_dir,
-    )
+    i18n_path = os.path.join(addon_dir, 'i18n')
+    pot_filepath = os.path.join(i18n_path, addon_name + POT_FILE_EXT)
+
+    lang_export = env['base.language.export'].create({
+        'lang': '__new__',
+        'format': 'po',
+        'modules': [(6, 0, [module.id])]
+    })
+    lang_export.act_getfile()
+
+    if not os.path.isdir(i18n_path):
+        os.makedirs(i18n_path)
+
+    module_languages = set()
+    for filename in os.listdir(i18n_path):
+        is_po_file = filename.endswith(PO_FILE_EXT)
+        skip_file = (
+            not is_po_file or
+            not os.path.isfile(os.path.join(i18n_path, filename)))
+        if skip_file:
+            continue
+        language = filename.replace(PO_FILE_EXT, '')
+        module_languages.add(language)
+
+    with open(pot_filepath, 'wb') as pot_file:
+        file_content = base64.b64decode(lang_export.data).decode('utf-8')
+        for pattern in LINE_PATTERNS_TO_REMOVE:
+            file_content = re.sub(
+                pattern, '', file_content, flags=re.MULTILINE)
+        pot_file.write(bytes(file_content, 'utf-8'))
+
+    for lang in module_languages:
+        lang_filename = lang + PO_FILE_EXT
+        lang_filepath = os.path.join(i18n_path, lang_filename)
+        if not os.path.isfile(lang_filepath):
+            with open(lang_filepath, 'w'):
+                pass
+        subprocess.check_call([
+            'msgmerge',
+            '--quiet',
+            '-U',
+            lang_filepath,
+            pot_filepath,
+        ])
+
+    if commit:
+        gitutils.commit_if_needed(
+            [pot_filepath],
+            "[UPD] {}.pot".format(addon_name),
+            cwd=addon_dir,
+        )
+        gitutils.commit_if_needed(
+            [i18n_path],
+            "[UPD] {} {}.po".format(addon_name, '/'.join(module_languages)),
+            cwd=addon_dir,
+        )
 
 
 @click.command()
@@ -40,4 +101,8 @@ def main(env, addons_dir, commit):
             ('name', 'in', addon_names),
         ])
         for module in modules:
-            export_pot(env, module.name, addons_dir, commit)
+            export_pot(env, module, addons_dir, commit)
+
+
+if __name__ == '__main__':
+    main()
