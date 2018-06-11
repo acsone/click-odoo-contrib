@@ -2,6 +2,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import base64
+import io
 import os
 import re
 import subprocess
@@ -48,12 +49,12 @@ def export_pot(env, module, addons_dir, commit):
         language = filename.replace(PO_FILE_EXT, '')
         module_languages.add(language)
 
-    with open(pot_filepath, 'wb') as pot_file:
+    with io.open(pot_filepath, 'w', encoding='utf-8') as pot_file:
         file_content = base64.b64decode(lang_export.data).decode('utf-8')
         for pattern in LINE_PATTERNS_TO_REMOVE:
             file_content = re.sub(
                 pattern, '', file_content, flags=re.MULTILINE)
-        pot_file.write(bytes(file_content, 'utf-8'))
+        pot_file.write(file_content)
 
     for lang in module_languages:
         lang_filename = lang + PO_FILE_EXT
