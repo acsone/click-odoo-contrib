@@ -5,6 +5,10 @@ Changes
 .. ----------
 .. -
 
+1.0.5 (unreleased)
+------------------
+- add click-odoo-makepot
+
 1.0.4 (2018-06-02)
 ------------------
 - update module list after creating a database from cache, useful when
@@ -12,7 +16,7 @@ Changes
   been added since the template was created
 
 1.0.3 (2018-05-30)
------------------
+------------------
 - fix: handle situations where two initdb start at the same time
   ending up with an "already exists" error when creating the cached template
 

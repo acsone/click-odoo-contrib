@@ -62,6 +62,26 @@ click-odoo-initdb (beta)
 			      to disable. Use 0 to empty cache.  [default: 5]
     --help                    Show this message and exit.
 
+click-odoo-makepot (beta)
+-------------------------
+
+.. code::
+
+  Usage: click-odoo-makepot [OPTIONS]
+
+    Export translation (.pot) files of addons installed in the database and
+    present in addons_dir. Additionally, run msgmerge on the existing .po
+    files to keep them up to date. Commit changes to git, if any.
+
+  Options:
+    -c, --config PATH       ...
+    -d, --database TEXT     ...
+    ...
+    --addons-dir TEXT       [default: .]
+    --commit / --no-commit  Git commit exported .pot files if needed.  [default:
+			    False]
+    --help                  Show this message and exit.
+
 click-odoo-uninstall (stable)
 -----------------------------
 
@@ -109,8 +129,11 @@ Credits
 
 Contributors:
 
-- Stéphane Bidoul (`ACSONE <http://acsone.eu/>`_)
-- Thomas Binsfeld (`ACSONE <http://acsone.eu/>`_)
+- Stéphane Bidoul (ACSONE_)
+- Thomas Binsfeld (ACSONE_)
+- Benjamin Willig (ACSONE_)
+
+.. _ACSONE: https://acsone.eu
 
 Maintainer
 ~~~~~~~~~~
