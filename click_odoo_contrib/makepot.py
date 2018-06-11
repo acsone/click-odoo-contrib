@@ -38,6 +38,7 @@ def export_pot(env, module, addons_dir, commit):
     if not os.path.isdir(i18n_path):
         os.makedirs(i18n_path)
 
+    files_to_commit = set()
     module_languages = set()
     for filename in os.listdir(i18n_path):
         is_po_file = filename.endswith(PO_FILE_EXT)
@@ -49,6 +50,7 @@ def export_pot(env, module, addons_dir, commit):
         language = filename.replace(PO_FILE_EXT, '')
         module_languages.add(language)
 
+    files_to_commit.add(pot_filepath)
     with io.open(pot_filepath, 'w', encoding='utf-8') as pot_file:
         file_content = base64.b64decode(lang_export.data).decode('utf-8')
         for pattern in LINE_PATTERNS_TO_REMOVE:
@@ -59,6 +61,7 @@ def export_pot(env, module, addons_dir, commit):
     for lang in module_languages:
         lang_filename = lang + PO_FILE_EXT
         lang_filepath = os.path.join(i18n_path, lang_filename)
+        files_to_commit.add(lang_filepath)
         if not os.path.isfile(lang_filepath):
             with open(lang_filepath, 'w'):
                 pass
@@ -72,13 +75,8 @@ def export_pot(env, module, addons_dir, commit):
 
     if commit:
         gitutils.commit_if_needed(
-            [pot_filepath],
-            "[UPD] {}.pot".format(addon_name),
-            cwd=addons_dir,
-        )
-        gitutils.commit_if_needed(
-            [i18n_path],
-            "[UPD] {} {}.po".format(addon_name, '/'.join(module_languages)),
+            list(files_to_commit),
+            "[UPD] Update {}.pot".format(addon_name),
             cwd=addons_dir,
         )
 
@@ -91,6 +89,8 @@ def export_pot(env, module, addons_dir, commit):
 def main(env, addons_dir, commit):
     """ Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
+    Additionally, run msgmerge on the existing .po files to keep
+    them up to date. Commit changes to git, if any.
     """
     addon_names = [
         addon_name
