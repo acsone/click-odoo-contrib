@@ -9,7 +9,7 @@ from click_odoo_contrib import manifest
 
 
 HERE = os.path.dirname(__file__)
-ADDONS_DIR = os.path.join(HERE, 'data/addons')
+ADDONS_DIR = os.path.join(HERE, 'data/test_manifest')
 
 
 def test_manifest_find_addons():

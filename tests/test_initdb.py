@@ -27,7 +27,7 @@ TODAY_MINUS_4 = datetime(2018, 5, 6)
 ADDONS_PATH = ','.join([
     os.path.join(click_odoo.odoo.__path__[0], 'addons'),
     os.path.join(click_odoo.odoo.__path__[0], '..', 'addons'),
-    os.path.join(os.path.dirname(__file__), 'data', 'addons'),
+    os.path.join(os.path.dirname(__file__), 'data', 'test_initdb'),
 ])
 
 
