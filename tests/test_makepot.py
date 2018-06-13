@@ -14,8 +14,11 @@ test_addons_dir = os.path.join(
     os.path.dirname(__file__), 'data', 'test_makepot')
 
 
-def test_makepot(odoodb, odoocfg, tmpdir):
+def test_makepot_base(odoodb, odoocfg, tmpdir):
     addon_name = 'addon_test_makepot'
+    addon_path = os.path.join(test_addons_dir, addon_name)
+    i18n_path = os.path.join(addon_path, 'i18n')
+    pot_filepath = os.path.join(i18n_path, addon_name + '.pot')
 
     subprocess.check_call([
         click_odoo.odoo_bin,
@@ -25,6 +28,9 @@ def test_makepot(odoodb, odoocfg, tmpdir):
         '--stop-after-init',
     ])
 
+    if os.path.exists(pot_filepath):
+        os.remove(pot_filepath)
+
     result = CliRunner().invoke(main, [
         '-d', odoodb,
         '-c', str(odoocfg),
@@ -32,10 +38,44 @@ def test_makepot(odoodb, odoocfg, tmpdir):
     ])
 
     assert result.exit_code == 0
+    assert os.path.isdir(i18n_path)
+    assert os.path.isfile(pot_filepath)
+    with open(pot_filepath) as f:
+        assert 'myfield' in f.read()
 
+
+def test_makepot_msgmerge(odoodb, odoocfg, tmpdir):
+    addon_name = 'addon_test_makepot'
     addon_path = os.path.join(test_addons_dir, addon_name)
     i18n_path = os.path.join(addon_path, 'i18n')
     pot_filepath = os.path.join(i18n_path, addon_name + '.pot')
+    fr_filepath = os.path.join(i18n_path, 'fr.po')
 
-    assert os.path.isdir(i18n_path)
-    assert os.path.isfile(pot_filepath)
+    subprocess.check_call([
+        click_odoo.odoo_bin,
+        '-d', odoodb,
+        '-c', str(odoocfg),
+        '-i', addon_name,
+        '--stop-after-init',
+    ])
+
+    if not os.path.exists(i18n_path):
+        os.makedirs(i18n_path)
+    if os.path.exists(pot_filepath):
+        os.remove(pot_filepath)
+    # create empty fr.po, that will be updated by msgmerge
+    with open(fr_filepath, 'w'):
+        pass
+    assert os.path.getsize(fr_filepath) == 0
+
+    result = CliRunner().invoke(main, [
+        '-d', odoodb,
+        '-c', str(odoocfg),
+        '--addons-dir', test_addons_dir,
+        '--msgmerge',
+    ])
+
+    assert result.exit_code == 0
+    assert os.path.getsize(fr_filepath) != 0
+    with open(fr_filepath) as f:
+        assert 'myfield' in f.read()
