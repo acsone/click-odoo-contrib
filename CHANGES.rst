@@ -8,6 +8,8 @@ Changes
 1.0.5 (unreleased)
 ------------------
 - add click-odoo-makepot
+- in click-odoo-initdb, include active=True modules in hash computation
+  (because modules with active=True are auto installed by Odoo)
 
 1.0.4 (2018-06-02)
 ------------------

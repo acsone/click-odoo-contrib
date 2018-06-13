@@ -49,7 +49,9 @@ def find_addons(addons_dir, installable_only=True):
         yield addon_name, addon_dir, manifest
 
 
-def expand_dependencies(module_names, include_auto_install=False):
+def expand_dependencies(module_names,
+                        include_auto_install=False,
+                        include_active=False):
     """ Return a set of module names with their transitive
     dependencies.  This method does not need an Odoo database,
     but requires the addons path to be initialized.
@@ -69,6 +71,12 @@ def expand_dependencies(module_names, include_auto_install=False):
     res = set()
     for module_name in module_names:
         add_deps(module_name)
+    if include_active:
+        for module_name in sorted(odoo.modules.module.get_modules()):
+            module_path = odoo.modules.get_module_path(module_name)
+            manifest = read_manifest(module_path)
+            if manifest.get('active'):
+                add_deps(module_name)
     if include_auto_install:
         auto_install_list = []
         for module_name in sorted(odoo.modules.module.get_modules()):
