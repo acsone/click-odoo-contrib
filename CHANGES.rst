@@ -5,8 +5,8 @@ Changes
 .. ----------
 .. -
 
-1.0.5 (unreleased)
-------------------
+1.1.0 (2018-06-13, Sevilla OCA code sprint)
+-------------------------------------------
 - add click-odoo-makepot
 - in click-odoo-initdb, include active=True modules in hash computation
   (because modules with active=True are auto installed by Odoo)
