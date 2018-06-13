@@ -74,13 +74,15 @@ click-odoo-makepot (beta)
     files to keep them up to date. Commit changes to git, if any.
 
   Options:
-    -c, --config PATH       ...
-    -d, --database TEXT     ...
+    -c, --config PATH           ...
+    -d, --database TEXT         ...
     ...
-    --addons-dir TEXT       [default: .]
-    --commit / --no-commit  Git commit exported .pot files if needed.  [default:
-			    False]
-    --help                  Show this message and exit.
+    --addons-dir TEXT           [default: .]
+    --msgmerge / --no-msgmerge  Merge .pot changes into all .po files
+                                [default: False]
+    --commit / --no-commit      Git commit exported .pot files if needed.
+                                [default: False]
+    --help                      Show this message and exit.
 
 click-odoo-uninstall (stable)
 -----------------------------
@@ -114,7 +116,7 @@ click-odoo-upgrade (stable)
     --i18n-overwrite     Overwrite existing translations
     --upgrade-all        Force a complete upgrade (-u base)
     --help               Show this message and exit.
-    
+
 Useful links
 ~~~~~~~~~~~~
 

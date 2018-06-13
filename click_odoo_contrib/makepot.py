@@ -22,7 +22,7 @@ PO_FILE_EXT = '.po'
 POT_FILE_EXT = '.pot'
 
 
-def export_pot(env, module, addons_dir, commit):
+def export_pot(env, module, addons_dir, msgmerge, commit):
     addon_name = module.name
     addon_dir = os.path.join(addons_dir, addon_name)
     i18n_path = os.path.join(addon_dir, 'i18n')
@@ -39,16 +39,6 @@ def export_pot(env, module, addons_dir, commit):
         os.makedirs(i18n_path)
 
     files_to_commit = set()
-    module_languages = set()
-    for filename in os.listdir(i18n_path):
-        is_po_file = filename.endswith(PO_FILE_EXT)
-        skip_file = (
-            not is_po_file or
-            not os.path.isfile(os.path.join(i18n_path, filename)))
-        if skip_file:
-            continue
-        language = filename.replace(PO_FILE_EXT, '')
-        module_languages.add(language)
 
     files_to_commit.add(pot_filepath)
     with io.open(pot_filepath, 'w', encoding='utf-8') as pot_file:
@@ -58,20 +48,19 @@ def export_pot(env, module, addons_dir, commit):
                 pattern, '', file_content, flags=re.MULTILINE)
         pot_file.write(file_content)
 
-    for lang in module_languages:
-        lang_filename = lang + PO_FILE_EXT
-        lang_filepath = os.path.join(i18n_path, lang_filename)
-        files_to_commit.add(lang_filepath)
-        if not os.path.isfile(lang_filepath):
-            with open(lang_filepath, 'w'):
-                pass
-        subprocess.check_call([
-            'msgmerge',
-            '--quiet',
-            '-U',
-            lang_filepath,
-            pot_filepath,
-        ])
+    if msgmerge:
+        for lang_filename in os.listdir(i18n_path):
+            if not lang_filename.endswith(PO_FILE_EXT):
+                continue
+            lang_filepath = os.path.join(i18n_path, lang_filename)
+            files_to_commit.add(lang_filepath)
+            subprocess.check_call([
+                'msgmerge',
+                '--quiet',
+                '-U',
+                lang_filepath,
+                pot_filepath,
+            ])
 
     if commit:
         gitutils.commit_if_needed(
@@ -84,12 +73,14 @@ def export_pot(env, module, addons_dir, commit):
 @click.command()
 @click_odoo.env_options(with_rollback=False, default_log_level='error')
 @click.option('--addons-dir', default='.', show_default=True)
+@click.option('--msgmerge / --no-msgmerge', show_default=True,
+              help="Merge .pot changes into all .po files")
 @click.option('--commit / --no-commit', show_default=True,
               help="Git commit exported .pot files if needed.")
-def main(env, addons_dir, commit):
+def main(env, addons_dir, msgmerge, commit):
     """ Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
-    Additionally, run msgmerge on the existing .po files to keep
+    Optionally, run msgmerge on the existing .po files to keep
     them up to date. Commit changes to git, if any.
     """
     addon_names = [
@@ -102,7 +93,7 @@ def main(env, addons_dir, commit):
             ('name', 'in', addon_names),
         ])
         for module in modules:
-            export_pot(env, module, addons_dir, commit)
+            export_pot(env, module, addons_dir, msgmerge, commit)
 
 
 if __name__ == '__main__':
