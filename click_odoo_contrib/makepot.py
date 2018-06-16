@@ -22,7 +22,7 @@ PO_FILE_EXT = '.po'
 POT_FILE_EXT = '.pot'
 
 
-def export_pot(env, module, addons_dir, msgmerge, commit):
+def export_pot(env, module, addons_dir, msgmerge, commit, msgmerge_if_new_pot):
     addon_name = module.name
     addon_dir = os.path.join(addons_dir, addon_name)
     i18n_path = os.path.join(addon_dir, 'i18n')
@@ -38,6 +38,8 @@ def export_pot(env, module, addons_dir, msgmerge, commit):
     if not os.path.isdir(i18n_path):
         os.makedirs(i18n_path)
 
+    pot_is_new = not os.path.exists(pot_filepath)
+
     files_to_commit = set()
 
     files_to_commit.add(pot_filepath)
@@ -48,7 +50,7 @@ def export_pot(env, module, addons_dir, msgmerge, commit):
                 pattern, '', file_content, flags=re.MULTILINE)
         pot_file.write(file_content)
 
-    if msgmerge:
+    if msgmerge or (msgmerge_if_new_pot and pot_is_new):
         for lang_filename in os.listdir(i18n_path):
             if not lang_filename.endswith(PO_FILE_EXT):
                 continue
@@ -74,10 +76,14 @@ def export_pot(env, module, addons_dir, msgmerge, commit):
 @click_odoo.env_options(with_rollback=False, default_log_level='error')
 @click.option('--addons-dir', default='.', show_default=True)
 @click.option('--msgmerge / --no-msgmerge', show_default=True,
-              help="Merge .pot changes into all .po files")
+              help="Merge .pot changes into all .po files.")
+@click.option('--msgmerge-if-new-pot / --no-msg-merge-if-new-pot',
+              show_default=True,
+              help="Merge .pot changes into all .po files, only if "
+                   "a new .pot file has been created.")
 @click.option('--commit / --no-commit', show_default=True,
               help="Git commit exported .pot files if needed.")
-def main(env, addons_dir, msgmerge, commit):
+def main(env, addons_dir, msgmerge, commit, msgmerge_if_new_pot):
     """ Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
     Optionally, run msgmerge on the existing .po files to keep
@@ -93,7 +99,8 @@ def main(env, addons_dir, msgmerge, commit):
             ('name', 'in', addon_names),
         ])
         for module in modules:
-            export_pot(env, module, addons_dir, msgmerge, commit)
+            export_pot(env, module, addons_dir, msgmerge, commit,
+                       msgmerge_if_new_pot)
 
 
 if __name__ == '__main__':

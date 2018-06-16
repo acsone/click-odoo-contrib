@@ -62,8 +62,8 @@ click-odoo-initdb (beta)
 			      to disable. Use 0 to empty cache.  [default: 5]
     --help                    Show this message and exit.
 
-click-odoo-makepot (beta)
--------------------------
+click-odoo-makepot (stable)
+---------------------------
 
 .. code::
 
@@ -79,6 +79,10 @@ click-odoo-makepot (beta)
     ...
     --addons-dir TEXT           [default: .]
     --msgmerge / --no-msgmerge  Merge .pot changes into all .po files
+                                [default: False]
+    --msgmerge-if-new-pot / --no-msg-merge-if-new-pot
+                                Merge .pot changes into all .po files, only
+                                if a new .pot file has been created.
                                 [default: False]
     --commit / --no-commit      Git commit exported .pot files if needed.
                                 [default: False]

@@ -5,6 +5,10 @@ Changes
 .. ----------
 .. -
 
+1.1.1 (2018-06-16)
+------------------
+- makepot: add --msgmerge-if-new-pot option
+
 1.1.0 (2018-06-13, Sevilla OCA code sprint)
 -------------------------------------------
 - add click-odoo-makepot

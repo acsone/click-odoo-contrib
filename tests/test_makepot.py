@@ -79,3 +79,56 @@ def test_makepot_msgmerge(odoodb, odoocfg, tmpdir):
     assert os.path.getsize(fr_filepath) != 0
     with open(fr_filepath) as f:
         assert 'myfield' in f.read()
+
+
+def test_makepot_msgmerge_if_new_pot(odoodb, odoocfg, tmpdir):
+    addon_name = 'addon_test_makepot'
+    addon_path = os.path.join(test_addons_dir, addon_name)
+    i18n_path = os.path.join(addon_path, 'i18n')
+    pot_filepath = os.path.join(i18n_path, addon_name + '.pot')
+    fr_filepath = os.path.join(i18n_path, 'fr.po')
+
+    subprocess.check_call([
+        click_odoo.odoo_bin,
+        '-d', odoodb,
+        '-c', str(odoocfg),
+        '-i', addon_name,
+        '--stop-after-init',
+    ])
+
+    if not os.path.exists(i18n_path):
+        os.makedirs(i18n_path)
+    if os.path.exists(pot_filepath):
+        os.remove(pot_filepath)
+    # create empty .pot
+    with open(pot_filepath, 'w'):
+        pass
+    # create empty fr.po
+    with open(fr_filepath, 'w'):
+        pass
+    assert os.path.getsize(fr_filepath) == 0
+
+    result = CliRunner().invoke(main, [
+        '-d', odoodb,
+        '-c', str(odoocfg),
+        '--addons-dir', test_addons_dir,
+        '--msgmerge-if-new-pot',
+    ])
+
+    assert result.exit_code == 0
+    # po file not changed because .pot did exist
+    assert os.path.getsize(fr_filepath) == 0
+
+    # now remove pot file so a new one will
+    # be created and msgmerge will run
+    os.remove(pot_filepath)
+
+    result = CliRunner().invoke(main, [
+        '-d', odoodb,
+        '-c', str(odoocfg),
+        '--addons-dir', test_addons_dir,
+        '--msgmerge-if-new-pot',
+    ])
+
+    with open(fr_filepath) as f:
+        assert 'myfield' in f.read()
