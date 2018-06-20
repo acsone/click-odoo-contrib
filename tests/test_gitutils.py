@@ -61,3 +61,12 @@ def test_git_commit_if_needed(gitdir):
     file3.ensure(file=True)
     assert commit_if_needed(['dir1/file3'], 'msg', cwd=str(gitdir))
     assert 'dir1/file3' in _git_ls_files(gitdir)
+
+
+def test_commit_git_ignored(gitdir):
+    file1 = (gitdir / 'file1.pot')
+    file1.ensure(file=True)
+    gitignore = (gitdir / '.gitignore')
+    gitignore.write("*.pot\n")
+    assert commit_if_needed([str(file1)], 'msg', cwd=str(gitdir))
+    assert 'file1.pot' in _git_ls_files(gitdir)

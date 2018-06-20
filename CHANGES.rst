@@ -5,6 +5,11 @@ Changes
 .. ----------
 .. -
 
+1.1.2 (2018-06-20)
+------------------
+- makepot: force git add in case .pot are in .gitignore
+  (made for https://github.com/OCA/maintainer-quality-tools/issues/558)
+
 1.1.1 (2018-06-16)
 ------------------
 - makepot: add --msgmerge-if-new-pot option
