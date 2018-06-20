@@ -5,6 +5,10 @@ Changes
 .. ----------
 .. -
 
+1.1.3 (2018-06-20)
+------------------
+- makepot: add --commit-message option
+
 1.1.2 (2018-06-20)
 ------------------
 - makepot: force git add in case .pot are in .gitignore

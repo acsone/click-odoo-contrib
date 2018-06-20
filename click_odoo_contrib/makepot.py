@@ -22,7 +22,8 @@ PO_FILE_EXT = '.po'
 POT_FILE_EXT = '.pot'
 
 
-def export_pot(env, module, addons_dir, msgmerge, commit, msgmerge_if_new_pot):
+def export_pot(env, module, addons_dir, msgmerge, commit, msgmerge_if_new_pot,
+               commit_message):
     addon_name = module.name
     addon_dir = os.path.join(addons_dir, addon_name)
     i18n_path = os.path.join(addon_dir, 'i18n')
@@ -67,7 +68,7 @@ def export_pot(env, module, addons_dir, msgmerge, commit, msgmerge_if_new_pot):
     if commit:
         gitutils.commit_if_needed(
             list(files_to_commit),
-            "[UPD] Update {}.pot".format(addon_name),
+            commit_message.format(addon_name=addon_name),
             cwd=addons_dir,
         )
 
@@ -83,7 +84,10 @@ def export_pot(env, module, addons_dir, msgmerge, commit, msgmerge_if_new_pot):
                    "a new .pot file has been created.")
 @click.option('--commit / --no-commit', show_default=True,
               help="Git commit exported .pot files if needed.")
-def main(env, addons_dir, msgmerge, commit, msgmerge_if_new_pot):
+@click.option('--commit-message', show_default=True,
+              default="[UPD] Update {addon_name}.pot")
+def main(env, addons_dir, msgmerge, commit, msgmerge_if_new_pot,
+         commit_message):
     """ Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
     Optionally, run msgmerge on the existing .po files to keep
@@ -100,7 +104,7 @@ def main(env, addons_dir, msgmerge, commit, msgmerge_if_new_pot):
         ])
         for module in modules:
             export_pot(env, module, addons_dir, msgmerge, commit,
-                       msgmerge_if_new_pot)
+                       msgmerge_if_new_pot, commit_message)
 
 
 if __name__ == '__main__':
