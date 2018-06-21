@@ -1,6 +1,7 @@
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
+import os
 import subprocess
 
 import pytest
@@ -59,7 +60,7 @@ def test_git_commit_if_needed(gitdir):
     dir1.ensure(dir=True)
     file3 = (dir1 / 'file3')
     file3.ensure(file=True)
-    assert commit_if_needed(['dir1/file3'], 'msg', cwd=str(gitdir))
+    assert commit_if_needed([str(file3)], 'msg', cwd=str(gitdir))
     assert 'dir1/file3' in _git_ls_files(gitdir)
 
 
@@ -70,3 +71,12 @@ def test_commit_git_ignored(gitdir):
     gitignore.write("*.pot\n")
     assert commit_if_needed([str(file1)], 'msg', cwd=str(gitdir))
     assert 'file1.pot' in _git_ls_files(gitdir)
+
+
+def test_commit_reldir(gitdir):
+    with gitdir.as_cwd():
+        os.mkdir('subdir')
+        file1 = 'subdir/file1'
+        with open(file1, 'w'):
+            pass
+        assert commit_if_needed([file1], 'msg', cwd='subdir')

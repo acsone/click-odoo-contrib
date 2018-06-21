@@ -5,6 +5,11 @@ Changes
 .. ----------
 .. -
 
+1.1.4 (2018-06-21)
+------------------
+- makepot: fix issue when addons-dir is not current directory
+  (this should also fix issues when there are symlinks)
+
 1.1.3 (2018-06-20)
 ------------------
 - makepot: add --commit-message option
