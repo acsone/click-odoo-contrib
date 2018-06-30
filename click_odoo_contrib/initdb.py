@@ -48,12 +48,15 @@ def _patch_ir_attachment_store(force_db_storage):
         # make sure attachments created during db initialization
         # are stored in database, so we get something consistent
         # when recreating the db by copying the cached template
-        if odoo.release.version_info[0] < 10:
-            from openerp.addons.base.ir.ir_attachment import \
-                ir_attachment as IrAttachment
-        else:
+        if odoo.release.version_info[0] >= 12:
+            from odoo.addons.base.models.ir_attachment import \
+                IrAttachment
+        elif odoo.release.version_info[0] >= 10:
             from odoo.addons.base.ir.ir_attachment import \
                 IrAttachment
+        else:
+            from openerp.addons.base.ir.ir_attachment import \
+                ir_attachment as IrAttachment
         orig = IrAttachment._storage
         IrAttachment._storage = _db_storage
         try:
