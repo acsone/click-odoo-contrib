@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 
-odoo_series = sys.argv[1]
+odoo_branch = sys.argv[1]
 odoo_dir = sys.argv[2]
 
 
@@ -30,7 +30,7 @@ def clone_odoo():
     subprocess.check_call([
         'git', 'clone',
         '--depth=1',
-        '-b', odoo_series,
+        '-b', odoo_branch,
         'https://github.com/odoo/odoo',
         odoo_dir,
     ])
