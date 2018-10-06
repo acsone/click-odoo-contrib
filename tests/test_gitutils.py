@@ -12,6 +12,14 @@ from click_odoo_contrib.gitutils import commit_if_needed
 @pytest.fixture
 def gitdir(tmpdir):
     subprocess.check_call(['git', 'init'], cwd=str(tmpdir))
+    subprocess.check_call(
+        ['git', 'config', 'user.name', 'tester'],
+        cwd=str(tmpdir),
+    )
+    subprocess.check_call(
+        ['git', 'config', 'user.email', 'tester@example.com'],
+        cwd=str(tmpdir),
+    )
     yield tmpdir
 
 
