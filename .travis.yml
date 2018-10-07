@@ -2,7 +2,8 @@ language: python
 
 cache: pip
 
-postgres: 9.6
+addons:
+  postgresql: "9.6"
 
 stages:
   - name: test
