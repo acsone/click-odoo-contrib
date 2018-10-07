@@ -5,6 +5,8 @@ import os
 
 import pytest
 
+from click_odoo import odoo
+
 from click_odoo_contrib import manifest
 
 
@@ -34,7 +36,10 @@ def test_manifest_expand_dependencies():
     assert 'base_import' in res
     assert 'base' in res  # obviously
     assert 'web' in res  # base_import depends on web
-    assert 'auth_crypt' not in res
+    if odoo.release.version_info[0] < 12:
+        assert 'auth_crypt' not in res
+    else:
+        assert 'iap' not in res  # iap is auto_install
 
 
 def test_manifest_expand_dependencies_auto_install():
@@ -44,7 +49,10 @@ def test_manifest_expand_dependencies_auto_install():
     )
     assert 'auth_signup' in res
     assert 'base' in res  # obviously
-    assert 'auth_crypt' in res  # web is autoinstall
+    if odoo.release.version_info[0] < 12:
+        assert 'auth_crypt' in res  # auth_crypt is autoinstall
+    else:
+        assert 'iap' in res  # iap is auto_install
     assert 'web' in res  # web is autoinstall
     assert 'base_import' in res  # base_import is indirect autoinstall
 
