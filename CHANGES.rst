@@ -5,6 +5,10 @@ Changes
 .. ----------
 .. -
 
+1.2.0 (2018-10-07)
+------------------
+- Odoo 12 support
+
 1.1.4 (2018-06-21)
 ------------------
 - makepot: fix issue when addons-dir is not current directory
