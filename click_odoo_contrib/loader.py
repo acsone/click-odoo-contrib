@@ -22,6 +22,12 @@ from .manifest import expand_dependencies
 _logger = logging.getLogger(__name__)
 
 class DataSetGraph(nx.DiGraph):
+    """ Holds DataFrames as nodes plus their metadata.
+    Class-level functions (ordered) describe the processing stages."""
+
+    def __init__(self, *args, **kwargs):
+        self.env = kwargs.get('env', False)
+        super(DataSetGraph, self).__init__(*args, **kwargs)
 
     def load_metadata(self):
         """ Loads all required metadata from the odoo enviornment
@@ -32,10 +38,18 @@ class DataSetGraph(nx.DiGraph):
             for col in node['df'].columns:
                 node['cols'].append({'name': col.rstrip('/.id').rstrip('/id')})
 
-            # TODO: Get info from `ctx.env`
-            node['fields'] = {'stored': [], 'relational': [{'name':'', 'model':''}]}
-            node['parent'] = 'parent_id'
-            node['repr'] = ''
+            klass = self.env[node['model']]  # click-odoo magic upon local Odoo codebase
+
+            node['fields'] = {'stored': [], 'relational': []}
+            # spec: {'relational': [{'name':'', 'model':''}]}
+            node['parent'] = klass._parent_name  # pylint: disable=W0212
+            node['repr'] = klass._description  # pylint: disable=W0212
+            for field in klass._fields:
+                if field.store:
+                    node['fields']['stored'].append(field)
+                if field.relational:
+                    node['fields']['relational'].append(
+                        {'name': field.name, 'model': field.comodel_name})
 
             # Enrich cols with data from odoo env (convenience)
             for col in node['cols']:
@@ -53,34 +67,32 @@ class DataSetGraph(nx.DiGraph):
                         self.add_edge(node_u, node_v, column=col['name'])
 
     def order_to_parent(self):
-        """ Reorganizes dataframes so they are in suitable loading
-        order if a parent field is present.
+        """ Reorganizes dataframes for parent fields so they are in
+        suitable loading order.
         TODO: Does not work with nested rows. Flatten everything first? """
         for node, parent in self.nodes(data='parent'):
             if parent not in [c['name'] for c in node['cols'].items()]:
                 continue
-            recordGraph = nx.DiGraph()
-            recordGraph.add_nodes_from(node['df'].index.tolist())
-            recordGraph.add_edges_from(
-                node['df'].loc[:,parent][node['df'][parent].notnull()].itertuples)
-            node['df'].reindex(nx.topological_sort(recordGraph.reverse(False)))
+            record_graph = nx.DiGraph()
+            record_graph.add_nodes_from(node['df'].index.tolist())
+            record_graph.add_edges_from(
+                node['df'].loc[:, parent][node['df'][parent].notnull()].itertuples)
+            node['df'].reindex(nx.topological_sort(record_graph.reverse(False)))
 
 
 
-
-
-GRAPH = DataSetGraph()
 
 def _infer_valid_model(filename):
     """ Returns a valid model name from filename or False
-    Filenames are expected to convey the model
-    just as Odoo does when loading csv files. """
+    Filenames are expected to convey the model just as Odoo
+    does when loading csv files. """
 
-    # TODO: validate model against `ctx.env`
-    return 'accout.accoount' or False
+    if filename not in ENV:
+        return False
+    return filename
 
 def _load_dataframes(filepath):
-    """ Loads dataframes into DataSetGraph global receiver """
+    """ Loads dataframes into the GRAPH global receiver """
 
     # Special case: Excle file with sheets
     if filepath.endswith('.xls') or \
@@ -170,3 +182,12 @@ def main(env, file, database, dbconninfo,
 
     Returns joy.
     """
+
+    global ENV  # pylint: disable=W0601
+    global GRAPH  # pylint: disable=W0601
+    ENV = env
+    # Non-private Class API, therfore pass env as arg
+    GRAPH = DataSetGraph(env=env)
+
+if __name__ == '__main__':  # pragma: no cover
+    main()
