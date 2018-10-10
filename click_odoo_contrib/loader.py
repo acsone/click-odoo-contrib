@@ -23,6 +23,17 @@ from .manifest import expand_dependencies
 
 _logger = logging.getLogger(__name__)
 
+
+def load(env, model, chunk):
+    """ Loads a chunk into model.
+    Public method. Can be scheduled into threads. """
+    env[model].load(
+                chunk.columns.tolist(),  # fields
+                chunk.fillna('').astype(str).values.tolist()  # data
+                )
+
+
+
 class DataSetGraph(nx.DiGraph):
     """ Holds DataFrames as nodes plus their metadata.
     Class-level functions (ordered) describe the processing stages."""
@@ -98,6 +109,16 @@ class DataSetGraph(nx.DiGraph):
             del node['df']
             # force gc collection as allocated memory chunks might non-negligable.
             gc.collect()
+
+    def flush_all(self):
+        """ Synchronously flushes all DataSetGraph's chunks in topo-sorted
+        order into their respective model. """
+        for node in nx.topological_sort(self.reverse(False)):
+            batchlen = len(node['chunked_iterable'])
+            for batch, df in node['chunked_iterable']:
+                _logger.info("Synchronously loading %s (%s), batch %s/%s.",
+                    node['repr'], node['model'], batch, batchlen)
+                load(self.env, node['model'], df)
 
 
 
@@ -214,6 +235,7 @@ def main(env, file, database, dbconninfo,
     GRAPH.seed_edges()
     GRAPH.order_to_parent()
     GRAPH.chunk_dataframes(batch)
+    GRAPH.flush_all()  # Sychronous loading
 
 if __name__ == '__main__':  # pragma: no cover
     main()
