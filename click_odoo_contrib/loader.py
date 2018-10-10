@@ -8,7 +8,9 @@ from fnmatch import fnmatch
 import hashlib
 import logging
 import pandas as pd
+import numpy as np
 import networkx as nx
+import gc
 import os
 import re
 
@@ -79,6 +81,23 @@ class DataSetGraph(nx.DiGraph):
                 node['df'].loc[:, parent][node['df'][parent].notnull()].itertuples)
             node['df'].reindex(nx.topological_sort(record_graph.reverse(False)))
 
+    def chunk_dataframes(self, batch):
+        """ Chunks dataframes as per provided batch size.
+        Resulting DFs are stored back as []DataFrame on the node.
+
+        Note:
+            Don't attempt to schedule Hierarchy tables across threads: we deliberately
+            refrain from implementing a federated data chunk dependency lock. This is
+            usually not a problem, as hiearchy tables tend to be relatively small in size
+            and simple in datastructure.
+        """
+        for node, df in self.nodes(data='df'):
+            # https://stackoverflow.com/a/25703030
+            # returns an iterable over (key, group)
+            node['chunked_iterable'] = df.groupby(np.arange(len(df))//batch)
+            del node['df']
+            # force gc collection as allocated memory chunks might non-negligable.
+            gc.collect()
 
 
 
