@@ -192,9 +192,7 @@ def _read_excel(excelfile, sheetname):
 
 
 @click.command()
-@click_odoo.env_options(default_log_level='warn',
-                        with_database=False,
-                        with_rollback=False)
+@click_odoo.env_options(default_log_level='warn', with_rollback=False)
 @click.option('--src', '-s', type=click.File('rb', lazy=True,exists=True),
               multiple=True, required=True,
               help="Path to the file, that you want to load. "
@@ -202,8 +200,6 @@ def _read_excel(excelfile, sheetname):
                    "for more than one file to load.")
 @click.option('--type', '-t', type=click.Choice(['json', 'csv', 'xls']),
               show_default=True, default='csv', help="Input date type.")
-@click.option('--database', '-d', required=True,
-              help="The database, into which to load the data.")
 @click.option('--onchange/--no-onchange', default=True, show_default=True,
               help="Trigger onchange methods as if data was entered "
                    "through normal form views.")
