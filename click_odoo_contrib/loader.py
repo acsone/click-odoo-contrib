@@ -88,7 +88,7 @@ class DataSetGraph(nx.DiGraph):
         Note:
             Don't attempt to schedule Hierarchy tables across threads: we deliberately
             refrain from implementing a federated data chunk dependency lock. This is
-            usually not a problem, as hiearchy tables tend to be relatively small in size
+            usually not a problem, as hierarchy tables tend to be relatively small in size
             and simple in datastructure.
         """
         for node, df in self.nodes(data='df'):
