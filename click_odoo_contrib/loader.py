@@ -207,6 +207,13 @@ def main(env, file, database, dbconninfo,
     ENV = env
     # Non-private Class API, therfore pass env as arg
     GRAPH = DataSetGraph(env=env)
+    for filepath in file:
+        _load_dataframes(filepath)
+
+    GRAPH.load_metadata()
+    GRAPH.seed_edges()
+    GRAPH.order_to_parent()
+    GRAPH.chunk_dataframes(batch)
 
 if __name__ == '__main__':  # pragma: no cover
     main()
