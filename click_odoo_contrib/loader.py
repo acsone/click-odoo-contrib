@@ -13,6 +13,7 @@ import networkx as nx
 import gc
 import os
 import re
+import json
 
 import click
 import click_odoo
@@ -26,12 +27,26 @@ _logger = logging.getLogger(__name__)
 
 def load(env, model, chunk):
     """ Loads a chunk into model.
-    Public method. Can be scheduled into threads. """
-    env[model].load(
+    Public method. Can be scheduled into threads. Interface method. """
+    res = env[model].load(
                 chunk.columns.tolist(),  # fields
                 chunk.fillna('').astype(str).values.tolist()  # data
                 )
 
+    # Make current return API more explicit
+    if not res['ids']:
+        return 'failure', res['ids'], res['messages']
+    return 'success', res['ids'], res['messages']
+
+def log_load_json(state, ids, msgs, batch, model):
+    """ Logs load result into json chunk. Interface method. """
+    return bytes(json.dumps({
+        'batch': batch,
+        'loaded': ids,
+        'model': model,
+        'state': state,
+        'x_msgs': msgs
+        }, sort_keys=True, indent=4), 'utf-8')
 
 
 class DataSetGraph(nx.DiGraph):
@@ -110,15 +125,20 @@ class DataSetGraph(nx.DiGraph):
             # force gc collection as allocated memory chunks might non-negligable.
             gc.collect()
 
-    def flush_all(self):
+    def flush_all(self, log_stream=None):
         """ Synchronously flushes all DataSetGraph's chunks in topo-sorted
-        order into their respective model. """
+        order into their respective model. Writes return state as json into
+        the log_buf reciever """
         for node in nx.topological_sort(self.reverse(False)):
             batchlen = len(node['chunked_iterable'])
             for batch, df in node['chunked_iterable']:
                 _logger.info("Synchronously loading %s (%s), batch %s/%s.",
-                    node['repr'], node['model'], batch, batchlen)
-                load(self.env, node['model'], df)
+                             node['repr'], node['model'], batch, batchlen)
+                state, ids, msgs = load(self.env, node['model'], df)
+                if log_stream:
+                    log_stream.write(
+                        log_load_json(state, ids, msgs, batch, node['model']))
+
 
 
 
@@ -131,13 +151,12 @@ def _infer_valid_model(filename):
         return False
     return filename
 
-def _load_dataframes(filepath):
+def _load_dataframes(buf, input_type, model):
     """ Loads dataframes into the GRAPH global receiver """
 
     # Special case: Excle file with sheets
-    if filepath.endswith('.xls') or \
-        filepath.endswith('.xlsx'):
-        xlf = pd.ExcelFile(filepath)
+    if input_type == 'xls':
+        xlf = pd.ExcelFile(buf)
         for name in xlf.sheet_names:
             model = _infer_valid_model(name)
             if not model:
@@ -146,14 +165,12 @@ def _load_dataframes(filepath):
             GRAPH.add_node(model=model, df=df)
         return
 
-    filename = os.path.basename(filepath)
-    model = _infer_valid_model(filename)
     if not model:
         return
-    if filepath.endswith('.csv'):
-        df = _read_csv(filepath)
-    if filepath.endswith('.json'):
-        df = _read_json(filepath)
+    if input_type == 'csv':
+        df = _read_csv(buf)
+    if input_type == 'json':
+        df = _read_json(buf)
     GRAPH.add_node(model=model, df=df)
 
 def _read_csv(filepath_or_buffer):
@@ -178,14 +195,13 @@ def _read_excel(excelfile, sheetname):
 @click_odoo.env_options(default_log_level='warn',
                         with_database=False,
                         with_rollback=False)
-@click.option('--file', '-f', required=True,
+@click.option('--src', '-s', type=click.File('rb', lazy=True,exists=True),
+              multiple=True, required=True,
               help="Path to the file, that you want to load. "
                    "You can specify this option multiple times "
                    "for more than one file to load.")
-@click.option('--stream-json', required=True,
-              help="Instead of a file, recieves a single, JSON-typed, stream.")
-@click.option('--stream-csv', required=True,
-              help="Instead of a file, recieves a single, CSV-typed, stream.")
+@click.option('--type', '-t', type=click.Choice(['json', 'csv', 'xls']),
+              show_default=True, default='csv', help="Input date type.")
 @click.option('--database', '-d', required=True,
               help="The database, into which to load the data.")
 @click.option('--onchange/--no-onchange', default=True, show_default=True,
@@ -196,12 +212,17 @@ def _read_excel(excelfile, sheetname):
                    "after so many records. Nested lines do not count "
                    "towards that value. In *very* complex loading "
                    "scenarios: take some care with nested records.")
-@click.option('--output/--no-output', default=True, show_default=True,
+@click.option('--out', type=click.File('wb', lazy=True),
+              default="./log.json", show_default=True,
               help="Persist the server's output into a JSON database "
                    "alongside each source file. On subsequent runs, "
                    "sucessfull loads are deduplicated.")
-def main(env, file, database, dbconninfo,
-         onchange, batch, output):
+@click.argument('models', required=False, nargs=-1,
+              help="When loading from unnamed streams, you can specify "
+                   "the modles of each stream. They must be presented "
+                   "in the same order as the streams. Note: don't use "
+                   "with xls streams as model is inferred from sheetnames.")
+def main(env, src, type, database, onchange, batch, out, models):
     """ Load data into an Odoo Database.
 
     Loads data supplied in a supported format by file or stream
@@ -228,14 +249,32 @@ def main(env, file, database, dbconninfo,
     ENV = env
     # Non-private Class API, therfore pass env as arg
     GRAPH = DataSetGraph(env=env)
-    for filepath in file:
-        _load_dataframes(filepath)
+
+    # Validations
+    if type == 'xls' and models:
+        raise click.BadParameter(
+            "You cannot combine 'xls' with models", ctx=env, param_hint=[type, models])
+
+    for stream in src:
+        if not hasattr(stream, 'name') and len(src) != len(models):
+            raise click.BadParameter(
+                "If you use at least one unnamed stream, "
+                "you must specify every model of every "
+                "stream in models", ctx=env, param_hint=[src, models])
+    if not models:
+        models = [None] * len(src)
+
+    for stream, model in zip(src, models):
+        # Cooperate with `_load_dataframes`
+        if hasattr(stream, 'name'):  # It's a file
+            model = _infer_valid_model(os.path.basename(stream.name))
+        _load_dataframes(stream, input, model)
 
     GRAPH.load_metadata()
     GRAPH.seed_edges()
     GRAPH.order_to_parent()
     GRAPH.chunk_dataframes(batch)
-    GRAPH.flush_all()  # Sychronous loading
+    GRAPH.flush_all(out)  # Sychronous loading
 
 if __name__ == '__main__':  # pragma: no cover
     main()
