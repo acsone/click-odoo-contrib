@@ -154,7 +154,7 @@ def _infer_valid_model(filename):
 def _load_dataframes(buf, input_type, model):
     """ Loads dataframes into the GRAPH global receiver """
 
-    # Special case: Excle file with sheets
+    # Special case: Excel file with sheets
     if input_type == 'xls':
         xlf = pd.ExcelFile(buf)
         for name in xlf.sheet_names:
