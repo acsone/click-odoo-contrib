@@ -193,7 +193,7 @@ def _read_excel(excelfile, sheetname):
 
 @click.command()
 @click_odoo.env_options(default_log_level='warn', with_rollback=False)
-@click.option('--src', '-s', type=click.File('rb', lazy=True,exists=True),
+@click.option('--src', '-s', type=click.File('rb', lazy=True),
               multiple=True, required=True,
               help="Path to the file, that you want to load. "
                    "You can specify this option multiple times "
