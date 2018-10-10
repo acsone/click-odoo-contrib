@@ -2,25 +2,16 @@
 # -*- coding: utf-8 -*-
 # Copyright 2018 XOE Corp. SAS (<https://xoe.solutions>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
-import contextlib
-from datetime import datetime, timedelta
-from fnmatch import fnmatch
-import hashlib
 import logging
 import pandas as pd
 import numpy as np
 import networkx as nx
 import gc
 import os
-import re
 import json
 
 import click
 import click_odoo
-
-from click_odoo import odoo
-
-from .manifest import expand_dependencies
 
 _logger = logging.getLogger(__name__)
 
@@ -29,14 +20,15 @@ def load(env, model, chunk):
     """ Loads a chunk into model.
     Public method. Can be scheduled into threads. Interface method. """
     res = env[model].load(
-                chunk.columns.tolist(),  # fields
-                chunk.fillna('').astype(str).values.tolist()  # data
-                )
+        chunk.columns.tolist(),  # fields
+        chunk.fillna('').astype(str).values.tolist()  # data
+    )
 
     # Make current return API more explicit
     if not res['ids']:
         return 'failure', res['ids'], res['messages']
     return 'success', res['ids'], res['messages']
+
 
 def log_load_json(state, ids, msgs, batch, model):
     """ Logs load result into json chunk. Interface method. """
@@ -66,7 +58,7 @@ class DataSetGraph(nx.DiGraph):
             for col in node['df'].columns:
                 node['cols'].append({'name': col.rstrip('/.id').rstrip('/id')})
 
-            klass = self.env[node['model']]  # click-odoo magic upon local Odoo codebase
+            klass = self.env[node['model']]
 
             node['fields'] = {'stored': [], 'relational': []}
             # spec: {'relational': [{'name':'', 'model':''}]}
@@ -104,25 +96,29 @@ class DataSetGraph(nx.DiGraph):
             record_graph = nx.DiGraph()
             record_graph.add_nodes_from(node['df'].index.tolist())
             record_graph.add_edges_from(
-                node['df'].loc[:, parent][node['df'][parent].notnull()].itertuples)
-            node['df'].reindex(nx.topological_sort(record_graph.reverse(False)))
+                node['df'].loc[:, parent][
+                    node['df'][parent].notnull()
+                ].itertuples)
+            node['df'].reindex(
+                nx.topological_sort(record_graph.reverse(False)))
 
     def chunk_dataframes(self, batch):
         """ Chunks dataframes as per provided batch size.
         Resulting DFs are stored back as []DataFrame on the node.
 
         Note:
-            Don't attempt to schedule Hierarchy tables across threads: we deliberately
-            refrain from implementing a federated data chunk dependency lock. This is
-            usually not a problem, as hierarchy tables tend to be relatively small in size
-            and simple in datastructure.
+            Don't attempt to schedule Hierarchy tables across threads: we
+            deliberately refrain from implementing a federated data chunk
+            dependency lock. This is usually not a problem, as hierarchy tables
+            tend to be relatively small in size and simple in datastructure.
         """
         for node, df in self.nodes(data='df'):
             # https://stackoverflow.com/a/25703030
             # returns an iterable over (key, group)
             node['chunked_iterable'] = df.groupby(np.arange(len(df))//batch)
             del node['df']
-            # force gc collection as allocated memory chunks might non-negligable.
+            # force gc collection as allocated memory
+            # chunks might non-negligable.
             gc.collect()
 
     def flush_all(self, log_stream=None):
@@ -140,8 +136,6 @@ class DataSetGraph(nx.DiGraph):
                         log_load_json(state, ids, msgs, batch, node['model']))
 
 
-
-
 def _infer_valid_model(filename):
     """ Returns a valid model name from filename or False
     Filenames are expected to convey the model just as Odoo
@@ -150,6 +144,7 @@ def _infer_valid_model(filename):
     if filename not in ENV:
         return False
     return filename
+
 
 def _load_dataframes(buf, input_type, model):
     """ Loads dataframes into the GRAPH global receiver """
@@ -173,22 +168,23 @@ def _load_dataframes(buf, input_type, model):
         df = _read_json(buf)
     GRAPH.add_node(model=model, df=df)
 
+
 def _read_csv(filepath_or_buffer):
     """ Reads a CSV file through pandas from a buffer.
     Returns a DataFrame. """
     return pd.read_csv(filepath_or_buffer)
+
 
 def _read_json(filepath_or_buffer):
     """ Reads a JSON file through pandas from a buffer.
     Returns a DataFrame. """
     return pd.read_json(filepath_or_buffer)
 
+
 def _read_excel(excelfile, sheetname):
     """ Reads a XLS/XLSX file through pandas from an ExcelFile object.
     Returns a DataFrame. """
     return pd.read_excel(excelfile, sheetname)
-
-
 
 
 @click.command()
@@ -214,7 +210,7 @@ def _read_excel(excelfile, sheetname):
                    "alongside each source file. On subsequent runs, "
                    "sucessfull loads are deduplicated.")
 @click.option('--model', '-m', required=False, multiple=True,
-                help="When loading from unnamed streams, you can specify "
+              help="When loading from unnamed streams, you can specify "
                    "the modles of each stream. They must be presented "
                    "in the same order as the streams. Note: don't use "
                    "with xls streams as model is inferred from sheetnames.")
@@ -249,14 +245,15 @@ def main(env, src, type, database, onchange, batch, out, model):
     # Validations
     if type == 'xls' and model:
         raise click.BadParameter(
-            "You cannot combine 'xls' with models", ctx=env, param_hint=[type, models])
+            "You cannot combine 'xls' with models",
+            ctx=env, param_hint=[type, model])
 
     for stream in src:
-        if not hasattr(stream, 'name') and len(src) != len(models):
+        if not hasattr(stream, 'name') and len(src) != len(model):
             raise click.BadParameter(
                 "If you use at least one unnamed stream, "
                 "you must specify every model of every "
-                "stream in models", ctx=env, param_hint=[src, models])
+                "stream in models", ctx=env, param_hint=[src, model])
     if not model:
         model = [None] * len(src)
 
@@ -271,6 +268,7 @@ def main(env, src, type, database, onchange, batch, out, model):
     GRAPH.order_to_parent()
     GRAPH.chunk_dataframes(batch)
     GRAPH.flush_all(out)  # Sychronous loading
+
 
 if __name__ == '__main__':  # pragma: no cover
     main()
