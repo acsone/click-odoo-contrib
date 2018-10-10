@@ -213,12 +213,12 @@ def _read_excel(excelfile, sheetname):
               help="Persist the server's output into a JSON database "
                    "alongside each source file. On subsequent runs, "
                    "sucessfull loads are deduplicated.")
-@click.argument('models', required=False, nargs=-1,
-              help="When loading from unnamed streams, you can specify "
+@click.option('--model', '-m', required=False, multiple=True,
+                help="When loading from unnamed streams, you can specify "
                    "the modles of each stream. They must be presented "
                    "in the same order as the streams. Note: don't use "
                    "with xls streams as model is inferred from sheetnames.")
-def main(env, src, type, database, onchange, batch, out, models):
+def main(env, src, type, database, onchange, batch, out, model):
     """ Load data into an Odoo Database.
 
     Loads data supplied in a supported format by file or stream
@@ -247,7 +247,7 @@ def main(env, src, type, database, onchange, batch, out, models):
     GRAPH = DataSetGraph(env=env)
 
     # Validations
-    if type == 'xls' and models:
+    if type == 'xls' and model:
         raise click.BadParameter(
             "You cannot combine 'xls' with models", ctx=env, param_hint=[type, models])
 
@@ -257,14 +257,14 @@ def main(env, src, type, database, onchange, batch, out, models):
                 "If you use at least one unnamed stream, "
                 "you must specify every model of every "
                 "stream in models", ctx=env, param_hint=[src, models])
-    if not models:
-        models = [None] * len(src)
+    if not model:
+        model = [None] * len(src)
 
-    for stream, model in zip(src, models):
+    for stream, mod in zip(src, model):
         # Cooperate with `_load_dataframes`
         if hasattr(stream, 'name'):  # It's a file
-            model = _infer_valid_model(os.path.basename(stream.name))
-        _load_dataframes(stream, input, model)
+            mod = _infer_valid_model(os.path.basename(stream.name))
+        _load_dataframes(stream, input, mod)
 
     GRAPH.load_metadata()
     GRAPH.seed_edges()
