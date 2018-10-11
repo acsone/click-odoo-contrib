@@ -1,0 +1,4 @@
+External ID,Name,Company Type,Related Company,Address Type,Street,Street2,City,State,ZIP,Country,Website,Phone,Mobile,Email
+res_partner_29,CSV MODEL Grocery Outlet,Company,,,51 Federal Street,#401,San Francisco,CA,94107,US,groceryoutlet.com,123456789,,
+res_partner_30,CSV MODEL Bob,Individual,Grocery Outlet,Contact,,,,,,,,,4157654321,
+res_partner_31,CSV MODEL Bill,Individual,Grocery Outlet,Other address,645 21st Street,,San Francisco,CA,94110,US,,,4517864512,

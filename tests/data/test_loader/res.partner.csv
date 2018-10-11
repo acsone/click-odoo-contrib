@@ -1,0 +1,8 @@
+External ID,Name,Company Type,Related Company,Address Type,Street,Street2,City,State,ZIP,Country,Website,Phone,Mobile,Email
+res_partner_15,CSV Grocery Outlet,Company,,,51 Federal Street,#401,San Francisco,CA,94107,US,groceryoutlet.com,123456789,,
+res_partner_16,CSV Bob,Individual,Grocery Outlet,Contact,,,,,,,,,4157654321,
+res_partner_17,CSV Bill,Individual,Grocery Outlet,Other address,645 21st Street,,San Francisco,CA,94110,US,,,4517864512,
+res_partner_18,CSV Warehouse,Individual,Grocery Outlet,Shipping address,645 21st Street,,San Francisco,CA,94110,US,,415659874,,bill@grocery-outlet.com
+res_partner_19,CSV Accounting dep.,Individual,Grocery Outlet,Invoice address,51 Federal Street,#404,San Francisco,CA,94107,US,,123456780,,
+res_partner_20,CSV ASUSTeK,Company,,,3442 2nd Avenue,,New York,NY,11201,US,asustek.com,654978123,,
+res_partner_21,CSV Camptocamp,Company,,,Press Avenue 93,,Le Bourget du Lac,,73377,FR,,,,
