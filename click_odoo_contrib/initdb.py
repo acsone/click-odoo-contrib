@@ -184,7 +184,14 @@ class DbCache:
     def _make_new_template_name(self, hashsum):
         return self._make_pattern(dt=datetime.utcnow(), hs=hashsum)
 
-    def _create_db_from_template(self, dbname, template):
+    def db_exists(self, dbname):
+        self.pgcr.execute("""
+            SELECT datname FROM pg_database
+            WHERE datname = %s
+        """, (dbname, ))
+        return bool(self.pgcr.fetchone())
+
+    def create_db_from_template(self, dbname, template):
         _logger.info(click.style(
             "Creating database {dbname} "
             "from template {template}".format(**locals()),
@@ -196,7 +203,7 @@ class DbCache:
             TEMPLATE "{template}"
         """.format(**locals()))
 
-    def _rename_db(self, dbname_from, dbname_to):
+    def rename_db(self, dbname_from, dbname_to):
         self.pgcr.execute("""
             ALTER DATABASE "{dbname_from}"
             RENAME TO "{dbname_to}"
@@ -227,7 +234,7 @@ class DbCache:
         assert template_name.endswith(hashsum)
         new_template_name = self._make_new_template_name(hashsum)
         if template_name != new_template_name:
-            self._rename_db(template_name, new_template_name)
+            self.rename_db(template_name, new_template_name)
 
     def create(self, new_database, hashsum):
         """ Create a new database from a cached template matching hashsum """
@@ -236,7 +243,7 @@ class DbCache:
             if not template_name:
                 return False
             else:
-                self._create_db_from_template(new_database, template_name)
+                self.create_db_from_template(new_database, template_name)
                 self._touch(template_name, hashsum)
                 return True
 
@@ -248,7 +255,7 @@ class DbCache:
                 self._touch(template_name, hashsum)
             else:
                 new_template_name = self._make_new_template_name(hashsum)
-                self._create_db_from_template(new_template_name, new_database)
+                self.create_db_from_template(new_template_name, new_database)
 
     @property
     def size(self):
@@ -304,10 +311,15 @@ class DbCache:
                         with_database=False,
                         with_rollback=False)
 @click.option('--new-database', '-n', required=False,
-              help="Name of new database to create, possibly from cache. "
+              help="Name of new database to create, possibly from cache, "
+                   "or template. "
                    "If absent, only the cache trimming operation is executed.")
-@click.option('--modules', '-m', default='base', show_default=True,
+@click.option('--modules', '-m', show_default=True,
               help="Comma separated list of addons to install.")
+@click.option('--template', '-T',
+              help="Template database from which to create the database. "
+                   "If this option is used, --modules must not be used, "
+                   "and --no-cache is implied.")
 @click.option('--demo/--no-demo', default=True, show_default=True,
               help="Load Odoo demo data.")
 @click.option('--cache/--no-cache', default=True, show_default=True,
@@ -332,7 +344,7 @@ class DbCache:
               type=int,
               help="Keep N most recently used cache templates. Use "
                    "-1 to disable. Use 0 to empty cache.")
-def main(env, new_database, modules, demo,
+def main(env, new_database, modules, template, demo,
          cache, cache_prefix, cache_max_age, cache_max_size):
     """ Create an Odoo database with pre-installed modules.
 
@@ -347,32 +359,51 @@ def main(env, new_database, modules, demo,
     """
     if new_database:
         check_dbname(new_database)
-    module_names = [m.strip() for m in modules.split(',')]
-    if not cache:
-        if new_database:
-            odoo_createdb(new_database, demo, module_names, False)
-        else:
-            _logger.info(
-                "Cache disabled and no new database name provided. "
-                "Nothing to do."
-            )
-    else:
+    if template and modules:
+        raise click.ClickException(
+            "Options --template and --modules may not be used together."
+        )
+    if template:
+        check_dbname(template)
         with DbCache(cache_prefix) as dbcache:
+            # we don't use the cache, but it has a method to create
+            # a postgres db from a template
+            if dbcache.db_exists(template):
+                dbcache.create_db_from_template(new_database, template)
+            else:
+                raise click.ClickException(
+                    "Template database {} does not exist.".format(template)
+                )
+            # TODO copy filestore
+    else:
+        if not modules:
+            modules = 'base'
+        module_names = [m.strip() for m in modules.split(',')]
+        if not cache:
             if new_database:
-                hashsum = addons_hash(module_names, demo)
-                if dbcache.create(new_database, hashsum):
-                    _logger.info(click.style(
-                        "Found matching database template! ✨ 🍰 ✨",
-                        fg='green', bold=True,
-                    ))
-                    refresh_module_list(new_database)
-                else:
-                    odoo_createdb(new_database, demo, module_names, True)
-                    dbcache.add(new_database, hashsum)
-            if cache_max_size >= 0:
-                dbcache.trim_size(cache_max_size)
-            if cache_max_age >= 0:
-                dbcache.trim_age(timedelta(days=cache_max_age))
+                odoo_createdb(new_database, demo, module_names, False)
+            else:
+                _logger.info(
+                    "Cache disabled and no new database name provided. "
+                    "Nothing to do."
+                )
+        else:
+            with DbCache(cache_prefix) as dbcache:
+                if new_database:
+                    hashsum = addons_hash(module_names, demo)
+                    if dbcache.create(new_database, hashsum):
+                        _logger.info(click.style(
+                            "Found matching database template! ✨ 🍰 ✨",
+                            fg='green', bold=True,
+                        ))
+                        refresh_module_list(new_database)
+                    else:
+                        odoo_createdb(new_database, demo, module_names, True)
+                        dbcache.add(new_database, hashsum)
+                if cache_max_size >= 0:
+                    dbcache.trim_size(cache_max_size)
+                if cache_max_age >= 0:
+                    dbcache.trim_age(timedelta(days=cache_max_age))
 
 
 if __name__ == '__main__':  # pragma: no cover
