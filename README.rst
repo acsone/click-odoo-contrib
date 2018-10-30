@@ -39,6 +39,21 @@ click-odoo-copydb (beta)
                             exist.
     --help                  Show this message and exit.
 
+click-odoo-dropdb (beta)
+------------------------
+
+.. code::
+
+  Usage: click-odoo-dropdb [OPTIONS] DBNAME
+
+    Drop an Odoo database and associated file store.
+
+  Options:
+    -c, --config FILE  ...
+    ...
+    --if-exists        Don't report error if new database already exists.
+    --help             Show this message and exit.
+
 click-odoo-initdb (beta)
 ------------------------
 

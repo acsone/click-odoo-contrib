@@ -6,6 +6,7 @@ Changes
 .. -
 
 - Add click-odoo-copydb
+- Add click-odoo-dropdb
 
 1.2.0 (2018-10-07)
 ------------------
