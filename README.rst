@@ -16,6 +16,29 @@ as composable python functions.
 Scripts
 ~~~~~~~
 
+click-odoo-copydb (beta)
+------------------------
+
+.. code::
+
+  Usage: click-odoo-copydb [OPTIONS] SOURCE DEST
+
+    Create an Odoo database by copying an existing one.
+
+    This script copies using postgres CREATEDB WITH TEMPLATE. It also copies
+    the filestore.
+
+  Options:
+    -c, --config FILE       ...
+    ...
+    -f, --force-disconnect  Attempt to disconnect users from the template
+                            database.
+    --if-dest-not-exists    Don't report error if destination database already
+                            exists.
+    --if-source-exists      Don't report error if source database does not
+                            exist.
+    --help                  Show this message and exit.
+
 click-odoo-initdb (beta)
 ------------------------
 

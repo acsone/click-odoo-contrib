@@ -15,8 +15,8 @@ import click_odoo
 from click_odoo_contrib import initdb
 from click_odoo_contrib.initdb import DbCache, main
 
-TEST_DBNAME = 'click-odoo-contrib-testdb'
-TEST_DBNAME_NEW = 'click-odoo-contrib-testdb-new'
+TEST_DBNAME = 'click-odoo-contrib-testinitdb'
+TEST_DBNAME_NEW = 'click-odoo-contrib-testinitdb-new'
 TEST_PREFIX = 'tstpfx9'
 TEST_HASH1 = 'a' * DbCache.HASH_SIZE
 TEST_HASH2 = 'b' * DbCache.HASH_SIZE

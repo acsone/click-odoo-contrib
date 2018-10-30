@@ -5,6 +5,8 @@ Changes
 .. ----------
 .. -
 
+- Add click-odoo-copydb
+
 1.2.0 (2018-10-07)
 ------------------
 - Odoo 12 support
