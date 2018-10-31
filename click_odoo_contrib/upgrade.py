@@ -53,14 +53,24 @@ def upgrade(env, i18n_overwrite=False, upgrade_all=False):
 
 
 @click.command()
-@click_odoo.env_options(with_rollback=False)
+@click_odoo.env_options(with_rollback=False, database_must_exist=False)
 @click.option("--i18n-overwrite", is_flag=True, help="Overwrite existing translations")
 @click.option("--upgrade-all", is_flag=True, help="Force a complete upgrade (-u base)")
-def main(env, i18n_overwrite, upgrade_all):
+@click.option(
+    "--if-exists", is_flag=True, help="Don't report error if database doesn't exist"
+)
+def main(env, i18n_overwrite, upgrade_all, if_exists):
     """ Upgrade an Odoo database (odoo -u),
     taking advantage of module_auto_update's
     upgrade_changed_checksum method if present.
     """
+    if not env:
+        msg = "Database does not exist"
+        if if_exists:
+            click.echo(click.style(msg, fg="yellow"))
+            return
+        else:
+            raise click.ClickException(msg)
     upgrade(env, i18n_overwrite, upgrade_all)
 
 

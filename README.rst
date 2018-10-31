@@ -157,6 +157,7 @@ click-odoo-upgrade (stable)
     ...
     --i18n-overwrite     Overwrite existing translations
     --upgrade-all        Force a complete upgrade (-u base)
+    --if-exists          Don't report error if database doesn't exist.
     --help               Show this message and exit.
 
 Useful links
