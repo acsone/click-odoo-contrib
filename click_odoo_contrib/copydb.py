@@ -48,7 +48,9 @@ def _copy_filestore(source, dest):
 )
 @click.argument("source", required=True)
 @click.argument("dest", required=True)
-def main(env, source, dest, force_disconnect, unless_dest_exists, if_source_exists):
+def main(
+    _ctx, env, source, dest, force_disconnect, unless_dest_exists, if_source_exists
+):
     """ Create an Odoo database by copying an existing one.
 
     This script copies using postgres CREATEDB WITH TEMPLATE.

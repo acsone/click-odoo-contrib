@@ -32,7 +32,7 @@ def _drop_filestore(dbname):
     "--if-exists", is_flag=True, help="Don't report error if database doesn't exist."
 )
 @click.argument("dbname", nargs=1)
-def main(env, dbname, if_exists=False):
+def main(_ctx, env, dbname, if_exists=False):
     """ Drop an Odoo database and associated file store. """
     if not db_exists(dbname):
         msg = "Database does not exist: {}".format(dbname)

@@ -59,7 +59,7 @@ def upgrade(env, i18n_overwrite=False, upgrade_all=False):
 @click.option(
     "--if-exists", is_flag=True, help="Don't report error if database doesn't exist"
 )
-def main(env, i18n_overwrite, upgrade_all, if_exists):
+def main(_ctx, env, i18n_overwrite, upgrade_all, if_exists):
     """ Upgrade an Odoo database (odoo -u),
     taking advantage of module_auto_update's
     upgrade_changed_checksum method if present.

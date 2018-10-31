@@ -24,7 +24,7 @@ def uninstall(env, module_names):
     required=True,
     help="Comma-separated list of modules to uninstall",
 )
-def main(env, modules):
+def main(_ctx, env, modules):
     module_names = [m.strip() for m in modules.split(",")]
     uninstall(env, module_names)
 

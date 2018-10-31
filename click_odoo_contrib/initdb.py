@@ -379,7 +379,15 @@ class DbCache:
     "-1 to disable. Use 0 to empty cache.",
 )
 def main(
-    env, new_database, modules, demo, cache, cache_prefix, cache_max_age, cache_max_size
+    _ctx,
+    env,
+    new_database,
+    modules,
+    demo,
+    cache,
+    cache_prefix,
+    cache_max_age,
+    cache_max_size,
 ):
     """ Create an Odoo database with pre-installed modules.
 
