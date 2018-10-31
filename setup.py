@@ -19,7 +19,7 @@ setup(
     use_scm_version=True,
     packages=find_packages(),
     setup_requires=["setuptools-scm"],
-    install_requires=["click-odoo>=1.0.0"],
+    install_requires=["click-odoo>=1.1.0"],
     license="LGPLv3+",
     author="ACSONE SA/NV",
     author_email="info@acsone.eu",
