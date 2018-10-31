@@ -10,7 +10,7 @@ import click_odoo
 from click_odoo import odoo
 from psycopg2.extensions import AsIs, quote_ident
 
-from ._dbutils import pg_connect, db_exists, terminate_connections
+from ._dbutils import db_exists, pg_connect, terminate_connections
 
 
 def _copy_db(cr, source, dest):
@@ -46,16 +46,9 @@ def _copy_filestore(source, dest):
     is_flag=True,
     help="Don't report error if source database does not exist.",
 )
-@click.argument('source', required=True)
-@click.argument('dest', required=True)
-def main(
-    env,
-    source,
-    dest,
-    force_disconnect,
-    if_dest_not_exists,
-    if_source_exists,
-):
+@click.argument("source", required=True)
+@click.argument("dest", required=True)
+def main(env, source, dest, force_disconnect, if_dest_not_exists, if_source_exists):
     """ Create an Odoo database by copying an existing one.
 
     This script copies using postgres CREATEDB WITH TEMPLATE.

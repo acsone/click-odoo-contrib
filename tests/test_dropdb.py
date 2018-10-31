@@ -5,13 +5,12 @@ import os
 import shutil
 import subprocess
 
-from click_odoo import odoo
-from click.testing import CliRunner
 import pytest
+from click.testing import CliRunner
+from click_odoo import odoo
 
-from click_odoo_contrib.dropdb import main
 from click_odoo_contrib._dbutils import db_exists
-
+from click_odoo_contrib.dropdb import main
 
 TEST_DBNAME = "click-odoo-contrib-testdropdb"
 

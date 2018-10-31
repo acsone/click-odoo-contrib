@@ -1,4 +1,1 @@
-{
-    'name': 'addon uninstallable',
-    'installable': False,
-}
+{"name": "addon uninstallable", "installable": False}

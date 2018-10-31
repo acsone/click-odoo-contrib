@@ -6,12 +6,19 @@ addons:
   postgresql: "9.6"
 
 stages:
+  - name: linting
   - name: test
   - name: deploy
     if: tag IS present
 
 jobs:
   include:
+    - stage: linting
+      python: 3.6
+      env: TOXENV=pre_commit
+    - stage: linting
+      python: 3.6
+      env: TOXENV=check_readme
     - stage: test
       python: 2.7
       env: ODOO="8.0"
@@ -52,7 +59,7 @@ jobs:
           repo: acsone/click-odoo-contrib
           branch: master
           tags: true
- 
+
 install:
   - pip install tox-travis
   - pip install codecov
