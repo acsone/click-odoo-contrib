@@ -31,7 +31,7 @@ def _drop_filestore(dbname):
 @click.option(
     "--if-exists",
     is_flag=True,
-    help="Don't report error if new database already exists.",
+    help="Don't report error if database doesn't exist.",
 )
 @click.argument("dbname", nargs=1)
 def main(env, dbname, if_exists=False):

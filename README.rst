@@ -51,7 +51,7 @@ click-odoo-dropdb (beta)
   Options:
     -c, --config FILE  ...
     ...
-    --if-exists        Don't report error if new database already exists.
+    --if-exists        Don't report error if database doesn't exist.
     --help             Show this message and exit.
 
 click-odoo-initdb (beta)
