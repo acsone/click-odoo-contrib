@@ -5,6 +5,8 @@ Changes
 .. ----------
 .. -
 
+1.3.0 (2018-10-31)
+------------------
 - Add click-odoo-copydb
 - Add click-odoo-dropdb
 - Add --if-exists option to click-odoo-upgrade
