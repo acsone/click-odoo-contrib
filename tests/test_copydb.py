@@ -5,13 +5,12 @@ import os
 import shutil
 import subprocess
 
-from click_odoo import odoo
-from click.testing import CliRunner
 import pytest
+from click.testing import CliRunner
+from click_odoo import odoo
 
-from click_odoo_contrib.copydb import main
 from click_odoo_contrib._dbutils import db_exists
-
+from click_odoo_contrib.copydb import main
 
 TEST_DBNAME = "click-odoo-contrib-testcopydb"
 TEST_DBNAME_NEW = "click-odoo-contrib-testcopydb-new"
@@ -50,12 +49,7 @@ def tests_copydb(pgdb, filestore):
         assert not db_exists(TEST_DBNAME_NEW)
         assert not os.path.exists(filestore_dir_new)
         result = CliRunner().invoke(
-            main,
-            [
-                "--force-disconnect",
-                TEST_DBNAME,
-                TEST_DBNAME_NEW,
-            ],
+            main, ["--force-disconnect", TEST_DBNAME, TEST_DBNAME_NEW]
         )
         assert result.exit_code == 0
         # this dropdb will indirectly test that the new db exists
@@ -70,22 +64,11 @@ def tests_copydb(pgdb, filestore):
 def tests_copydb_template_absent():
     assert not db_exists(TEST_DBNAME)
     assert not db_exists(TEST_DBNAME_NEW)
-    result = CliRunner().invoke(
-        main,
-        [
-            TEST_DBNAME,
-            TEST_DBNAME_NEW,
-        ],
-    )
+    result = CliRunner().invoke(main, [TEST_DBNAME, TEST_DBNAME_NEW])
     assert result.exit_code != 0
     assert "Source database does not exist" in result.output
     result = CliRunner().invoke(
-        main,
-        [
-            "--if-source-exists",
-            TEST_DBNAME,
-            TEST_DBNAME_NEW,
-        ],
+        main, ["--if-source-exists", TEST_DBNAME, TEST_DBNAME_NEW]
     )
     assert result.exit_code == 0
     assert "Source database does not exist" in result.output
@@ -96,22 +79,11 @@ def test_copydb_target_exists(pgdb):
     try:
         assert db_exists(TEST_DBNAME)
         assert db_exists(TEST_DBNAME_NEW)
-        result = CliRunner().invoke(
-            main,
-            [
-                TEST_DBNAME,
-                TEST_DBNAME_NEW,
-            ],
-        )
+        result = CliRunner().invoke(main, [TEST_DBNAME, TEST_DBNAME_NEW])
         assert result.exit_code != 0
         assert "Destination database already exists" in result.output
         result = CliRunner().invoke(
-            main,
-            [
-                "--if-dest-not-exists",
-                TEST_DBNAME,
-                TEST_DBNAME_NEW,
-            ],
+            main, ["--if-dest-not-exists", TEST_DBNAME, TEST_DBNAME_NEW]
         )
         assert result.exit_code == 0
         assert "Destination database already exists" in result.output

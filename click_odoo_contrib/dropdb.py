@@ -11,7 +11,7 @@ import click_odoo
 from click_odoo import odoo
 from psycopg2.extensions import AsIs, quote_ident
 
-from ._dbutils import pg_connect, db_exists
+from ._dbutils import db_exists, pg_connect
 
 
 def _drop_db(cr, dbname):
@@ -29,9 +29,7 @@ def _drop_filestore(dbname):
     default_log_level="warn", with_database=False, with_rollback=False
 )
 @click.option(
-    "--if-exists",
-    is_flag=True,
-    help="Don't report error if database doesn't exist.",
+    "--if-exists", is_flag=True, help="Don't report error if database doesn't exist."
 )
 @click.argument("dbname", nargs=1)
 def main(env, dbname, if_exists=False):

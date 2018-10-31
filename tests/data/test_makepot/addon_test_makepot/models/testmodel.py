@@ -6,6 +6,6 @@ except ImportError:
 
 class TestModel(models.Model):
 
-    _name = 'test.model'
+    _name = "test.model"
 
     myfield = fields.Char()
