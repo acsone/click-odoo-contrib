@@ -37,7 +37,7 @@ def _copy_filestore(source, dest):
     help="Attempt to disconnect users from the template database.",
 )
 @click.option(
-    "--if-dest-not-exists",
+    "--unless-dest-exists",
     is_flag=True,
     help="Don't report error if destination database already exists.",
 )
@@ -48,7 +48,7 @@ def _copy_filestore(source, dest):
 )
 @click.argument("source", required=True)
 @click.argument("dest", required=True)
-def main(env, source, dest, force_disconnect, if_dest_not_exists, if_source_exists):
+def main(env, source, dest, force_disconnect, unless_dest_exists, if_source_exists):
     """ Create an Odoo database by copying an existing one.
 
     This script copies using postgres CREATEDB WITH TEMPLATE.
@@ -57,7 +57,7 @@ def main(env, source, dest, force_disconnect, if_dest_not_exists, if_source_exis
     with pg_connect() as cr:
         if db_exists(dest):
             msg = "Destination database already exists: {}".format(dest)
-            if if_dest_not_exists:
+            if unless_dest_exists:
                 click.echo(click.style(msg, fg="yellow"))
                 return
             else:

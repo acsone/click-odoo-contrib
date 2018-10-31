@@ -83,7 +83,7 @@ def test_copydb_target_exists(pgdb):
         assert result.exit_code != 0
         assert "Destination database already exists" in result.output
         result = CliRunner().invoke(
-            main, ["--if-dest-not-exists", TEST_DBNAME, TEST_DBNAME_NEW]
+            main, ["--unless-dest-exists", TEST_DBNAME, TEST_DBNAME_NEW]
         )
         assert result.exit_code == 0
         assert "Destination database already exists" in result.output
@@ -100,7 +100,7 @@ def test_copydb_template_not_exists_target_exists():
             main,
             [
                 "--if-source-exists",
-                "--if-dest-not-exists",
+                "--unless-dest-exists",
                 TEST_DBNAME,
                 TEST_DBNAME_NEW,
             ],

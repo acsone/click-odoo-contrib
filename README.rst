@@ -33,7 +33,7 @@ click-odoo-copydb (beta)
     ...
     -f, --force-disconnect  Attempt to disconnect users from the template
                             database.
-    --if-dest-not-exists    Don't report error if destination database already
+    --unless-dest-exists    Don't report error if destination database already
                             exists.
     --if-source-exists      Don't report error if source database does not
                             exist.
