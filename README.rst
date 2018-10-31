@@ -73,7 +73,7 @@ click-odoo-initdb (beta)
     corresponding auto_install modules.
 
   Options:
-    -c, --config PATH         ...
+    -c, --config FILE         ...
     ...
     -n, --new-database TEXT   Name of new database to create, possibly from
                               cache. If absent, only the cache trimming
@@ -112,7 +112,7 @@ click-odoo-makepot (stable)
     files to keep them up to date. Commit changes to git, if any.
 
   Options:
-    -c, --config PATH           ...
+    -c, --config FILE           ...
     -d, --database TEXT         ...
     ...
     --addons-dir TEXT           [default: .]
@@ -152,7 +152,7 @@ click-odoo-upgrade (stable)
     module_auto_update's upgrade_changed_checksum method if present.
 
   Options:
-    -c, --config PATH    ...
+    -c, --config FILE    ...
     -d, --database TEXT  ...
     ...
     --i18n-overwrite     Overwrite existing translations
@@ -167,6 +167,20 @@ Useful links
 - report issues at: https://github.com/acsone/click-odoo-contrib/issues
 
 .. _click-odoo: https://pypi.python.org/pypi/click-odoo
+
+Developement
+~~~~~~~~~~~~
+
+To run tests, type ``tox``. Tests are made using pytest. To run tests matching
+a specific keyword for, say, Odoo 12 and python 3.6, use
+``tox -e py36-12.0 -- -k keyword``.
+
+This project uses `black <https://github.com/ambv/black>`_
+as code formatting convention, as well as isort and flake8.
+To make sure local coding convention are respected before
+you commit, install
+`pre-commit <https://github.com/pre-commit/pre-commit>`_ and
+run ``pre-commit install`` after cloning the repository.
 
 Credits
 ~~~~~~~
