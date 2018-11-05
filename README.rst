@@ -98,6 +98,7 @@ click-odoo-initdb (beta)
                               30]
     --cache-max-size INTEGER  Keep N most recently used cache templates. Use -1
                               to disable. Use 0 to empty cache.  [default: 5]
+    --unless-exists           Don't report error if database already exists.
     --help                    Show this message and exit.
 
 click-odoo-makepot (stable)

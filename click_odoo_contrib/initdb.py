@@ -14,6 +14,7 @@ import click
 import click_odoo
 from click_odoo import odoo
 
+from ._dbutils import db_exists
 from .manifest import expand_dependencies
 
 _logger = logging.getLogger(__name__)
@@ -378,8 +379,21 @@ class DbCache:
     help="Keep N most recently used cache templates. Use "
     "-1 to disable. Use 0 to empty cache.",
 )
+@click.option(
+    "--unless-exists",
+    is_flag=True,
+    help="Don't report error if database already exists.",
+)
 def main(
-    env, new_database, modules, demo, cache, cache_prefix, cache_max_age, cache_max_size
+    env,
+    new_database,
+    modules,
+    demo,
+    cache,
+    cache_prefix,
+    cache_max_age,
+    cache_max_size,
+    unless_exists,
 ):
     """ Create an Odoo database with pre-installed modules.
 
@@ -394,6 +408,10 @@ def main(
     """
     if new_database:
         check_dbname(new_database)
+    if unless_exists and db_exists(new_database):
+        msg = "Database already exists: {}".format(new_database)
+        click.echo(click.style(msg, fg="yellow"))
+        return
     module_names = [m.strip() for m in modules.split(",")]
     if not cache:
         if new_database:

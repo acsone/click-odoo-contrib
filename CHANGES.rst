@@ -5,6 +5,10 @@ Changes
 .. ----------
 .. -
 
+1.3.1 (2018-11-05)
+------------------
+- Add --unless-exists option to click-odoo-initdb
+
 1.3.0 (2018-10-31)
 ------------------
 - Add click-odoo-copydb
