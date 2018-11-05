@@ -312,3 +312,11 @@ def test_dbcache_add_concurrency(pgdb, dbcache):
     assert dbcache.size == 1
     dbcache.add(pgdb, TEST_HASH1)
     assert dbcache.size == 1
+
+
+def test_unless_exists_exists(pgdb):
+    result = CliRunner().invoke(main, ["--unless-exists", "-n", TEST_DBNAME])
+    assert result.exit_code == 0
+    assert "Database already exists" in result.output
+    result = CliRunner().invoke(main, ["-n", TEST_DBNAME])
+    assert result.exit_code != 0
