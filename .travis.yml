@@ -15,10 +15,10 @@ jobs:
   include:
     - stage: linting
       python: 3.6
-      env: TOXENV=pre_commit
+      env: TOXENV=pre-commit
     - stage: linting
       python: 3.6
-      env: TOXENV=check_readme
+      env: TOXENV=check-readme
     - stage: test
       python: 2.7
       env: ODOO="8.0"
