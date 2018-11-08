@@ -320,3 +320,4 @@ def test_unless_exists_exists(pgdb):
     assert "Database already exists" in result.output
     result = CliRunner().invoke(main, ["-n", TEST_DBNAME])
     assert result.exit_code != 0
+    assert "already exists" in result.output
