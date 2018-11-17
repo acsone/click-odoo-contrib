@@ -109,6 +109,7 @@ def test_copydb_template_not_exists_target_exists():
     finally:
         _dropdb(TEST_DBNAME_NEW)
 
+
 def test_copydb_no_source_filestore(pgdb):
     filestore_dir_new = odoo.tools.config.filestore(TEST_DBNAME_NEW)
     try:
