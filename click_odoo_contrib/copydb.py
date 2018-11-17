@@ -3,6 +3,7 @@
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
+import os
 import shutil
 
 import click
@@ -22,8 +23,9 @@ def _copy_db(cr, source, dest):
 
 def _copy_filestore(source, dest):
     filestore_source = odoo.tools.config.filestore(source)
-    filestore_dest = odoo.tools.config.filestore(dest)
-    shutil.copytree(filestore_source, filestore_dest)
+    if os.path.isdir(filestore_source):
+        filestore_dest = odoo.tools.config.filestore(dest)
+        shutil.copytree(filestore_source, filestore_dest)
 
 
 @click.command()

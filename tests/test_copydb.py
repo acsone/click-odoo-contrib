@@ -108,3 +108,16 @@ def test_copydb_template_not_exists_target_exists():
         assert result.exit_code == 0
     finally:
         _dropdb(TEST_DBNAME_NEW)
+
+def test_copydb_no_source_filestore(pgdb):
+    filestore_dir_new = odoo.tools.config.filestore(TEST_DBNAME_NEW)
+    try:
+        result = CliRunner().invoke(
+            main, ["--force-disconnect", TEST_DBNAME, TEST_DBNAME_NEW]
+        )
+        assert result.exit_code == 0
+        # this dropdb will indirectly test that the new db exists
+        subprocess.check_call(["dropdb", TEST_DBNAME_NEW])
+        assert not os.path.isdir(filestore_dir_new)
+    finally:
+        _dropdb(TEST_DBNAME_NEW)

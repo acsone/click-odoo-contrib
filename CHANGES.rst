@@ -5,6 +5,8 @@ Changes
 .. ----------
 .. -
 
+- copydb: fix error when source filestore did not exist
+
 1.3.1 (2018-11-05)
 ------------------
 - Add --unless-exists option to click-odoo-initdb
