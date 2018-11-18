@@ -13,6 +13,7 @@ Changes
   and is more robust (it does a regular -u after identifying modules to update)
 - upgrade: deprecated in favor of click-odoo-update
 - initdb: save installed checksums so click-odoo-update can readily use them
+- initdb: add --addons-path option
 - copydb: fix error when source filestore did not exist
 
 1.3.1 (2018-11-05)

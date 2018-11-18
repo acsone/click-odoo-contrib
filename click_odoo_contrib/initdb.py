@@ -325,7 +325,10 @@ class DbCache:
 
 @click.command()
 @click_odoo.env_options(
-    default_log_level="warn", with_database=False, with_rollback=False
+    default_log_level="warn",
+    with_database=False,
+    with_rollback=False,
+    with_addons_path=True,
 )
 @click.option(
     "--new-database",

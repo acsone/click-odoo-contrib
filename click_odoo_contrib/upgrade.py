@@ -53,7 +53,9 @@ def upgrade(env, i18n_overwrite=False, upgrade_all=False):
 
 
 @click.command()
-@click_odoo.env_options(with_rollback=False, database_must_exist=False)
+@click_odoo.env_options(
+    with_rollback=False, database_must_exist=False, with_addons_path=True
+)
 @click.option("--i18n-overwrite", is_flag=True, help="Overwrite existing translations")
 @click.option("--upgrade-all", is_flag=True, help="Force a complete upgrade (-u base)")
 @click.option(
