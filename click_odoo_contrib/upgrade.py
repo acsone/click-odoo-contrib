@@ -64,6 +64,11 @@ def main(env, i18n_overwrite, upgrade_all, if_exists):
     taking advantage of module_auto_update's
     upgrade_changed_checksum method if present.
     """
+    click.echo(
+        click.style(
+            "click-odoo-upgrade is deprecated, use click-odoo-update.", fg="red"
+        )
+    )
     if not env:
         msg = "Database does not exist"
         if if_exists:
