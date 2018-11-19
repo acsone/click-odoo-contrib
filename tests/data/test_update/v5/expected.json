@@ -1,0 +1,13 @@
+{
+    "addon_app": {
+        "state": "installed",
+        "version": "5.0"
+    },
+    "addon_d1": {
+        "state": "installed",
+        "version": "5.0"
+    },
+    "addon_d2": {
+        "state": "uninstalled"
+    }
+}

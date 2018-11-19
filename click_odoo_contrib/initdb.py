@@ -16,6 +16,7 @@ from click_odoo import odoo
 
 from ._dbutils import db_exists
 from .manifest import expand_dependencies
+from .update import _save_installed_checksums
 
 _logger = logging.getLogger(__name__)
 
@@ -78,6 +79,8 @@ def odoo_createdb(dbname, demo, module_names, force_db_storage):
                 "Created new Odoo database {dbname}.".format(**locals()), fg="green"
             )
         )
+        with odoo.sql_db.db_connect(dbname).cursor() as cr:
+            _save_installed_checksums(cr)
         odoo.sql_db.close_db(dbname)
 
 
@@ -322,7 +325,10 @@ class DbCache:
 
 @click.command()
 @click_odoo.env_options(
-    default_log_level="warn", with_database=False, with_rollback=False
+    default_log_level="warn",
+    with_database=False,
+    with_rollback=False,
+    with_addons_path=True,
 )
 @click.option(
     "--new-database",

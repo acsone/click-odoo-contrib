@@ -142,8 +142,28 @@ click-odoo-uninstall (stable)
                          [required]
     --help               Show this message and exit.
 
-click-odoo-upgrade (stable)
----------------------------
+click-odoo-update (beta)
+------------------------
+
+.. code::
+
+  Usage: click-odoo-update [OPTIONS]
+
+    Update an Odoo database (odoo -u), automatically detecting addons to
+    update based on a hash of their file content, compared to the hashes
+    stored in the database.
+
+  Options:
+    -c, --config FILE    ...
+    -d, --database TEXT  ...
+    ...
+    --i18n-overwrite     Overwrite existing translations
+    --update-all         Force a complete upgrade (-u base)
+    --if-exists          Don't report error if database doesn't exist
+    --help               Show this message and exit.
+
+click-odoo-upgrade (deprecated, see click-odoo-update)
+------------------------------------------------------
 
 .. code::
 

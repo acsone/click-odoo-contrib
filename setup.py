@@ -19,7 +19,7 @@ setup(
     use_scm_version=True,
     packages=find_packages(),
     setup_requires=["setuptools-scm"],
-    install_requires=["click-odoo>=1.1.0"],
+    install_requires=["click-odoo>=1.2.0"],
     license="LGPLv3+",
     author="ACSONE SA/NV",
     author_email="info@acsone.eu",
@@ -39,6 +39,7 @@ setup(
         [console_scripts]
         click-odoo-uninstall=click_odoo_contrib.uninstall:main
         click-odoo-upgrade=click_odoo_contrib.upgrade:main
+        click-odoo-update=click_odoo_contrib.update:main
         click-odoo-copydb=click_odoo_contrib.copydb:main
         click-odoo-dropdb=click_odoo_contrib.dropdb:main
         click-odoo-initdb=click_odoo_contrib.initdb:main
