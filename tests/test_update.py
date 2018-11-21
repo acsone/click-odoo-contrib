@@ -107,3 +107,16 @@ def test_update_db_not_exists():
     runner = CliRunner()
     result = runner.invoke(main, ["--if-exists", "-d", "dbthatdoesnotexist"])
     assert result.exit_code == 0
+
+
+def test_update_i18n_overwrite(odoodb):
+    cmd = [
+        sys.executable,
+        "-m",
+        "click_odoo_contrib.update",
+        "--i18n-overwrite",
+        "-d",
+        odoodb,
+    ]
+    subprocess.check_call(cmd)
+    # TODO how to test i18n-overwrite was effectively applied?
