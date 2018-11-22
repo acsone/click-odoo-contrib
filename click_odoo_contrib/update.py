@@ -70,21 +70,13 @@ def _get_checksum_dir(cr, module_name):
     return checksum_dir
 
 
-class env_options(click_odoo.env_options):
-    def get_odoo_args(self, ctx):
-        odoo_args = super(env_options, self).get_odoo_args(ctx)
-        if ctx.params["i18n_overwrite"]:
-            odoo_args.append("--i18n-overwrite")
-        if ctx.params["update_all"]:
-            odoo_args.extend(("-u", "base"))
-        return odoo_args
-
-
 @contextmanager
-def OdooEnvironmentWithUpdate(database, **kwargs):
+def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     conn = odoo.sql_db.db_connect(database)
     to_update = odoo.tools.config["update"]
-    if "base" not in to_update:
+    if ctx.params["update_all"]:
+        to_update["base"] = 1
+    else:
         with conn.cursor() as cr:
             checksums = _load_installed_checksums(cr)
             cr.execute("SELECT name FROM ir_module_module WHERE state = 'installed'")
@@ -96,6 +88,8 @@ def OdooEnvironmentWithUpdate(database, **kwargs):
                 "Updating addons for their hash changed: %s.",
                 ",".join(to_update.keys()),
             )
+    if ctx.params["i18n_overwrite"]:
+        odoo.tools.config["overwrite_existing_translations"] = True
     if odoo.release.version_info[0] < 10:
         Registry = odoo.modules.registry.RegistryManager
     else:
@@ -108,7 +102,7 @@ def OdooEnvironmentWithUpdate(database, **kwargs):
 
 
 @click.command()
-@env_options(
+@click_odoo.env_options(
     with_rollback=False,
     database_must_exist=False,
     with_addons_path=True,
