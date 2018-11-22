@@ -98,6 +98,9 @@ def test_update(odoodb):
     _check_expected(odoodb, "v6")
     with pytest.raises(subprocess.CalledProcessError):
         _update_one(odoodb, "v7")
+    if odoo.release.version_info[0] >= 12:
+        # Odoo >= 12 does -u in a transaction
+        _check_expected(odoodb, "v6")
 
 
 def test_update_db_not_exists():
