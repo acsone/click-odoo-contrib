@@ -6,6 +6,7 @@ Changes
 - update: support postgres 9.4
 - backupdb: work correctly when list_db is false too
 - backupdb: new --(no-)filestore option
+- dropdb: refactored to use Odoo api instead of custom code
 
 1.5.0 (2019-02-05)
 ------------------
