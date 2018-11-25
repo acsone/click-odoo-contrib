@@ -101,6 +101,36 @@ click-odoo-initdb (beta)
     --unless-exists           Don't report error if database already exists.
     --help                    Show this message and exit.
 
+click-odoo-backupdb (beta)
+--------------------------
+
+.. code::
+
+  Usage: click-odoo-backupdb [OPTIONS] DBNAME DEST
+
+    Create an Odoo database backup.
+
+    This script dumps the database using pg_dump. It also copies the filestore.
+
+    Unlike Odoo, this script allows you to make a backup of a database without
+    going through the web interface. This avoids timeout and file size
+    limitation problems when databases are too large.
+
+    It also allows you to make a backup directly to a directory. This type of
+    backup has the advantage that it reduces memory consumption since the
+    files in the filestore are directly copied to the target directory as well
+    as the database dump.
+
+  Options:
+    -c, --config FILE      ...
+    ...
+    --force                Don't report error if destination file/folder already
+                           exists.  [default: False]
+    --if-exists            Don't report error if database does not exist.
+    --format [zip|folder]  Expected dump format  [default: zip]
+    --help                 Show this message and exit.
+
+
 click-odoo-makepot (stable)
 ---------------------------
 
