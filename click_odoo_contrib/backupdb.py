@@ -60,9 +60,15 @@ def _backup_filestore(dbname, backup):
     show_default=True,
     help="Expected dump format",
 )
+@click.option(
+    "--filestore/--no-filestore",
+    default=True,
+    show_default=True,
+    help="Include/Exclude filestore from backup",
+)
 @click.argument("dbname", nargs=1)
 @click.argument("dest", nargs=1, required=1)
-def main(env, dbname, dest, force, if_exists, format):
+def main(env, dbname, dest, force, if_exists, format, filestore):
     """ Create an Odoo database backup from an existing one.
 
     This script dumps the database using pg_dump.
@@ -102,7 +108,8 @@ def main(env, dbname, dest, force, if_exists, format):
     try:
         with backup(format, dest, "w") as _backup, db.cursor() as cr:
             _create_manifest(cr, dbname, _backup)
-            _backup_filestore(dbname, _backup)
+            if filestore:
+                _backup_filestore(dbname, _backup)
             _dump_db(dbname, _backup)
     finally:
         odoo.sql_db.close_db(dbname)
