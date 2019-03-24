@@ -42,6 +42,8 @@ def clone_odoo():
 
 
 def install_odoo():
+    # Odoo not compatible with recent pyyaml due to load() now being safe by default
+    subprocess.check_call(["pip", "install", "pyyaml<4"])
     subprocess.check_call(["pip", "install", "-e", odoo_dir])
 
 
