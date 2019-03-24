@@ -128,6 +128,9 @@ click-odoo-backupdb (beta)
                            exists.  [default: False]
     --if-exists            Don't report error if database does not exist.
     --format [zip|folder]  Expected dump format  [default: zip]
+    -s, --schema TEXT      Dump only schemas matching schema. Multiple schemas
+                           can be selected by writing multiple -s switches
+                           [default: public]
     --help                 Show this message and exit.
 
 

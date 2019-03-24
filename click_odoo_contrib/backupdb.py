@@ -16,8 +16,11 @@ from ._backup import backup
 from ._dbutils import db_exists
 
 
-def _dump_db(dbname, backup):
-    cmd = ["pg_dump", "--no-owner", dbname]
+def _dump_db(dbname, schemas, backup):
+    cmd = ["pg_dump", "--no-owner"]
+    for schema in schemas:
+        cmd.extend(["-n", schema])
+    cmd.append(dbname)
     filename = "dump.sql"
     if backup.format == "folder":
         cmd.insert(-1, "--format=c")
@@ -60,9 +63,18 @@ def _backup_filestore(dbname, backup):
     show_default=True,
     help="Expected dump format",
 )
+@click.option(
+    "--schema",
+    "-s",
+    default=["public"],
+    multiple=True,
+    show_default=True,
+    help="Dump only schemas matching schema. Multiple schemas can be selected "
+    "by writing multiple -s switches",
+)
 @click.argument("dbname", nargs=1)
 @click.argument("dest", nargs=1, required=1)
-def main(env, dbname, dest, force, if_exists, format):
+def main(env, dbname, dest, force, if_exists, format, schema):
     """ Create an Odoo database backup from an existing one.
 
     This script dumps the database using pg_dump.
@@ -103,7 +115,7 @@ def main(env, dbname, dest, force, if_exists, format):
         with backup(format, dest, "w") as _backup, db.cursor() as cr:
             _create_manifest(cr, dbname, _backup)
             _backup_filestore(dbname, _backup)
-            _dump_db(dbname, _backup)
+            _dump_db(dbname, schema, _backup)
     finally:
         odoo.sql_db.close_db(dbname)
 

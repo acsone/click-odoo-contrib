@@ -1,6 +1,11 @@
 Changes
 ~~~~~~~
 
+Unreleased
+----------
+- click-odoo-backupdb: Allows to specify the db schema to backup.
+
+
 1.5.0 (2019-02-05)
 ------------------
 - add click-odoo-backupdb
