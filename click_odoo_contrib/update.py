@@ -31,12 +31,11 @@ def _get_param(cr, key, default=None):
 
 
 def _set_param(cr, key, value):
-    cr.execute(
-        "INSERT INTO ir_config_parameter "
-        "(key, value) VALUES (%s, %s) "
-        "ON CONFLICT (key) DO UPDATE SET value=%s",
-        (key, value, value),
-    )
+    cr.execute("UPDATE ir_config_parameter SET value=%s WHERE key=%s", (value, key))
+    if not cr.rowcount:
+        cr.execute(
+            "INSERT INTO ir_config_parameter (key, value) VALUES (%s, %s)", (key, value)
+        )
 
 
 def _load_installed_checksums(cr):
