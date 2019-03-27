@@ -66,13 +66,17 @@ def manifest():
         odoo.service.db.dump_db_manifest = _original_f
 
 
-def _check_backup(backup_dir):
+def _check_backup(backup_dir, with_filestore=True):
     assert os.path.exists(os.path.join(backup_dir, "dump.sql")) or os.path.exists(
         os.path.join(backup_dir, "db.dump")
     )
-    assert os.path.exists(
-        os.path.join(backup_dir, "filestore", *TEST_FILESTORE_FILE.split("/")[1:])
+    filestore_path = os.path.join(
+        backup_dir, "filestore", *TEST_FILESTORE_FILE.split("/")[1:]
     )
+    if with_filestore:
+        assert os.path.exists(filestore_path)
+    else:
+        assert not os.path.exists(filestore_path)
     assert os.path.exists(os.path.join(backup_dir, "manifest.json"))
 
 
@@ -102,6 +106,21 @@ def tests_backupdb_zip(pgdb, filestore, tmp_path, manifest):
     _check_backup(extract_dir)
 
 
+def tests_backupdb_zip_no_filestore(pgdb, filestore, tmp_path, manifest):
+    zip_path = tmp_path.joinpath("test.zip")
+    assert not zip_path.exists()
+    zip_filename = zip_path.as_posix()
+    result = CliRunner().invoke(
+        main, ["--format=zip", "--no-filestore", TEST_DBNAME, zip_filename]
+    )
+    assert result.exit_code == 0
+    assert zip_path.exists()
+    extract_dir = tmp_path.joinpath("extract_dir").as_posix()
+    with zipfile.ZipFile(zip_filename) as zfile:
+        zfile.extractall(extract_dir)
+    _check_backup(extract_dir, with_filestore=False)
+
+
 def tests_backupdb_folder(pgdb, filestore, tmp_path, manifest):
     backup_path = tmp_path.joinpath("backup2")
     assert not backup_path.exists()
@@ -110,6 +129,18 @@ def tests_backupdb_folder(pgdb, filestore, tmp_path, manifest):
     assert result.exit_code == 0
     assert backup_path.exists()
     _check_backup(backup_dir)
+
+
+def tests_backupdb_folder_no_filestore(pgdb, filestore, tmp_path, manifest):
+    backup_path = tmp_path.joinpath("backup2")
+    assert not backup_path.exists()
+    backup_dir = backup_path.as_posix()
+    result = CliRunner().invoke(
+        main, ["--format=folder", "--no-filestore", TEST_DBNAME, backup_dir]
+    )
+    assert result.exit_code == 0
+    assert backup_path.exists()
+    _check_backup(backup_dir, with_filestore=False)
 
 
 def tests_backupdb_not_exists():
