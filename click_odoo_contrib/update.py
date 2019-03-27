@@ -5,10 +5,14 @@
 import json
 import logging
 import os
-from contextlib import contextmanager
+import threading
+from contextlib import closing, contextmanager
+from datetime import timedelta
+from time import sleep
 
 import click
 import click_odoo
+import psycopg2
 from click_odoo import OdooEnvironment, odoo
 
 from ._addon_hash import addon_hash
@@ -19,6 +23,93 @@ _logger = logging.getLogger(__name__)
 PARAM_INSTALLED_CHECKSUMS = "module_auto_update.installed_checksums"
 PARAM_EXCLUDE_PATTERNS = "module_auto_update.exclude_patterns"
 DEFAULT_EXCLUDE_PATTERNS = "*.pyc,*.pyo,i18n/*.pot,i18n_extra/*.pot,static/*"
+
+# Global variables to allow interaction between main and watcher threads
+aborted = False
+watching = True
+
+
+def _db_lock_watcher(database, max_seconds):
+    """Watch DB while another process is updating Odoo.
+
+    This method will query :param:`database` to see if there are DB locks.
+    If a lock longer than :param:`max_seconds` is detected, it will be
+    terminated and an exception will be raised.
+
+    :param str database:
+        Name of the database that is being updated in parallel.
+
+    :param float max_seconds:
+        Max length of DB lock allowed.
+    """
+    _logger.info("Starting DB lock watcher")
+    global aborted, watching
+    beat = max_seconds / 3
+    max_td = timedelta(seconds=max_seconds)
+    own_pid_query = "SELECT pg_backend_pid()"
+    # SQL explained in https://wiki.postgresql.org/wiki/Lock_Monitoring
+    locks_query = """
+        SELECT
+            pg_stat_activity.datname,
+            pg_class.relname,
+            pg_locks.transactionid,
+            pg_locks.mode,
+            pg_locks.granted,
+            pg_stat_activity.usename,
+            pg_stat_activity.query,
+            pg_stat_activity.query_start,
+            AGE(NOW(), pg_stat_activity.query_start) AS age,
+            pg_stat_activity.pid
+        FROM
+            pg_stat_activity
+            JOIN pg_locks ON pg_locks.pid = pg_stat_activity.pid
+            JOIN pg_class ON pg_class.oid = pg_locks.relation
+        WHERE
+            NOT pg_locks.granted
+            AND pg_stat_activity.datname = %s
+        ORDER BY pg_stat_activity.query_start
+    """
+    # See https://stackoverflow.com/a/35319598/1468388
+    terminate_session = "SELECT pg_terminate_backend(%s)"
+    if odoo.release.version_info < (9, 0):
+        params = {"dsn": odoo.sql_db.dsn(database)[1]}
+    else:
+        params = odoo.sql_db.connection_info_for(database)[1]
+    # Need a separate raw psycopg2 cursor without transactioning to avoid
+    # weird concurrency errors; this cursor will only trigger SELECTs, and
+    # it needs to access current Postgres server status, monitoring other
+    # transactions' status, so running inside a normal, transactioned,
+    # Odoo cursor would block such monitoring and, after all, offer no
+    # additional protection
+    with closing(psycopg2.connect(**params)) as watcher_conn:
+        watcher_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+        while watching:
+            # Wait some time before checking locks
+            sleep(beat)
+            # Ensure no long blocking queries happen
+            with closing(
+                watcher_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            ) as watcher_cr:
+                if _logger.level <= logging.DEBUG:
+                    watcher_cr.execute(own_pid_query)
+                    watcher_pid = watcher_cr.fetchone()[0]
+                    _logger.debug(
+                        "DB lock watcher running with postgres PID %d", watcher_pid
+                    )
+                watcher_cr.execute(locks_query, (database,))
+                locks = watcher_cr.fetchall()
+                if locks:
+                    _logger.warning("%d locked queries found", len(locks))
+                    _logger.info("Query details: %r", locks)
+                for row in locks:
+                    if row["age"] > max_td:
+                        # Terminate the query to abort the parallel update
+                        _logger.error(
+                            "Long locked query detected; aborting update cursor with PID %d...",
+                            row["pid"],
+                        )
+                        aborted = True
+                        watcher_cr.execute(terminate_session, (row["pid"],))
 
 
 def _get_param(cr, key, default=None):
@@ -52,6 +143,7 @@ def _save_installed_checksums(cr):
     for (module_name,) in cr.fetchall():
         checksums[module_name] = _get_checksum_dir(cr, module_name)
     _set_param(cr, PARAM_INSTALLED_CHECKSUMS, json.dumps(checksums))
+    _logger.info("Database updated, new checksums stored")
 
 
 def _get_checksum_dir(cr, module_name):
@@ -69,11 +161,10 @@ def _get_checksum_dir(cr, module_name):
     return checksum_dir
 
 
-@contextmanager
-def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
+def _update_db(database, update_all, i18n_overwrite):
     conn = odoo.sql_db.db_connect(database)
     to_update = odoo.tools.config["update"]
-    if ctx.params["update_all"]:
+    if update_all:
         to_update["base"] = 1
     else:
         with conn.cursor() as cr:
@@ -87,15 +178,40 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
                 "Updating addons for their hash changed: %s.",
                 ",".join(to_update.keys()),
             )
-    if ctx.params["i18n_overwrite"]:
+    if i18n_overwrite:
         odoo.tools.config["overwrite_existing_translations"] = True
     if odoo.release.version_info[0] < 10:
         Registry = odoo.modules.registry.RegistryManager
     else:
         Registry = odoo.modules.registry.Registry
     Registry.new(database, update_module=True)
+    if aborted:
+        # If you get here, the updating session has been terminated and it
+        # somehow has recovered by opening a new cursor and continuing;
+        # that's very unlikely, but just in case some paranoid module
+        # happens to update, let's just make sure the exit code for
+        # this script indicates always a failure
+        raise click.Abort("Update aborted by watcher, check logs")
     with conn.cursor() as cr:
         _save_installed_checksums(cr)
+
+
+@contextmanager
+def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
+    global watching
+    # Watch for database locks while Odoo updates
+    if ctx.params["watcher_max_seconds"] > 0:
+        watcher = threading.Thread(
+            target=_db_lock_watcher, args=(database, ctx.params["watcher_max_seconds"])
+        )
+        watcher.daemon = True
+        watcher.start()
+    # Update Odoo datatabase
+    try:
+        _update_db(database, ctx.params["update_all"], ctx.params["i18n_overwrite"])
+    finally:
+        watching = False
+    # If we get here, the database has been updated
     with OdooEnvironment(database) as env:
         yield env
 
@@ -112,10 +228,26 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
 @click.option(
     "--if-exists", is_flag=True, help="Don't report error if database doesn't exist"
 )
-def main(env, i18n_overwrite, update_all, if_exists):
+@click.option(
+    "--watcher-max-seconds",
+    default=0,
+    type=float,
+    help="Max DB lock seconds allowed before aborting the update process. "
+    "Default: 0 (disabled).",
+)
+def main(env, i18n_overwrite, update_all, if_exists, watcher_max_seconds):
     """ Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
     to the hashes stored in the database.
+
+    If you want to update in parallel while another Odoo instance is still
+    running against the same database, you can use `--watcher-max-seconds`
+    to start a watcher thread that aborts the update in case a DB
+    lock is found. You will probably need to have at least 2 odoo codebases
+    running in parallel (the old one, serving; the new one, updating) and
+    swap them ASAP once the update is done. This process will reduce downtime
+    a lot, but it requires deeper knowledge of Odoo internals to be used
+    safely, so use it at your own risk.
     """
     if not env:
         msg = "Database does not exist"
