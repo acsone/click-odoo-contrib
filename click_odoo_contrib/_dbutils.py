@@ -37,3 +37,13 @@ def terminate_connections(dbname):
             "AND pid <> pg_backend_pid();",
             (dbname,),
         )
+
+
+@contextmanager
+def db_management_enabled():
+    list_db = odoo.tools.config["list_db"]
+    odoo.tools.config["list_db"] = True
+    try:
+        yield
+    finally:
+        odoo.tools.config["list_db"] = list_db

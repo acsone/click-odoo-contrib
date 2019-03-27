@@ -4,6 +4,8 @@
 import os
 import shutil
 import subprocess
+import sys
+import textwrap
 import zipfile
 from filecmp import dircmp
 
@@ -141,6 +143,34 @@ def tests_backupdb_folder_no_filestore(pgdb, filestore, tmp_path, manifest):
     assert result.exit_code == 0
     assert backup_path.exists()
     _check_backup(backup_dir, with_filestore=False)
+
+
+def tests_backupdb_no_list_db(odoodb, filestore, tmp_path):
+    """backupdb should work even if list_db is set to False into odoo.cfg
+    """
+    zip_path = tmp_path.joinpath("test.zip")
+    assert not zip_path.exists()
+    zip_filename = zip_path.as_posix()
+    odoo_cfg = tmp_path / "odoo.cfg"
+    odoo_cfg.write_text(
+        textwrap.dedent(
+            u"""\
+        [options]
+        list_db = False
+    """
+        )
+    )
+    cmd = [
+        sys.executable,
+        "-m",
+        "click_odoo_contrib.backupdb",
+        "-c",
+        str(odoo_cfg),
+        odoodb,
+        zip_filename,
+    ]
+    subprocess.check_call(cmd)
+    assert zip_path.exists()
 
 
 def tests_backupdb_not_exists():

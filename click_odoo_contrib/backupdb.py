@@ -13,7 +13,7 @@ import click_odoo
 from click_odoo import odoo
 
 from ._backup import backup
-from ._dbutils import db_exists
+from ._dbutils import db_exists, db_management_enabled
 
 
 def _dump_db(dbname, backup):
@@ -106,7 +106,9 @@ def main(env, dbname, dest, force, if_exists, format, filestore):
                 shutil.rmtree(dest)
     db = odoo.sql_db.db_connect(dbname)
     try:
-        with backup(format, dest, "w") as _backup, db.cursor() as cr:
+        with backup(
+            format, dest, "w"
+        ) as _backup, db.cursor() as cr, db_management_enabled():
             _create_manifest(cr, dbname, _backup)
             if filestore:
                 _backup_filestore(dbname, _backup)
