@@ -22,6 +22,8 @@ jobs:
     - stage: test
       python: 2.7
       env: ODOO="8.0"
+      addons:
+        postgresql: "9.4"
     - stage: test
       python: 2.7
       env: ODOO="9.0"
