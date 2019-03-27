@@ -1,9 +1,11 @@
 Changes
 ~~~~~~~
 
-1.6.0 (2019-03-27)
+1.6.0 (unreleased)
 ------------------
-- support postgres 9.4
+- update: support postgres 9.4
+- backupdb: work correctly when list_db is false too
+- backupdb: new --(no-)filestore option
 
 1.5.0 (2019-02-05)
 ------------------
