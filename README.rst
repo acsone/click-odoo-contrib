@@ -122,14 +122,14 @@ click-odoo-backupdb (beta)
     as the database dump.
 
   Options:
-    -c, --config FILE      ...
+    -c, --config FILE           ...
     ...
-    --force                Don't report error if destination file/folder already
-                           exists.  [default: False]
-    --if-exists            Don't report error if database does not exist.
-    --format [zip|folder]  Expected dump format  [default: zip]
-    --help                 Show this message and exit.
-
+  --force                       Don't report error if destination file/folder
+                                already exists.  [default: False]
+  --if-exists                   Don't report error if database does not exist.
+  --format [zip|folder]         Output format  [default: zip]
+  --filestore / --no-filestore  Include filestore in backup  [default: True]
+  --help                        Show this message and exit.
 
 click-odoo-makepot (stable)
 ---------------------------

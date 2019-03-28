@@ -58,13 +58,13 @@ def _backup_filestore(dbname, backup):
     type=click.Choice(["zip", "folder"]),
     default="zip",
     show_default=True,
-    help="Expected dump format",
+    help="Output format",
 )
 @click.option(
     "--filestore/--no-filestore",
     default=True,
     show_default=True,
-    help="Include/Exclude filestore from backup",
+    help="Include filestore in backup",
 )
 @click.argument("dbname", nargs=1)
 @click.argument("dest", nargs=1, required=1)
