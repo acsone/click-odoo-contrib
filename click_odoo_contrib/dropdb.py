@@ -3,25 +3,11 @@
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
-import os
-import shutil
-
 import click
 import click_odoo
 from click_odoo import odoo
-from psycopg2.extensions import AsIs, quote_ident
 
-from ._dbutils import db_exists, pg_connect
-
-
-def _drop_db(cr, dbname):
-    cr.execute("DROP DATABASE %s", (AsIs(quote_ident(dbname, cr)),))
-
-
-def _drop_filestore(dbname):
-    filestore_dir = odoo.tools.config.filestore(dbname)
-    if os.path.exists(filestore_dir):
-        shutil.rmtree(filestore_dir)
+from ._dbutils import db_exists, db_management_enabled
 
 
 @click.command()
@@ -41,6 +27,5 @@ def main(env, dbname, if_exists=False):
             return
         else:
             raise click.ClickException(msg)
-    with pg_connect() as cr:
-        _drop_db(cr, dbname)
-    _drop_filestore(dbname)
+    with db_management_enabled():
+        odoo.service.db.exp_drop(dbname)
