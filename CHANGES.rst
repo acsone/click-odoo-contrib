@@ -1,7 +1,7 @@
 Changes
 ~~~~~~~
 
-1.6.0 (unreleased)
+1.6.0 (2019-03-28)
 ------------------
 - update: support postgres 9.4
 - backupdb: work correctly when list_db is false too

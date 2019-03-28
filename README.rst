@@ -242,8 +242,11 @@ Contributors:
 - Stéphane Bidoul (ACSONE_)
 - Thomas Binsfeld (ACSONE_)
 - Benjamin Willig (ACSONE_)
+- Jairo Llopis (Tecnativa_)
+- Laurent Mignon (ACSONE_)
 
 .. _ACSONE: https://acsone.eu
+.. _Tecnativa: https://tecnativa.com
 
 Maintainer
 ~~~~~~~~~~
