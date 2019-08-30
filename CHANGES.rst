@@ -1,6 +1,10 @@
 Changes
 ~~~~~~~
 
+1.7.0 (unreleased)
+------------------
+- makepot: always check validity of .po files
+
 1.6.0 (2019-03-28)
 ------------------
 - update: support postgres 9.4

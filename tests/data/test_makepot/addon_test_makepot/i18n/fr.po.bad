@@ -1,0 +1,44 @@
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_create_uid
+msgid "Created on"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_create_date
+msgid "Created on"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_id
+msgid "ID"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model___last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_myfield
+msgid "Myfield"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model,name:addon_test_makepot.model_test_model
+msgid "test.model"
+msgstr ""
