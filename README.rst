@@ -220,8 +220,8 @@ Useful links
 
 .. _click-odoo: https://pypi.python.org/pypi/click-odoo
 
-Developement
-~~~~~~~~~~~~
+Development
+~~~~~~~~~~~
 
 To run tests, type ``tox``. Tests are made using pytest. To run tests matching
 a specific keyword for, say, Odoo 12 and python 3.6, use
