@@ -48,15 +48,26 @@ def export_pot(
             file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)
         pot_file.write(file_content)
 
-    if msgmerge or (msgmerge_if_new_pot and pot_is_new):
-        for lang_filename in os.listdir(i18n_path):
-            if not lang_filename.endswith(PO_FILE_EXT):
-                continue
-            lang_filepath = os.path.join(i18n_path, lang_filename)
-            files_to_commit.add(lang_filepath)
-            subprocess.check_call(
-                ["msgmerge", "--quiet", "-U", lang_filepath, pot_filepath]
-            )
+    invalid_po = 0
+    for lang_filename in os.listdir(i18n_path):
+        if not lang_filename.endswith(PO_FILE_EXT):
+            continue
+        lang_filepath = os.path.join(i18n_path, lang_filename)
+        try:
+            if msgmerge or (msgmerge_if_new_pot and pot_is_new):
+                files_to_commit.add(lang_filepath)
+                subprocess.check_call(
+                    ["msgmerge", "--quiet", "-U", lang_filepath, pot_filepath]
+                )
+            else:
+                # check .po is valid
+                subprocess.check_output(
+                    ["msgmerge", "--quiet", lang_filepath, pot_filepath]
+                )
+        except subprocess.CalledProcessError:
+            invalid_po += 1
+    if invalid_po:
+        raise click.ClickException("%d invalid .po file(s) found" % invalid_po)
 
     if commit:
         gitutils.commit_if_needed(
@@ -91,6 +102,7 @@ def export_pot(
 def main(env, addons_dir, msgmerge, commit, msgmerge_if_new_pot, commit_message):
     """ Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
+    Check that existing .po file are syntactically correct.
     Optionally, run msgmerge on the existing .po files to keep
     them up to date. Commit changes to git, if any.
     """

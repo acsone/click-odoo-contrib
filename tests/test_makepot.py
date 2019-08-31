@@ -2,6 +2,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import os
+import shutil
 import subprocess
 
 import click_odoo
@@ -162,3 +163,35 @@ def test_makepot_msgmerge_if_new_pot(odoodb, odoocfg, tmpdir):
 
     with open(fr_filepath) as f:
         assert "myfield" in f.read()
+
+
+def test_makepot_detect_bad_po(odoodb, odoocfg, capfd):
+    addon_name = "addon_test_makepot"
+    addon_path = os.path.join(test_addons_dir, addon_name)
+    i18n_path = os.path.join(addon_path, "i18n")
+    fr_filepath = os.path.join(i18n_path, "fr.po")
+
+    subprocess.check_call(
+        [
+            click_odoo.odoo_bin,
+            "-d",
+            odoodb,
+            "-c",
+            str(odoocfg),
+            "-i",
+            addon_name,
+            "--stop-after-init",
+        ]
+    )
+
+    shutil.copy(fr_filepath + ".bad", fr_filepath)
+
+    capfd.readouterr()
+    result = CliRunner().invoke(
+        main, ["-d", odoodb, "-c", str(odoocfg), "--addons-dir", test_addons_dir]
+    )
+
+    assert result.exit_code != 0
+    capture = capfd.readouterr()
+    assert "duplicate message definition" in capture.err
+    assert "msgmerge: found 1 fatal error" in capture.err
