@@ -1,7 +1,7 @@
 Changes
 ~~~~~~~
 
-1.7.0 (unreleased)
+1.7.0 (2019-09-02)
 ------------------
 - makepot: always check validity of .po files
 
