@@ -192,6 +192,25 @@ click-odoo-update (beta)
     --if-exists          Don't report error if database doesn't exist
     --help               Show this message and exit.
 
+click-odoo-setting (alfa)
+------------------------
+
+.. code::
+
+  Usage: click-odoo-setting SOURCE
+
+    Apply settings to all companies of an odoo instance.
+    Useful to quick start your dev configuration.
+    Settings are provided as python file SOURCE argument.
+    This source file only contains a dict mapping fields with their values
+
+        {
+            ...
+            'group_uom': True,
+            ...
+        }
+
+
 click-odoo-upgrade (deprecated, see click-odoo-update)
 ------------------------------------------------------
 
@@ -244,9 +263,11 @@ Contributors:
 - Benjamin Willig (ACSONE_)
 - Jairo Llopis (Tecnativa_)
 - Laurent Mignon (ACSONE_)
+- David Béal (Akretion_)
 
 .. _ACSONE: https://acsone.eu
 .. _Tecnativa: https://tecnativa.com
+.. _Akretion: https://akretion.com
 
 Maintainer
 ~~~~~~~~~~
