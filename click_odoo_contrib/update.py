@@ -24,92 +24,103 @@ PARAM_INSTALLED_CHECKSUMS = "module_auto_update.installed_checksums"
 PARAM_EXCLUDE_PATTERNS = "module_auto_update.exclude_patterns"
 DEFAULT_EXCLUDE_PATTERNS = "*.pyc,*.pyo,i18n/*.pot,i18n_extra/*.pot,static/*"
 
-# Global variables to allow interaction between main and watcher threads
-aborted = False
-watching = True
 
+class DbLockWatcher(threading.Thread):
+    def __init__(self, database, max_seconds):
+        super(DbLockWatcher, self).__init__()
+        self.daemon = True
+        self.database = database
+        self.max_seconds = max_seconds
+        self.aborted = False
+        self.watching = False
 
-def _db_lock_watcher(database, max_seconds):
-    """Watch DB while another process is updating Odoo.
+    def stop(self):
+        self.watching = False
 
-    This method will query :param:`database` to see if there are DB locks.
-    If a lock longer than :param:`max_seconds` is detected, it will be
-    terminated and an exception will be raised.
+    def run(self):
+        """Watch DB while another process is updating Odoo.
 
-    :param str database:
-        Name of the database that is being updated in parallel.
+        This method will query :param:`database` to see if there are DB locks.
+        If a lock longer than :param:`max_seconds` is detected, it will be
+        terminated and an exception will be raised.
 
-    :param float max_seconds:
-        Max length of DB lock allowed.
-    """
-    _logger.info("Starting DB lock watcher")
-    global aborted, watching
-    beat = max_seconds / 3
-    max_td = timedelta(seconds=max_seconds)
-    own_pid_query = "SELECT pg_backend_pid()"
-    # SQL explained in https://wiki.postgresql.org/wiki/Lock_Monitoring
-    locks_query = """
-        SELECT
-            pg_stat_activity.datname,
-            pg_class.relname,
-            pg_locks.transactionid,
-            pg_locks.mode,
-            pg_locks.granted,
-            pg_stat_activity.usename,
-            pg_stat_activity.query,
-            pg_stat_activity.query_start,
-            AGE(NOW(), pg_stat_activity.query_start) AS age,
-            pg_stat_activity.pid
-        FROM
-            pg_stat_activity
-            JOIN pg_locks ON pg_locks.pid = pg_stat_activity.pid
-            JOIN pg_class ON pg_class.oid = pg_locks.relation
-        WHERE
-            NOT pg_locks.granted
-            AND pg_stat_activity.datname = %s
-        ORDER BY pg_stat_activity.query_start
-    """
-    # See https://stackoverflow.com/a/35319598/1468388
-    terminate_session = "SELECT pg_terminate_backend(%s)"
-    if odoo.release.version_info < (9, 0):
-        params = {"dsn": odoo.sql_db.dsn(database)[1]}
-    else:
-        params = odoo.sql_db.connection_info_for(database)[1]
-    # Need a separate raw psycopg2 cursor without transactioning to avoid
-    # weird concurrency errors; this cursor will only trigger SELECTs, and
-    # it needs to access current Postgres server status, monitoring other
-    # transactions' status, so running inside a normal, transactioned,
-    # Odoo cursor would block such monitoring and, after all, offer no
-    # additional protection
-    with closing(psycopg2.connect(**params)) as watcher_conn:
-        watcher_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-        while watching:
-            # Wait some time before checking locks
-            sleep(beat)
-            # Ensure no long blocking queries happen
-            with closing(
-                watcher_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            ) as watcher_cr:
-                if _logger.level <= logging.DEBUG:
-                    watcher_cr.execute(own_pid_query)
-                    watcher_pid = watcher_cr.fetchone()[0]
-                    _logger.debug(
-                        "DB lock watcher running with postgres PID %d", watcher_pid
-                    )
-                watcher_cr.execute(locks_query, (database,))
-                locks = watcher_cr.fetchall()
-                if locks:
-                    _logger.warning("%d locked queries found", len(locks))
-                    _logger.info("Query details: %r", locks)
-                for row in locks:
-                    if row["age"] > max_td:
-                        # Terminate the query to abort the parallel update
-                        _logger.error(
-                            "Long locked query detected; aborting update cursor with PID %d...",
-                            row["pid"],
+        :param str database:
+            Name of the database that is being updated in parallel.
+
+        :param float max_seconds:
+            Max length of DB lock allowed.
+        """
+        _logger.info("Starting DB lock watcher")
+        beat = self.max_seconds / 3
+        max_td = timedelta(seconds=self.max_seconds)
+        own_pid_query = "SELECT pg_backend_pid()"
+        # SQL explained in https://wiki.postgresql.org/wiki/Lock_Monitoring
+        locks_query = """
+            SELECT
+                pg_stat_activity.datname,
+                pg_class.relname,
+                pg_locks.transactionid,
+                pg_locks.mode,
+                pg_locks.granted,
+                pg_stat_activity.usename,
+                pg_stat_activity.query,
+                pg_stat_activity.query_start,
+                AGE(NOW(), pg_stat_activity.query_start) AS age,
+                pg_stat_activity.pid
+            FROM
+                pg_stat_activity
+                JOIN pg_locks ON pg_locks.pid = pg_stat_activity.pid
+                JOIN pg_class ON pg_class.oid = pg_locks.relation
+            WHERE
+                NOT pg_locks.granted
+                AND pg_stat_activity.datname = %s
+            ORDER BY pg_stat_activity.query_start
+        """
+        # See https://stackoverflow.com/a/35319598/1468388
+        terminate_session = "SELECT pg_terminate_backend(%s)"
+        if odoo.release.version_info < (9, 0):
+            params = {"dsn": odoo.sql_db.dsn(self.database)[1]}
+        else:
+            params = odoo.sql_db.connection_info_for(self.database)[1]
+        # Need a separate raw psycopg2 cursor without transactioning to avoid
+        # weird concurrency errors; this cursor will only trigger SELECTs, and
+        # it needs to access current Postgres server status, monitoring other
+        # transactions' status, so running inside a normal, transactioned,
+        # Odoo cursor would block such monitoring and, after all, offer no
+        # additional protection
+        with closing(psycopg2.connect(**params)) as watcher_conn:
+            watcher_conn.set_isolation_level(
+                psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
+            )
+            self.watching = True
+            while self.watching:
+                # Wait some time before checking locks
+                sleep(beat)
+                # Ensure no long blocking queries happen
+                with closing(
+                    watcher_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                ) as watcher_cr:
+                    if _logger.level <= logging.DEBUG:
+                        watcher_cr.execute(own_pid_query)
+                        watcher_pid = watcher_cr.fetchone()[0]
+                        _logger.debug(
+                            "DB lock watcher running with postgres PID %d", watcher_pid
                         )
-                        aborted = True
-                        watcher_cr.execute(terminate_session, (row["pid"],))
+                    watcher_cr.execute(locks_query, (self.database,))
+                    locks = watcher_cr.fetchall()
+                    if locks:
+                        _logger.warning("%d locked queries found", len(locks))
+                        _logger.info("Query details: %r", locks)
+                    for row in locks:
+                        if row["age"] > max_td:
+                            # Terminate the query to abort the parallel update
+                            _logger.error(
+                                "Long locked query detected; aborting update cursor "
+                                "with PID %d...",
+                                row["pid"],
+                            )
+                            self.aborted = True
+                            watcher_cr.execute(terminate_session, (row["pid"],))
 
 
 def _get_param(cr, key, default=None):
@@ -161,7 +172,7 @@ def _get_checksum_dir(cr, module_name):
     return checksum_dir
 
 
-def _update_db(database, update_all, i18n_overwrite):
+def _update_db(database, update_all, i18n_overwrite, watcher=None):
     conn = odoo.sql_db.db_connect(database)
     to_update = odoo.tools.config["update"]
     if update_all:
@@ -185,7 +196,7 @@ def _update_db(database, update_all, i18n_overwrite):
     else:
         Registry = odoo.modules.registry.Registry
     Registry.new(database, update_module=True)
-    if aborted:
+    if watcher and watcher.aborted:
         # If you get here, the updating session has been terminated and it
         # somehow has recovered by opening a new cursor and continuing;
         # that's very unlikely, but just in case some paranoid module
@@ -198,19 +209,19 @@ def _update_db(database, update_all, i18n_overwrite):
 
 @contextmanager
 def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
-    global watching
     # Watch for database locks while Odoo updates
+    watcher = None
     if ctx.params["watcher_max_seconds"] > 0:
-        watcher = threading.Thread(
-            target=_db_lock_watcher, args=(database, ctx.params["watcher_max_seconds"])
-        )
-        watcher.daemon = True
+        watcher = DbLockWatcher(database, ctx.params["watcher_max_seconds"])
         watcher.start()
     # Update Odoo datatabase
     try:
-        _update_db(database, ctx.params["update_all"], ctx.params["i18n_overwrite"])
+        _update_db(
+            database, ctx.params["update_all"], ctx.params["i18n_overwrite"], watcher
+        )
     finally:
-        watching = False
+        if watcher:
+            watcher.stop()
     # If we get here, the database has been updated
     with OdooEnvironment(database) as env:
         yield env
