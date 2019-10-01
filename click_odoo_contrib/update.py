@@ -89,7 +89,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
             )
     if ctx.params["i18n_overwrite"]:
         odoo.tools.config["overwrite_existing_translations"] = True
-    if odoo.release.version_info[0] < 10:
+    if odoo.tools.parse_version(odoo.release.version) < odoo.tools.parse_version("10"):
         Registry = odoo.modules.registry.RegistryManager
     else:
         Registry = odoo.modules.registry.Registry

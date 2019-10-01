@@ -1,6 +1,10 @@
 Changes
 ~~~~~~~
 
+1.7.1 (2019-09-30)
+------------------
+- Support Odoo SaaS versions
+
 1.7.0 (2019-09-02)
 ------------------
 - makepot: always check validity of .po files
