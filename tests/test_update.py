@@ -123,3 +123,18 @@ def test_update_i18n_overwrite(odoodb):
     ]
     subprocess.check_call(cmd)
     # TODO how to test i18n-overwrite was effectively applied?
+
+
+def test_parallel_watcher(odoodb):
+    # Test that the parallel updater does not disturb normal operation
+    cmd = [
+        sys.executable,
+        "-m",
+        "click_odoo_contrib.update",
+        "--watcher-max-seconds",
+        "30",
+        "-d",
+        odoodb,
+    ]
+    subprocess.check_call(cmd)
+    # TODO Test an actual lock

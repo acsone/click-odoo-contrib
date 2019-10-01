@@ -183,14 +183,31 @@ click-odoo-update (beta)
     update based on a hash of their file content, compared to the hashes
     stored in the database.
 
+    It allows updating in parallel while another Odoo instance is still
+    running against the same database, by using a watcher that aborts the
+    update in case a DB lock happens.
+
   Options:
-    -c, --config FILE    ...
-    -d, --database TEXT  ...
-    ...
-    --i18n-overwrite     Overwrite existing translations
-    --update-all         Force a complete upgrade (-u base)
-    --if-exists          Don't report error if database doesn't exist
-    --help               Show this message and exit.
+    -c, --config FILE            Specify the Odoo configuration file. Other ways
+                                 to provide it are with the ODOO_RC or
+                                 OPENERP_SERVER environment variables, or
+                                 ~/.odoorc (Odoo >= 10) or ~/.openerp_serverrc.
+    --addons-path TEXT           Specify the addons path. If present, this
+                                 parameter takes precedence over the addons path
+                                 provided in the Odoo configuration file.
+    -d, --database TEXT          Specify the database name. If present, this
+                                 parameter takes precedence over the database
+                                 provided in the Odoo configuration file.
+    --log-level TEXT             Specify the logging level. Accepted values
+                                 depend on the Odoo version, and include debug,
+                                 info, warn, error.  [default: info]
+    --logfile FILE               Specify the log file.
+    --i18n-overwrite             Overwrite existing translations
+    --update-all                 Force a complete upgrade (-u base)
+    --if-exists                  Don't report error if database doesn't exist
+    --watcher-max-seconds FLOAT  Max DB lock seconds allowed before aborting the
+                                 update process. Default: 0 (disabled).
+    --help                       Show this message and exit.
 
 click-odoo-upgrade (deprecated, see click-odoo-update)
 ------------------------------------------------------
