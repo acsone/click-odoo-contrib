@@ -1,9 +1,12 @@
 Changes
 ~~~~~~~
 
-1.7.1 (2019-09-30)
+1.8.0 (2019-10-01)
 ------------------
 - Support Odoo SaaS versions
+- click-odoo-update now has some support for updating while another Odoo
+  instance is running against the same database, by using a watcher that
+  aborts the update in case a DB lock happens (this is an advanced feature)
 
 1.7.0 (2019-09-02)
 ------------------
