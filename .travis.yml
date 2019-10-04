@@ -34,19 +34,19 @@ jobs:
       python: 3.5
       env: ODOO="11.0"
     - stage: test
-      python: 3.6
+      python: 3.5
       env: ODOO="11.0"
     - stage: test
       python: 3.5
       env: ODOO="12.0"
     - stage: test
-      python: 3.6
+      python: 3.5
       env: ODOO="12.0"
     - stage: test
-      python: 3.5
-      env: ODOO="master"
-    - stage: test
       python: 3.6
+      env: ODOO="13.0"
+    - stage: test
+      python: 3.7
       env: ODOO="master"
     - stage: deploy
       script: echo "Deploy to PyPi"
@@ -61,6 +61,9 @@ jobs:
           repo: acsone/click-odoo-contrib
           branch: master
           tags: true
+  allow_failures:
+    - python: 3.8-dev
+    - env: ODOO="master"
 
 install:
   - pip install tox-travis
