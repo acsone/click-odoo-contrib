@@ -4,16 +4,18 @@
 import os
 import shutil
 import subprocess
+from collections import defaultdict
 
 import pytest
 from click.testing import CliRunner
-from click_odoo import odoo
+from click_odoo import OdooEnvironment, odoo
 
 from click_odoo_contrib._dbutils import db_exists
 from click_odoo_contrib.copydb import main
 
 TEST_DBNAME = "click-odoo-contrib-testcopydb"
 TEST_DBNAME_NEW = "click-odoo-contrib-testcopydb-new"
+_DEFAULT_IR_CONFIG_PARAMETERS = ["database.uuid", "database.create_date"]
 
 
 def _dropdb(dbname):
@@ -22,6 +24,20 @@ def _dropdb(dbname):
 
 def _createdb(dbname):
     subprocess.check_call(["createdb", dbname])
+
+
+def _assert_ir_config_reset(db1, db2):
+    params_by_db = defaultdict(dict)
+    for db in (db1, db2):
+        with OdooEnvironment(database=db) as env:
+            IrConfigParameters = env["ir.config_parameter"]
+            for key in _DEFAULT_IR_CONFIG_PARAMETERS:
+                params_by_db[db][key] = IrConfigParameters.get_param(key)
+    params1 = params_by_db[db1]
+    params2 = params_by_db[db2]
+    assert set(params1.keys()) == set(params2.keys())
+    for k, v in params1.items():
+        assert v != params2[k]
 
 
 @pytest.fixture
@@ -43,17 +59,20 @@ def pgdb():
         _dropdb(TEST_DBNAME)
 
 
-def tests_copydb(pgdb, filestore):
+def tests_copydb(odoodb):
     filestore_dir_new = odoo.tools.config.filestore(TEST_DBNAME_NEW)
+    filestore_dir_original = odoo.tools.config.filestore(odoodb)
+    if not os.path.exists(filestore_dir_original):
+        os.makedirs(filestore_dir_original)
     try:
         assert not db_exists(TEST_DBNAME_NEW)
         assert not os.path.exists(filestore_dir_new)
         result = CliRunner().invoke(
-            main, ["--force-disconnect", TEST_DBNAME, TEST_DBNAME_NEW]
+            main, ["--force-disconnect", odoodb, TEST_DBNAME_NEW]
         )
         assert result.exit_code == 0
-        # this dropdb will indirectly test that the new db exists
-        subprocess.check_call(["dropdb", TEST_DBNAME_NEW])
+        # this assert will indirectly test that the new db exists
+        _assert_ir_config_reset(odoodb, TEST_DBNAME_NEW)
         assert os.path.isdir(filestore_dir_new)
     finally:
         _dropdb(TEST_DBNAME_NEW)
@@ -110,15 +129,18 @@ def test_copydb_template_not_exists_target_exists():
         _dropdb(TEST_DBNAME_NEW)
 
 
-def test_copydb_no_source_filestore(pgdb):
+def test_copydb_no_source_filestore(odoodb):
     filestore_dir_new = odoo.tools.config.filestore(TEST_DBNAME_NEW)
+    filestore_dir_original = odoo.tools.config.filestore(odoodb)
+    if os.path.exists(filestore_dir_original):
+        shutil.rmtree(filestore_dir_original)
     try:
         result = CliRunner().invoke(
-            main, ["--force-disconnect", TEST_DBNAME, TEST_DBNAME_NEW]
+            main, ["--force-disconnect", odoodb, TEST_DBNAME_NEW]
         )
         assert result.exit_code == 0
-        # this dropdb will indirectly test that the new db exists
-        subprocess.check_call(["dropdb", TEST_DBNAME_NEW])
+        # this assert will indirectly test that the new db exists
+        _assert_ir_config_reset(odoodb, TEST_DBNAME_NEW)
         assert not os.path.isdir(filestore_dir_new)
     finally:
         _dropdb(TEST_DBNAME_NEW)
