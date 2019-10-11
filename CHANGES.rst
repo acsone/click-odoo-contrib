@@ -1,6 +1,12 @@
 Changes
 ~~~~~~~
 
+unreleased
+----------
+
+- add click-odoo-restoredb
+
+
 1.8.0 (2019-10-01)
 ------------------
 - Support Odoo SaaS versions

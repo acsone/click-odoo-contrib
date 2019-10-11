@@ -15,13 +15,17 @@ from click_odoo import odoo
 from ._backup import backup
 from ._dbutils import db_exists, db_management_enabled
 
+MANIFEST_FILENAME = "manifest.json"
+DBDUMP_FILENAME = "db.dump"
+FILESTORE_DIRAME = "filestore"
+
 
 def _dump_db(dbname, backup):
     cmd = ["pg_dump", "--no-owner", dbname]
     filename = "dump.sql"
     if backup.format == "folder":
         cmd.insert(-1, "--format=c")
-        filename = "db.dump"
+        filename = DBDUMP_FILENAME
     _stdin, stdout = odoo.tools.exec_pg_command_pipe(*cmd)
     backup.write(stdout, filename)
 
@@ -31,13 +35,13 @@ def _create_manifest(cr, dbname, backup):
     with tempfile.NamedTemporaryFile(mode="w") as f:
         json.dump(manifest, f, indent=4)
         f.seek(0)
-        backup.addfile(f.name, "manifest.json")
+        backup.addfile(f.name, MANIFEST_FILENAME)
 
 
 def _backup_filestore(dbname, backup):
     filestore_source = odoo.tools.config.filestore(dbname)
     if os.path.isdir(filestore_source):
-        backup.addtree(filestore_source, "filestore")
+        backup.addtree(filestore_source, FILESTORE_DIRAME)
 
 
 @click.command()
