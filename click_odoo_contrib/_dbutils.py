@@ -9,8 +9,8 @@ from click_odoo import odoo
 
 
 @contextmanager
-def pg_connect():
-    conn = odoo.sql_db.db_connect("postgres")
+def pg_connect(dbname="postgres"):
+    conn = odoo.sql_db.db_connect(dbname)
     cr = conn.cursor()
     cr.autocommit(True)
     try:
@@ -27,6 +27,13 @@ def db_exists(dbname):
             (dbname,),
         )
         return bool(cr.fetchone())
+
+
+def db_initialized(dbname):
+    if not db_exists(dbname):
+        return False
+    with pg_connect(dbname) as cr:
+        return odoo.modules.db.is_initialized(cr)
 
 
 def terminate_connections(dbname):
