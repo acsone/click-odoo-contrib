@@ -306,7 +306,7 @@ class DbCache:
                 self._drop_db(datname)
 
     def trim_age(self, max_age):
-        max_trim = max_age - timedelta(days=1)
+        max_trim = max_age + timedelta(days=1)
         with self._lock():
             pattern = self._make_pattern()
             max_name = self._make_pattern(
