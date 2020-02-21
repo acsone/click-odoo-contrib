@@ -14,7 +14,7 @@ import click
 import click_odoo
 from click_odoo import odoo
 
-from ._dbutils import db_exists
+from ._dbutils import advisory_lock, db_exists
 from .manifest import expand_dependencies
 from .update import _save_installed_checksums
 
@@ -137,7 +137,6 @@ class DbCache:
     def __init__(self, prefix):
         check_cache_prefix(prefix)
         self.prefix = prefix
-        self.lock_id = self._make_lock_id()
         conn = odoo.sql_db.db_connect("postgres")
         self.pgcr = conn.cursor()
         self.pgcr.autocommit(True)
@@ -151,19 +150,8 @@ class DbCache:
     def close(self):
         self.pgcr.close()
 
-    def _make_lock_id(self):
-        # try to make a unique lock id based on the cache prefix
-        h = hashlib.sha1()
-        h.update(self.prefix.encode("utf8"))
-        return int(h.hexdigest()[:14], 16)
-
-    @contextlib.contextmanager
     def _lock(self):
-        self.pgcr.execute("SELECT pg_advisory_lock(%s::bigint)", (self.lock_id,))
-        try:
-            yield
-        finally:
-            self.pgcr.execute("SELECT pg_advisory_unlock(%s::bigint)", (self.lock_id,))
+        return advisory_lock(self.pgcr, self.prefix)
 
     def _make_pattern(self, dt=None, hs=None):
         if dt:
