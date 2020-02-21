@@ -2,6 +2,7 @@
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
+import hashlib
 from contextlib import contextmanager
 
 from click_odoo import odoo
@@ -47,3 +48,16 @@ def db_management_enabled():
         yield
     finally:
         odoo.tools.config["list_db"] = list_db
+
+
+@contextmanager
+def advisory_lock(cr, name):
+    # try to make a unique lock id based on a string
+    h = hashlib.sha1()
+    h.update(name.encode("utf8"))
+    lock_id = int(h.hexdigest()[:14], 16)
+    cr.execute("SELECT pg_advisory_lock(%s::bigint)", (lock_id,))
+    try:
+        yield
+    finally:
+        cr.execute("SELECT pg_advisory_unlock(%s::bigint)", (lock_id,))
