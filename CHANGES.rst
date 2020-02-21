@@ -1,6 +1,11 @@
 Changes
 ~~~~~~~
 
+- click-odoo-update: acquire an advisory lock on the database so multiple
+  instances of click-odoo-update will not start at the same time on the
+  same database (useful when there are several Odoo instances running
+  on the same database and all running click-odoo-update at startup)
+
 1.8.0 (2019-10-01)
 ------------------
 - Support Odoo SaaS versions
