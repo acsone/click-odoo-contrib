@@ -46,6 +46,8 @@ def install_odoo():
     subprocess.check_call(["pip", "install", "pyyaml<4"])
     # Odoo not compatible with werkzeug 1.0: https://github.com/odoo/odoo/issues/45914
     subprocess.check_call(["pip", "install", "werkzeug<1"])
+    # Odoo not compatible with Jinja2 >= 2.11
+    subprocess.check_call(["pip", "install", "jinja2<2.11"])
     subprocess.check_call(["pip", "install", "-e", odoo_dir])
 
 
