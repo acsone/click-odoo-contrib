@@ -207,6 +207,8 @@ click-odoo-update (stable)
     --if-exists                  Don't report error if database doesn't exist
     --watcher-max-seconds FLOAT  Max DB lock seconds allowed before aborting the
                                  update process. Default: 0 (disabled).
+    --list-only                  Log the list of addons to update without
+                                 actually updating them.
     --help                       Show this message and exit.
 
 Useful links
@@ -242,9 +244,11 @@ Contributors:
 - Benjamin Willig (ACSONE_)
 - Jairo Llopis (Tecnativa_)
 - Laurent Mignon (ACSONE_)
+- Lois Rilo (ForgeFlow_)
 
 .. _ACSONE: https://acsone.eu
 .. _Tecnativa: https://tecnativa.com
+.. _ForgeFlow: https://forgeflow.com
 
 Maintainer
 ~~~~~~~~~~
