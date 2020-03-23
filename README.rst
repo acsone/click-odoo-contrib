@@ -209,25 +209,6 @@ click-odoo-update (beta)
                                  update process. Default: 0 (disabled).
     --help                       Show this message and exit.
 
-click-odoo-upgrade (deprecated, see click-odoo-update)
-------------------------------------------------------
-
-.. code::
-
-  Usage: click-odoo-upgrade [OPTIONS]
-
-    Upgrade an Odoo database (odoo -u), taking advantage of
-    module_auto_update's upgrade_changed_checksum method if present.
-
-  Options:
-    -c, --config FILE    ...
-    -d, --database TEXT  ...
-    ...
-    --i18n-overwrite     Overwrite existing translations
-    --upgrade-all        Force a complete upgrade (-u base)
-    --if-exists          Don't report error if database doesn't exist.
-    --help               Show this message and exit.
-
 Useful links
 ~~~~~~~~~~~~
 
