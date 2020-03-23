@@ -16,6 +16,7 @@ import psycopg2
 from click_odoo import OdooEnvironment, odoo
 
 from ._addon_hash import addon_hash
+from ._dbutils import advisory_lock
 
 _logger = logging.getLogger(__name__)
 
@@ -172,8 +173,7 @@ def _get_checksum_dir(cr, module_name):
     return checksum_dir
 
 
-def _update_db(database, update_all, i18n_overwrite, watcher=None):
-    conn = odoo.sql_db.db_connect(database)
+def _update_db_nolock(conn, database, update_all, i18n_overwrite, watcher=None):
     to_update = odoo.tools.config["update"]
     if update_all:
         to_update["base"] = 1
@@ -205,6 +205,12 @@ def _update_db(database, update_all, i18n_overwrite, watcher=None):
         raise click.Abort("Update aborted by watcher, check logs")
     with conn.cursor() as cr:
         _save_installed_checksums(cr)
+
+
+def _update_db(database, update_all, i18n_overwrite, watcher=None):
+    conn = odoo.sql_db.db_connect(database)
+    with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
+        _update_db_nolock(conn, database, update_all, i18n_overwrite, watcher)
 
 
 @contextmanager
