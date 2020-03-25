@@ -39,8 +39,8 @@ click-odoo-copydb (beta)
                             exist.
     --help                  Show this message and exit.
 
-click-odoo-dropdb (beta)
-------------------------
+click-odoo-dropdb (stable)
+--------------------------
 
 .. code::
 
@@ -54,8 +54,8 @@ click-odoo-dropdb (beta)
     --if-exists        Don't report error if database doesn't exist.
     --help             Show this message and exit.
 
-click-odoo-initdb (beta)
-------------------------
+click-odoo-initdb (stable)
+--------------------------
 
 .. code::
 
@@ -172,8 +172,8 @@ click-odoo-uninstall (stable)
                          [required]
     --help               Show this message and exit.
 
-click-odoo-update (beta)
-------------------------
+click-odoo-update (stable)
+--------------------------
 
 .. code::
 
