@@ -2,6 +2,6 @@
     template = ".towncrier-template.rst"
     underlines = ["-"]
     title_format = "{version} ({project_date})"
-    issue_format = "`#{issue} <https://github.com/pypa/pip/issues/{issue}>`_"
+    issue_format = "`#{issue} <https://github.com/acsone/click-odoo-contrib/issues/{issue}>`_"
     directory = "newsfragments/"
     filename = "CHANGES.rst"
