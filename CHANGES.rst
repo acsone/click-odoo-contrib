@@ -1,6 +1,8 @@
 Changes
 ~~~~~~~
 
+.. towncrier release notes start
+
 1.9.0 (2020-03-23)
 ------------------
 - click-odoo-update: acquire an advisory lock on the database so multiple
