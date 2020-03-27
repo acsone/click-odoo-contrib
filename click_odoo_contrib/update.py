@@ -173,7 +173,9 @@ def _get_checksum_dir(cr, module_name):
     return checksum_dir
 
 
-def _update_db_nolock(conn, database, update_all, i18n_overwrite, watcher=None):
+def _update_db_nolock(
+    conn, database, update_all, i18n_overwrite, watcher=None, list_only=False
+):
     to_update = odoo.tools.config["update"]
     if update_all:
         to_update["base"] = 1
@@ -189,6 +191,10 @@ def _update_db_nolock(conn, database, update_all, i18n_overwrite, watcher=None):
                 "Updating addons for their hash changed: %s.",
                 ",".join(to_update.keys()),
             )
+    if list_only:
+        odoo.tools.config["update"] = {}
+        _logger.info("List-only selected, update is not performed.")
+        return
     if i18n_overwrite:
         odoo.tools.config["overwrite_existing_translations"] = True
     if odoo.tools.parse_version(odoo.release.version) < odoo.tools.parse_version("10"):
@@ -207,10 +213,12 @@ def _update_db_nolock(conn, database, update_all, i18n_overwrite, watcher=None):
         _save_installed_checksums(cr)
 
 
-def _update_db(database, update_all, i18n_overwrite, watcher=None):
+def _update_db(database, update_all, i18n_overwrite, watcher=None, list_only=False):
     conn = odoo.sql_db.db_connect(database)
     with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
-        _update_db_nolock(conn, database, update_all, i18n_overwrite, watcher)
+        _update_db_nolock(
+            conn, database, update_all, i18n_overwrite, watcher, list_only
+        )
 
 
 @contextmanager
@@ -223,7 +231,11 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     # Update Odoo datatabase
     try:
         _update_db(
-            database, ctx.params["update_all"], ctx.params["i18n_overwrite"], watcher
+            database,
+            ctx.params["update_all"],
+            ctx.params["i18n_overwrite"],
+            watcher,
+            ctx.params["list_only"],
         )
     finally:
         if watcher:
@@ -252,7 +264,12 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     help="Max DB lock seconds allowed before aborting the update process. "
     "Default: 0 (disabled).",
 )
-def main(env, i18n_overwrite, update_all, if_exists, watcher_max_seconds):
+@click.option(
+    "--list-only",
+    is_flag=True,
+    help="Log the list of addons to update without actually updating them.",
+)
+def main(env, i18n_overwrite, update_all, if_exists, watcher_max_seconds, list_only):
     """ Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
     to the hashes stored in the database.

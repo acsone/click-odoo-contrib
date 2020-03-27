@@ -77,9 +77,27 @@ def _update_one(odoodb, v):
     subprocess.check_call(cmd)
 
 
+def _update_list(odoodb, v):
+    cmd = [
+        sys.executable,
+        "-m",
+        "click_odoo_contrib.update",
+        "--addons-path",
+        _addons_path(v),
+        "-d",
+        odoodb,
+        "--list-only",
+    ]
+    subprocess.check_call(cmd)
+
+
 def test_update(odoodb):
     _install_one(odoodb, "v1")
     _check_expected(odoodb, "v1")
+    # With --list-only option update shouldn't be performed:
+    _update_list(odoodb, "v2")
+    _check_expected(odoodb, "v1")
+    # Default update should:
     _update_one(odoodb, "v2")
     _check_expected(odoodb, "v2")
     _update_one(odoodb, "v3")
