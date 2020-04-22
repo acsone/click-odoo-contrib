@@ -204,6 +204,12 @@ click-odoo-update (stable)
     --logfile FILE               Specify the log file.
     --i18n-overwrite             Overwrite existing translations
     --update-all                 Force a complete upgrade (-u base)
+    --ignore-addons TEXT         A comma-separated list of addons to ignore.
+                                 These will not be updated if their checksum has
+                                 changed. Use with care.
+    --ignore-core-addons         If this option is set, Odoo CE and EE addons
+                                 are not updated. This is normally safe, due the
+                                 Odoo stable policy.
     --if-exists                  Don't report error if database doesn't exist
     --watcher-max-seconds FLOAT  Max DB lock seconds allowed before aborting the
                                  update process. Default: 0 (disabled).
