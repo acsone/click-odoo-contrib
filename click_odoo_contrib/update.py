@@ -261,8 +261,10 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     "--watcher-max-seconds",
     default=0,
     type=float,
-    help="Max DB lock seconds allowed before aborting the update process. "
-    "Default: 0 (disabled).",
+    help=(
+        "Max DB lock seconds allowed before aborting the update process. "
+        "Default: 0 (disabled)."
+    ),
 )
 @click.option(
     "--list-only",
