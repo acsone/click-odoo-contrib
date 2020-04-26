@@ -19,7 +19,7 @@ setup(
     use_scm_version=True,
     packages=find_packages(),
     setup_requires=["setuptools-scm"],
-    install_requires=["click-odoo>=1.3.0"],
+    install_requires=["click-odoo>=1.3.0", "unicodecsv"],
     license="LGPLv3+",
     author="ACSONE SA/NV",
     author_email="info@acsone.eu",
@@ -45,5 +45,6 @@ setup(
         click-odoo-initdb=click_odoo_contrib.initdb:main
         click-odoo-backupdb=click_odoo_contrib.backupdb:main
         click-odoo-makepot=click_odoo_contrib.makepot:main
+        click-odoo-addons-analyse=click_odoo_contrib.addons_analyse:main
     """,
 )
