@@ -64,7 +64,7 @@ def _install_one(odoodb, v):
     subprocess.check_call(cmd)
 
 
-def _update_one(odoodb, v):
+def _update_one(odoodb, v, ignore_addons=None, ignore_core_addons=False):
     cmd = [
         sys.executable,
         "-m",
@@ -74,6 +74,10 @@ def _update_one(odoodb, v):
         "-d",
         odoodb,
     ]
+    if ignore_addons:
+        cmd.extend(["--ignore-addons", ignore_addons])
+    if ignore_core_addons:
+        cmd.append("--ignore-core-addons")
     subprocess.check_call(cmd)
 
 
@@ -97,6 +101,9 @@ def test_update(odoodb):
     # With --list-only option update shouldn't be performed:
     _update_list(odoodb, "v2")
     _check_expected(odoodb, "v1")
+    # With --ignore-addons addon_app, update should not be performed
+    _update_one(odoodb, "v1", ignore_addons="addon_app")
+    _check_expected(odoodb, "v1")
     # Default update should:
     _update_one(odoodb, "v2")
     _check_expected(odoodb, "v2")
@@ -105,6 +112,7 @@ def test_update(odoodb):
     with OdooEnvironment(odoodb) as env:
         checksums = _load_installed_checksums(env.cr)
         print(checksums)
+        assert "base" in checksums
         assert checksums.get("addon_app") == "bb1ff827fd6084e69180557c3183989100ddb62b"
         assert checksums.get("addon_d1") == "ff46eefbe846e1a46ff3de74e117fd285b72f298"
         assert checksums.get("addon_d2") == "edf58645e2e55a2d282320206f73df09a746a4ab"
@@ -112,8 +120,11 @@ def test_update(odoodb):
     _check_expected(odoodb, "v4")
     _update_one(odoodb, "v5")
     _check_expected(odoodb, "v5")
-    _update_one(odoodb, "v6")
+    _update_one(odoodb, "v6", ignore_core_addons=True)
     _check_expected(odoodb, "v6")
+    with OdooEnvironment(odoodb) as env:
+        checksums = _load_installed_checksums(env.cr)
+        assert "base" not in checksums  # because ignore_Core_addons=True
     with pytest.raises(subprocess.CalledProcessError):
         _update_one(odoodb, "v7")
     if odoo.tools.parse_version(odoo.release.version) >= odoo.tools.parse_version("12"):

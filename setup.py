@@ -19,7 +19,10 @@ setup(
     use_scm_version=True,
     packages=find_packages(),
     setup_requires=["setuptools-scm"],
-    install_requires=["click-odoo>=1.3.0"],
+    install_requires=[
+        "click-odoo>=1.3.0",
+        "importlib_resources ; python_version<'3.9'",
+    ],
     license="LGPLv3+",
     author="ACSONE SA/NV",
     author_email="info@acsone.eu",

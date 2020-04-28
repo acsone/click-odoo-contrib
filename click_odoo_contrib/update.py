@@ -17,6 +17,7 @@ from click_odoo import OdooEnvironment, odoo
 
 from ._addon_hash import addon_hash
 from ._dbutils import advisory_lock
+from .core_addons import core_addons
 
 _logger = logging.getLogger(__name__)
 
@@ -149,10 +150,12 @@ def _load_installed_checksums(cr):
         return {}
 
 
-def _save_installed_checksums(cr):
+def _save_installed_checksums(cr, ignore_addons=None):
     checksums = {}
     cr.execute("SELECT name FROM ir_module_module WHERE state='installed'")
     for (module_name,) in cr.fetchall():
+        if ignore_addons and module_name in ignore_addons:
+            continue
         checksums[module_name] = _get_checksum_dir(cr, module_name)
     _set_param(cr, PARAM_INSTALLED_CHECKSUMS, json.dumps(checksums))
     _logger.info("Database updated, new checksums stored")
@@ -174,7 +177,13 @@ def _get_checksum_dir(cr, module_name):
 
 
 def _update_db_nolock(
-    conn, database, update_all, i18n_overwrite, watcher=None, list_only=False
+    conn,
+    database,
+    update_all,
+    i18n_overwrite,
+    watcher=None,
+    list_only=False,
+    ignore_addons=None,
 ):
     to_update = odoo.tools.config["update"]
     if update_all:
@@ -184,6 +193,8 @@ def _update_db_nolock(
             checksums = _load_installed_checksums(cr)
             cr.execute("SELECT name FROM ir_module_module WHERE state = 'installed'")
             for (module_name,) in cr.fetchall():
+                if module_name in ignore_addons:
+                    continue
                 if _get_checksum_dir(cr, module_name) != checksums.get(module_name):
                     to_update[module_name] = 1
         if to_update:
@@ -210,14 +221,27 @@ def _update_db_nolock(
         # this script indicates always a failure
         raise click.Abort("Update aborted by watcher, check logs")
     with conn.cursor() as cr:
-        _save_installed_checksums(cr)
+        _save_installed_checksums(cr, ignore_addons)
 
 
-def _update_db(database, update_all, i18n_overwrite, watcher=None, list_only=False):
+def _update_db(
+    database,
+    update_all,
+    i18n_overwrite,
+    watcher=None,
+    list_only=False,
+    ignore_addons=None,
+):
     conn = odoo.sql_db.db_connect(database)
     with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
         _update_db_nolock(
-            conn, database, update_all, i18n_overwrite, watcher, list_only
+            conn,
+            database,
+            update_all,
+            i18n_overwrite,
+            watcher,
+            list_only,
+            ignore_addons,
         )
 
 
@@ -228,6 +252,15 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     if ctx.params["watcher_max_seconds"] > 0:
         watcher = DbLockWatcher(database, ctx.params["watcher_max_seconds"])
         watcher.start()
+    ignore_addons = set()
+    if ctx.params["ignore_addons"]:
+        ignore_addons.update(ctx.params["ignore_addons"].strip().split(","))
+    if ctx.params["ignore_core_addons"]:
+        ignore_addons.update(core_addons[odoo.release.series])
+    if ignore_addons and ctx.params["update_all"]:
+        raise click.ClickException(
+            "--update-all and --ignore(-core)-addons cannot be used together"
+        )
     # Update Odoo datatabase
     try:
         _update_db(
@@ -236,6 +269,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
             ctx.params["i18n_overwrite"],
             watcher,
             ctx.params["list_only"],
+            ignore_addons,
         )
     finally:
         if watcher:
@@ -255,21 +289,48 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
 @click.option("--i18n-overwrite", is_flag=True, help="Overwrite existing translations")
 @click.option("--update-all", is_flag=True, help="Force a complete upgrade (-u base)")
 @click.option(
+    "--ignore-addons",
+    help=(
+        "A comma-separated list of addons to ignore. "
+        "These will not be updated if their checksum has changed. "
+        "Use with care."
+    ),
+)
+@click.option(
+    "--ignore-core-addons",
+    is_flag=True,
+    help=(
+        "If this option is set, Odoo CE and EE addons are not updated. "
+        "This is normally safe, due the Odoo stable policy."
+    ),
+)
+@click.option(
     "--if-exists", is_flag=True, help="Don't report error if database doesn't exist"
 )
 @click.option(
     "--watcher-max-seconds",
     default=0,
     type=float,
-    help="Max DB lock seconds allowed before aborting the update process. "
-    "Default: 0 (disabled).",
+    help=(
+        "Max DB lock seconds allowed before aborting the update process. "
+        "Default: 0 (disabled)."
+    ),
 )
 @click.option(
     "--list-only",
     is_flag=True,
     help="Log the list of addons to update without actually updating them.",
 )
-def main(env, i18n_overwrite, update_all, if_exists, watcher_max_seconds, list_only):
+def main(
+    env,
+    i18n_overwrite,
+    update_all,
+    if_exists,
+    watcher_max_seconds,
+    list_only,
+    ignore_addons,
+    ignore_core_addons,
+):
     """ Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
     to the hashes stored in the database.
