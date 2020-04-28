@@ -3,6 +3,27 @@ Changes
 
 .. towncrier release notes start
 
+1.10.0 (2020-04-28)
+-------------------
+
+**Features**
+
+- click-odoo-initdb: add support of dot and underscore in database name. (`#35 <https://github.com/acsone/click-odoo-contrib/issues/35>`_)
+- click-odoo-update: added --list-only option. (`#68 <https://github.com/acsone/click-odoo-contrib/issues/68>`_)
+- click-odoo-update: add --ignore-addons and --ignore-core-addons options to
+  exclude addons from checksum change detection. (`#69 <https://github.com/acsone/click-odoo-contrib/issues/69>`_)
+
+
+**Improved Documentation**
+
+- initdb, dropdb, update: move out of beta. (`#70 <https://github.com/acsone/click-odoo-contrib/issues/70>`_)
+
+
+**Deprecations and Removals**
+
+- Remove deprecated click-odoo-upgrade. (`#71 <https://github.com/acsone/click-odoo-contrib/issues/71>`_)
+
+
 1.9.0 (2020-03-23)
 ------------------
 - click-odoo-update: acquire an advisory lock on the database so multiple
