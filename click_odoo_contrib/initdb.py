@@ -26,7 +26,7 @@ EXCLUDE_PATTERNS = ("*.pyc", "*.pyo")
 
 
 def check_dbname(dbname):
-    if not re.match("^[A-Za-z][A-Za-z0-9-]*$", dbname):
+    if not re.match("^[A-Za-z][A-Za-z0-9-_.]*$", dbname):
         raise click.ClickException("Invalid database name '{}'".format(dbname))
 
 
