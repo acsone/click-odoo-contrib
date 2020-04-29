@@ -3,6 +3,14 @@ Changes
 
 .. towncrier release notes start
 
+1.10.1 (2020-04-29)
+-------------------
+
+**Bugfixes**
+
+- click-odoo-update: fix packaging issue (missing core addons lists). (`#77 <https://github.com/acsone/click-odoo-contrib/issues/77>`_)
+
+
 1.10.0 (2020-04-28)
 -------------------
 
