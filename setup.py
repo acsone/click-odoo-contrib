@@ -18,6 +18,7 @@ setup(
     ),
     use_scm_version=True,
     packages=find_packages(),
+    include_package_data=True,
     setup_requires=["setuptools-scm"],
     install_requires=[
         "click-odoo>=1.3.0",
