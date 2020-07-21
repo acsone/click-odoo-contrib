@@ -31,7 +31,7 @@ def check_dbname(dbname):
 
 
 def check_cache_prefix(cache_prefix):
-    if not re.match("^[A-Za-z][A-Za-z0-9-]{0,7}$", cache_prefix):
+    if not re.match("^[A-Za-z][A-Za-z0-9-]*$", cache_prefix):
         raise click.ClickException(
             "Invalid cache prefix name '{}'".format(cache_prefix)
         )
