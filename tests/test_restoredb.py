@@ -50,12 +50,14 @@ def _check_default_params(db1, db2, operator):
         assert operator(v, params2[k])
 
 
-@pytest.fixture(params=["folder", "zip"])
+@pytest.fixture(params=["folder", "zip", "dump"])
 def backup(request, odoodb, odoocfg, tmp_path):
     if request.param == "folder":
         name = "backup"
-    else:
+    elif request.param == "zip":
         name = "backup.zip"
+    else:
+        name = "backup.dump"
     path = tmp_path.joinpath(name)
     posix_path = path.as_posix()
     CliRunner().invoke(
