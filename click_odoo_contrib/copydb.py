@@ -11,7 +11,12 @@ import click_odoo
 from click_odoo import odoo
 from psycopg2.extensions import AsIs, quote_ident
 
-from ._dbutils import db_exists, pg_connect, terminate_connections
+from ._dbutils import (
+    db_exists,
+    pg_connect,
+    reset_config_parameters,
+    terminate_connections,
+)
 
 
 def _copy_db(cr, source, dest):
@@ -74,6 +79,7 @@ def main(env, source, dest, force_disconnect, unless_dest_exists, if_source_exis
         if force_disconnect:
             terminate_connections(source)
         _copy_db(cr, source, dest)
+        reset_config_parameters(dest)
     _copy_filestore(source, dest)
 
 
