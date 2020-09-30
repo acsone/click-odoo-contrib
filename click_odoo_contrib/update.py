@@ -331,7 +331,7 @@ def main(
     ignore_addons,
     ignore_core_addons,
 ):
-    """ Update an Odoo database (odoo -u), automatically detecting
+    """Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
     to the hashes stored in the database.
 

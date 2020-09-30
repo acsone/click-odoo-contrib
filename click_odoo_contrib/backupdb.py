@@ -69,7 +69,7 @@ def _backup_filestore(dbname, backup):
 @click.argument("dbname", nargs=1)
 @click.argument("dest", nargs=1, required=1)
 def main(env, dbname, dest, force, if_exists, format, filestore):
-    """ Create an Odoo database backup from an existing one.
+    """Create an Odoo database backup from an existing one.
 
     This script dumps the database using pg_dump.
     It also copies the filestore.

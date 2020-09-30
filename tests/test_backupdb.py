@@ -146,8 +146,7 @@ def tests_backupdb_folder_no_filestore(pgdb, filestore, tmp_path, manifest):
 
 
 def tests_backupdb_no_list_db(odoodb, filestore, tmp_path):
-    """backupdb should work even if list_db is set to False into odoo.cfg
-    """
+    """backupdb should work even if list_db is set to False into odoo.cfg"""
     zip_path = tmp_path.joinpath("test.zip")
     assert not zip_path.exists()
     zip_filename = zip_path.as_posix()
@@ -210,8 +209,7 @@ def tests_backupdb_force_zip(pgdb, filestore, tmp_path, manifest):
 
 
 def tests_backupdb_zip_restore(odoodb, odoocfg, tmp_path):
-    """Test zip backup compatibility with native Odoo restore API
-    """
+    """Test zip backup compatibility with native Odoo restore API"""
     zip_path = tmp_path.joinpath("test.zip")
     zip_filename = zip_path.as_posix()
     result = CliRunner().invoke(main, ["--format=zip", odoodb, zip_filename])

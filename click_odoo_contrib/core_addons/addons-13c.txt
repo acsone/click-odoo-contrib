@@ -1,4 +1,4 @@
-# generated on Wed Apr 22 18:56:07 2020
+# generated on Wed Sep 30 21:15:09 2020
 account
 account_analytic_default
 account_analytic_default_hr_expense
@@ -97,6 +97,7 @@ l10n_bo
 l10n_br
 l10n_ca
 l10n_ch
+l10n_ch_qriban
 l10n_cl
 l10n_cn
 l10n_cn_city
@@ -110,10 +111,12 @@ l10n_de_skr03
 l10n_de_skr04
 l10n_dk
 l10n_do
+l10n_dz
 l10n_ec
 l10n_es
 l10n_et
 l10n_eu_service
+l10n_fi
 l10n_fr
 l10n_fr_fec
 l10n_fr_pos_cert
@@ -125,6 +128,7 @@ l10n_hn
 l10n_hr
 l10n_hu
 l10n_id
+l10n_id_efaktur
 l10n_ie
 l10n_il
 l10n_in
@@ -155,6 +159,7 @@ l10n_pt
 l10n_ro
 l10n_sa
 l10n_se
+l10n_se_ocr
 l10n_sg
 l10n_si
 l10n_syscohada

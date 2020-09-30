@@ -21,4 +21,5 @@ core_addons = {
     "11.0": _addons("11c") | _addons("11e"),
     "12.0": _addons("12c") | _addons("12e"),
     "13.0": _addons("13c") | _addons("13e"),
+    "14.0": _addons("14c") | _addons("14e"),
 }

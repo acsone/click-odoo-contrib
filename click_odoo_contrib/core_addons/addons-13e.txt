@@ -1,4 +1,4 @@
-# generated on Wed Apr 22 18:56:14 2020
+# generated on Wed Sep 30 21:15:20 2020
 account_3way_match
 account_accountant
 account_asset
@@ -81,6 +81,7 @@ industry_fsm_report
 industry_fsm_stock
 inter_company_rules
 iot
+iot_pairing
 l10n_ar_edi
 l10n_ar_reports
 l10n_at_reports
@@ -95,6 +96,7 @@ l10n_be_sale_intrastat
 l10n_be_us_consolidation_demo
 l10n_ca_check_printing
 l10n_ch_reports
+l10n_cl_edi
 l10n_cl_reports
 l10n_co_edi
 l10n_co_edi_ubl_2_1
@@ -103,6 +105,7 @@ l10n_de_reports
 l10n_dk_reports
 l10n_es_real_estates
 l10n_es_reports
+l10n_fi_reports
 l10n_fr_hr_payroll
 l10n_fr_reports
 l10n_generic_auto_transfer_demo
@@ -140,6 +143,7 @@ ocn_client
 partner_commission
 payment_sepa_direct_debit
 planning
+pos_account_reports
 pos_blackbox_be
 pos_enterprise
 pos_hr_l10n_be
@@ -163,6 +167,7 @@ quality_mrp_workorder
 quality_mrp_workorder_iot
 sale_account_taxcloud
 sale_amazon
+sale_amazon_authentication
 sale_amazon_delivery
 sale_amazon_taxcloud
 sale_coupon_taxcloud
@@ -177,6 +182,7 @@ sale_subscription
 sale_subscription_dashboard
 sale_subscription_sepa_direct_debit
 sale_subscription_taxcloud
+sale_subscription_timesheet
 sale_timesheet_enterprise
 sign
 snailmail_account_followup

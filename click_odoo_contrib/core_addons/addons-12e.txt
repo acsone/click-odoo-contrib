@@ -1,4 +1,4 @@
-# generated on Fri Mar  6 11:55:24 2020
+# generated on Wed Sep 30 21:15:43 2020
 account_3way_match
 account_accountant
 account_asset
@@ -51,6 +51,7 @@ hr_contract_salary
 hr_holidays_gantt
 inter_company_rules
 iot
+iot_pairing
 l10n_ae_reports
 l10n_ar_reports
 l10n_at_reports
