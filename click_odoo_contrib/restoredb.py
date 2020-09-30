@@ -107,7 +107,7 @@ def main(env, dbname, source, copy, force, jobs):
         msg = "Destination database already exists: {}".format(dbname)
         if not force:
             raise click.ClickException(msg)
-        msg = "{} -> drop".format(msg)
+        msg = "{}, dropping it as requested.".format(msg)
         click.echo(click.style(msg, fg="yellow"))
         with db_management_enabled():
             odoo.service.db.exp_drop(dbname)
