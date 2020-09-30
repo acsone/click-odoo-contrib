@@ -50,7 +50,7 @@ def find_addons(addons_dir, installable_only=True):
 
 
 def expand_dependencies(module_names, include_auto_install=False, include_active=False):
-    """ Return a set of module names with their transitive
+    """Return a set of module names with their transitive
     dependencies.  This method does not need an Odoo database,
     but requires the addons path to be initialized.
     """

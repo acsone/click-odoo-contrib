@@ -44,13 +44,11 @@ class AbstractBackup(object):
         raise NotImplementedError()  # pragma: no cover
 
     def close(self):
-        """Close the backup
-        """
+        """Close the backup"""
         raise NotImplementedError()  # pragma: no cover
 
     def delete(self):
-        """Deelte the backup
-        """
+        """Delete the backup"""
         raise NotImplementedError()  # pragma: no cover
 
 

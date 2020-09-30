@@ -124,7 +124,7 @@ def refresh_module_list(dbname):
 
 
 class DbCache:
-    """ Manage a cache of db templates.
+    """Manage a cache of db templates.
 
     Templates are named prefix-YYYYmmddHHMM-hashsum, where
     YYYYmmddHHMM is the date and time when the given hashsum has last been
@@ -390,7 +390,7 @@ def main(
     cache_max_size,
     unless_exists,
 ):
-    """ Create an Odoo database with pre-installed modules.
+    """Create an Odoo database with pre-installed modules.
 
     Almost like standard Odoo does with the -i option,
     except this script manages a cache of database templates with

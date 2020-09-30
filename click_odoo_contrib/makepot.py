@@ -100,7 +100,7 @@ def export_pot(
     "--commit-message", show_default=True, default="[UPD] Update {addon_name}.pot"
 )
 def main(env, addons_dir, msgmerge, commit, msgmerge_if_new_pot, commit_message):
-    """ Export translation (.pot) files of addons
+    """Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
     Check that existing .po file are syntactically correct.
     Optionally, run msgmerge on the existing .po files to keep
