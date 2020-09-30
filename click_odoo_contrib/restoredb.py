@@ -12,13 +12,13 @@ import psycopg2
 from click_odoo import OdooEnvironment, odoo
 
 from ._dbutils import db_exists, db_management_enabled, reset_config_parameters
-from .backupdb import DBDUMP_FILENAME, FILESTORE_DIRAME, MANIFEST_FILENAME
+from .backupdb import DBDUMP_FILENAME, FILESTORE_DIRNAME, MANIFEST_FILENAME
 
 
 def _restore_from_folder(dbname, backup, copy=True, jobs=1):
     manifest_file_path = os.path.join(backup, MANIFEST_FILENAME)
     dbdump_file_path = os.path.join(backup, DBDUMP_FILENAME)
-    filestore_dir_path = os.path.join(backup, FILESTORE_DIRAME)
+    filestore_dir_path = os.path.join(backup, FILESTORE_DIRNAME)
     if not os.path.exists(manifest_file_path) or not os.path.exists(dbdump_file_path):
         msg = (
             "{} is not folder backup created by the backupdb command. "

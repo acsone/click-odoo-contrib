@@ -17,7 +17,7 @@ from ._dbutils import db_exists, db_management_enabled
 
 MANIFEST_FILENAME = "manifest.json"
 DBDUMP_FILENAME = "db.dump"
-FILESTORE_DIRAME = "filestore"
+FILESTORE_DIRNAME = "filestore"
 
 
 def _dump_db(dbname, backup):
@@ -41,7 +41,7 @@ def _create_manifest(cr, dbname, backup):
 def _backup_filestore(dbname, backup):
     filestore_source = odoo.tools.config.filestore(dbname)
     if os.path.isdir(filestore_source):
-        backup.addtree(filestore_source, FILESTORE_DIRAME)
+        backup.addtree(filestore_source, FILESTORE_DIRNAME)
 
 
 @click.command()
