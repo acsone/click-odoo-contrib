@@ -1,4 +1,4 @@
-# generated on Fri Mar  6 11:55:17 2020
+# generated on Wed Sep 30 21:15:35 2020
 account
 account_analytic_default
 account_bank_statement_import
