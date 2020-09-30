@@ -124,12 +124,42 @@ click-odoo-backupdb (beta)
   Options:
     -c, --config FILE           ...
     ...
-  --force                       Don't report error if destination file/folder
-                                already exists.  [default: False]
-  --if-exists                   Don't report error if database does not exist.
-  --format [zip|folder]         Output format  [default: zip]
-  --filestore / --no-filestore  Include filestore in backup  [default: True]
-  --help                        Show this message and exit.
+    --force                       Don't report error if destination file/folder
+                                  already exists.  [default: False]
+
+    --if-exists                   Don't report error if database does not exist.
+    --format [zip|folder]         Output format  [default: zip]
+    --filestore / --no-filestore  Include filestore in backup  [default: True]
+    --help                        Show this message and exit.
+
+click-odoo-restoredb (beta)
+---------------------------
+
+.. code::
+
+  Usage: click-odoo-restoredb [OPTIONS] DBNAME BACKUP
+
+    Restore an Odoo database backup.
+
+    This script allows you to restore databses created by using the Odoo web
+    interface or the backupdb script. This avoids timeout and file size
+    limitation problems when databases are too large.
+
+  Options:
+    -c, --config FILE  ...
+    ...
+    --copy / --move    This database is a copy. In order to avoid conflicts
+                       between databases, Odoo needs to know if thisdatabase was
+                       moved or copied. If you don't know, set is a copy.
+
+    --force            Don't report error if destination database already
+                       exists. If force and destination database exists, it will
+                       be dropped before restore.  [default: False]
+
+    --jobs INTEGER     Uses this many parallel jobs to restore. Only used to
+                       restore folder format backup.
+
+    --help             Show this message and exit.
 
 click-odoo-makepot (stable)
 ---------------------------

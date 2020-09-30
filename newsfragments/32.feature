@@ -1,1 +1,1 @@
-Add click-odoo-restoredb
+Add ``click-odoo-restoredb`` command.

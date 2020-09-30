@@ -62,22 +62,28 @@ def _restore_from_file(dbname, backup, copy=True):
 @click.option(
     "--copy/--move",
     default=True,
-    help="This database is a copy.\nIn order "
-    "to avoid conflicts between databases, Odoo needs to know if this"
-    "database was moved or copied. If you don't know, set is a copy.",
+    help=(
+        "This database is a copy.\nIn order "
+        "to avoid conflicts between databases, Odoo needs to know if this"
+        "database was moved or copied. If you don't know, set is a copy."
+    ),
 )
 @click.option(
     "--force",
     is_flag=True,
     show_default=True,
-    help="Don't report error if destination database already exists. If "
-    "force and destination database exists, it will be dropped before "
-    "restore.",
+    help=(
+        "Don't report error if destination database already exists. If "
+        "force and destination database exists, it will be dropped before "
+        "restore."
+    ),
 )
 @click.option(
     "--jobs",
-    help="Uses this many parallel jobs to restore. (Only used to restore"
-    "folder backup)",
+    help=(
+        "Uses this many parallel jobs to restore. restore. Only used to "
+        "restore folder format backup."
+    ),
     type=int,
     default=1,
 )
@@ -90,7 +96,7 @@ def _restore_from_file(dbname, backup, copy=True):
     ),
 )
 def main(env, dbname, backup, copy, force, jobs):
-    """ Restore an Odoo database backup.
+    """Restore an Odoo database backup.
 
     This script allows you to restore databses created by using the Odoo
     web interface or the backupdb script. This
