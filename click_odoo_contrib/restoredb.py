@@ -81,7 +81,7 @@ def _restore_from_file(dbname, backup, copy=True):
 @click.option(
     "--jobs",
     help=(
-        "Uses this many parallel jobs to restore. restore. Only used to "
+        "Uses this many parallel jobs to restore. Only used to "
         "restore folder format backup."
     ),
     type=int,
@@ -89,13 +89,13 @@ def _restore_from_file(dbname, backup, copy=True):
 )
 @click.argument("dbname", nargs=1)
 @click.argument(
-    "backup",
+    "source",
     nargs=1,
     type=click.Path(
         exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True
     ),
 )
-def main(env, dbname, backup, copy, force, jobs):
+def main(env, dbname, source, copy, force, jobs):
     """Restore an Odoo database backup.
 
     This script allows you to restore databses created by using the Odoo
@@ -111,7 +111,7 @@ def main(env, dbname, backup, copy, force, jobs):
         click.echo(click.style(msg, fg="yellow"))
         with db_management_enabled():
             odoo.service.db.exp_drop(dbname)
-    if os.path.isfile(backup):
-        _restore_from_file(dbname, backup, copy)
+    if os.path.isfile(source):
+        _restore_from_file(dbname, source, copy)
     else:
-        _restore_from_folder(dbname, backup, copy, jobs)
+        _restore_from_folder(dbname, source, copy, jobs)

@@ -137,7 +137,7 @@ click-odoo-restoredb (beta)
 
 .. code::
 
-  Usage: click-odoo-restoredb [OPTIONS] DBNAME BACKUP
+  Usage: click-odoo-restoredb [OPTIONS] DBNAME SOURCE
 
     Restore an Odoo database backup.
 
