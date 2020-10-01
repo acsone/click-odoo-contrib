@@ -3,6 +3,19 @@ Changes
 
 .. towncrier release notes start
 
+1.11.0 (2020-10-01)
+-------------------
+
+**Features**
+
+- In ``click-odoo-copydb``, reset ``database.*`` system parameters, to prevent
+  conflicts between databases (database.uuid, database.secret,
+  database.enterprise_code, ...) (`#25 <https://github.com/acsone/click-odoo-contrib/issues/25>`_)
+- Add ``click-odoo-restoredb`` command. (`#32 <https://github.com/acsone/click-odoo-contrib/issues/32>`_)
+- Update core addons lists (for click-odoo-update --ignore-core-addons),
+  including Odoo 14 support. (`#81 <https://github.com/acsone/click-odoo-contrib/issues/81>`_)
+
+
 1.10.1 (2020-04-29)
 -------------------
 
