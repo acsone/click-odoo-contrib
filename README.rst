@@ -37,6 +37,8 @@ click-odoo-copydb (beta)
                             exists.
     --if-source-exists      Don't report error if source database does not
                             exist.
+    --filestore-diff        Only copy differences in filestore
+                            (needs rsync installed).
     --help                  Show this message and exit.
 
 click-odoo-dropdb (stable)
