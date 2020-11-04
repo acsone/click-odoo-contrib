@@ -26,11 +26,42 @@ def _copy_db(cr, source, dest):
     )
 
 
-def _copy_filestore(source, dest):
+def _copy_filestore(source, dest, diff=False):
     filestore_source = odoo.tools.config.filestore(source)
     if os.path.isdir(filestore_source):
         filestore_dest = odoo.tools.config.filestore(dest)
-        shutil.copytree(filestore_source, filestore_dest)
+        if diff:
+
+            def _ignore_existing(directory, children):
+                paths = {
+                    child: {
+                        "old": os.path.join(directory, child),
+                        "new": os.path.join(
+                            filestore_dest,
+                            os.path.relpath(
+                                os.path.join(directory, child), filestore_source
+                            ),
+                        ),
+                    }
+                    for child in children
+                }
+                return [
+                    child
+                    for child in paths
+                    if not os.path.isdir(
+                        paths[child]["old"]
+                    )  # do not ignore directories
+                    and os.path.exists(paths[child]["new"])  # ignore existing files
+                ]
+
+            shutil.copytree(
+                filestore_source,
+                filestore_dest,
+                ignore=_ignore_existing,
+                dirs_exist_ok=True,
+            )
+        else:
+            shutil.copytree(filestore_source, filestore_dest)
 
 
 @click.command()
@@ -53,9 +84,22 @@ def _copy_filestore(source, dest):
     is_flag=True,
     help="Don't report error if source database does not exist.",
 )
+@click.option(
+    "--filestore-diff",
+    is_flag=True,
+    help="Only copy new files in filestore (needs python >= 3.8).",
+)
 @click.argument("source", required=True)
 @click.argument("dest", required=True)
-def main(env, source, dest, force_disconnect, unless_dest_exists, if_source_exists):
+def main(
+    env,
+    source,
+    dest,
+    force_disconnect,
+    unless_dest_exists,
+    if_source_exists,
+    filestore_diff,
+):
     """Create an Odoo database by copying an existing one.
 
     This script copies using postgres CREATEDB WITH TEMPLATE.
@@ -80,7 +124,7 @@ def main(env, source, dest, force_disconnect, unless_dest_exists, if_source_exis
             terminate_connections(source)
         _copy_db(cr, source, dest)
         reset_config_parameters(dest)
-    _copy_filestore(source, dest)
+    _copy_filestore(source, dest, diff=filestore_diff)
 
 
 if __name__ == "__main__":  # pragma: no cover

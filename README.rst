@@ -37,6 +37,8 @@ click-odoo-copydb (beta)
                             exists.
     --if-source-exists      Don't report error if source database does not
                             exist.
+    --filestore-diff        Only copy new files in filestore
+                            (needs python >= 3.8).
     --help                  Show this message and exit.
 
 click-odoo-dropdb (stable)
