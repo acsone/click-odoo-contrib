@@ -5,6 +5,7 @@
 
 import os
 import shutil
+import subprocess
 
 import click
 import click_odoo
@@ -26,11 +27,25 @@ def _copy_db(cr, source, dest):
     )
 
 
-def _copy_filestore(source, dest):
+def _copy_filestore(source, dest, diff=False):
     filestore_source = odoo.tools.config.filestore(source)
     if os.path.isdir(filestore_source):
         filestore_dest = odoo.tools.config.filestore(dest)
-        shutil.copytree(filestore_source, filestore_dest)
+        if diff:
+            try:
+                cmd = [
+                    "rsync",
+                    "-a",
+                    "--delete-delay",
+                    filestore_source + "/",
+                    filestore_dest,
+                ]
+                subprocess.check_call(cmd)
+            except Exception as e:
+                msg = "Error syncing filestore to: {}, {}".format(dest, e)
+                raise click.ClickException(msg)
+        else:
+            shutil.copytree(filestore_source, filestore_dest)
 
 
 @click.command()
@@ -53,9 +68,22 @@ def _copy_filestore(source, dest):
     is_flag=True,
     help="Don't report error if source database does not exist.",
 )
+@click.option(
+    "--filestore-diff",
+    is_flag=True,
+    help="Only copy differences in filestore (needs rsync installed).",
+)
 @click.argument("source", required=True)
 @click.argument("dest", required=True)
-def main(env, source, dest, force_disconnect, unless_dest_exists, if_source_exists):
+def main(
+    env,
+    source,
+    dest,
+    force_disconnect,
+    unless_dest_exists,
+    if_source_exists,
+    filestore_diff,
+):
     """Create an Odoo database by copying an existing one.
 
     This script copies using postgres CREATEDB WITH TEMPLATE.
@@ -80,7 +108,7 @@ def main(env, source, dest, force_disconnect, unless_dest_exists, if_source_exis
             terminate_connections(source)
         _copy_db(cr, source, dest)
         reset_config_parameters(dest)
-    _copy_filestore(source, dest)
+    _copy_filestore(source, dest, diff=filestore_diff)
 
 
 if __name__ == "__main__":  # pragma: no cover
