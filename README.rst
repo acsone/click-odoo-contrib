@@ -183,6 +183,12 @@ click-odoo-makepot (stable)
                                 Merge .pot changes into all .po files, only
                                 if a new .pot file has been created.
                                 [default: False]
+    --fuzzy-matching /  --no-fuzzy-matching
+                                Use fuzzy matching when merging .pot changes
+                                into .po files.
+                                Only applies when --msgmerge
+                                or --msgmerge-if-new-pot are passed.
+                                [default: True]
     --commit / --no-commit      Git commit exported .pot files if needed.
                                 [default: False]
     --help                      Show this message and exit.
