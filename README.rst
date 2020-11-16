@@ -189,6 +189,12 @@ click-odoo-makepot (stable)
                                 Only applies when --msgmerge
                                 or --msgmerge-if-new-pot are passed.
                                 [default: True]
+    --purge-old-translations /  --no-purge-old-translations
+                                Remove comment lines containing old
+                                translations from .po files.
+                                Only applies when --msgmerge
+                                or --msgmerge-if-new-pot are passed.
+                                [default: False]
     --commit / --no-commit      Git commit exported .pot files if needed.
                                 [default: False]
     --help                      Show this message and exit.

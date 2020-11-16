@@ -30,6 +30,7 @@ def export_pot(
     msgmerge_if_new_pot,
     commit_message,
     fuzzy_matching,
+    purge_old_translations,
 ):
     addon_name = module.name
     addon_dir = os.path.join(addons_dir, addon_name)
@@ -67,6 +68,15 @@ def export_pot(
                 if not fuzzy_matching:
                     cmd.append("--no-fuzzy-matching")
                 subprocess.check_call(cmd)
+                # Purge old translations
+                if purge_old_translations:
+                    cmd = [
+                        "msgattrib",
+                        "--output-file=%s" % lang_filepath,
+                        "--no-obsolete",
+                        lang_filepath,
+                    ]
+                    subprocess.check_call(cmd)
             else:
                 # check .po is valid
                 subprocess.check_output(
@@ -107,6 +117,13 @@ def export_pot(
     "Only applies when --msgmerge or --msgmerge-if-new-pot are passed.",
 )
 @click.option(
+    "--purge-old-translations / --no-purge-old-translations",
+    show_default=True,
+    default=False,
+    help="Remove comment lines containing old translations from .po files. "
+    "Only applies when --msgmerge or --msgmerge-if-new-pot are passed.",
+)
+@click.option(
     "--commit / --no-commit",
     show_default=True,
     help="Git commit exported .pot files if needed.",
@@ -122,6 +139,7 @@ def main(
     msgmerge_if_new_pot,
     commit_message,
     fuzzy_matching,
+    purge_old_translations,
 ):
     """Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
@@ -144,6 +162,7 @@ def main(
                 msgmerge_if_new_pot,
                 commit_message,
                 fuzzy_matching,
+                purge_old_translations,
             )
 
 
