@@ -27,11 +27,11 @@ def _copy_db(cr, source, dest):
     )
 
 
-def _copy_filestore(source, dest, diff=False):
+def _copy_filestore(source, dest, copy_mode="default"):
     filestore_source = odoo.tools.config.filestore(source)
     if os.path.isdir(filestore_source):
         filestore_dest = odoo.tools.config.filestore(dest)
-        if diff:
+        if copy_mode == "rsync":
             try:
                 cmd = [
                     "rsync",
@@ -69,9 +69,13 @@ def _copy_filestore(source, dest, diff=False):
     help="Don't report error if source database does not exist.",
 )
 @click.option(
-    "--filestore-diff",
-    is_flag=True,
-    help="Only copy differences in filestore (needs rsync installed).",
+    "--filestore-copy-mode",
+    type=click.Choice(["default", "rsync"]),
+    default="default",
+    help="Mode for copying the filestore. Default uses python shutil copytree"
+    " which copies everything. If the target filestore already exists and"
+    " just needs an update you can use rsync to rsync the filestore "
+    "instead.",
 )
 @click.argument("source", required=True)
 @click.argument("dest", required=True)
@@ -82,7 +86,7 @@ def main(
     force_disconnect,
     unless_dest_exists,
     if_source_exists,
-    filestore_diff,
+    filestore_copy_mode,
 ):
     """Create an Odoo database by copying an existing one.
 
@@ -108,7 +112,7 @@ def main(
             terminate_connections(source)
         _copy_db(cr, source, dest)
         reset_config_parameters(dest)
-    _copy_filestore(source, dest, diff=filestore_diff)
+    _copy_filestore(source, dest, copy_mode=filestore_copy_mode)
 
 
 if __name__ == "__main__":  # pragma: no cover

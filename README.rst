@@ -37,8 +37,12 @@ click-odoo-copydb (beta)
                             exists.
     --if-source-exists      Don't report error if source database does not
                             exist.
-    --filestore-diff        Only copy differences in filestore
-                            (needs rsync installed).
+    --filestore-copy-mode   [default|rsync]
+                            Mode for copying the filestore. Default uses
+                            python shutil copytree which copies
+                            everything. If the target filestore already
+                            exists and just needs an update you can use
+                            rsync to rsync the filestore instead.
     --help                  Show this message and exit.
 
 click-odoo-dropdb (stable)
