@@ -1,0 +1,20 @@
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_create_uid
+msgid "Created on"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_create_date
+msgid "Created on"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: addon_test_makepot
+#: model:ir.model.fields,field_description:addon_test_makepot.field_test_model_id
+#, fuzzy
+msgid "ID"
+msgstr ""

@@ -95,6 +95,110 @@ def test_makepot_msgmerge(odoodb, odoocfg, tmpdir):
         assert "myfield" in f.read()
 
 
+def test_makepot_msgmerge_no_fuzzy(odoodb, odoocfg, tmpdir):
+    addon_name = "addon_test_makepot"
+    addon_path = os.path.join(test_addons_dir, addon_name)
+    i18n_path = os.path.join(addon_path, "i18n")
+    pot_filepath = os.path.join(i18n_path, addon_name + ".pot")
+    fr_filepath = os.path.join(i18n_path, "fr.po")
+
+    # Copy .fuzzy to .po
+    shutil.copyfile(os.path.join(i18n_path, "fr.po.fuzzy"), fr_filepath)
+
+    subprocess.check_call(
+        [
+            click_odoo.odoo_bin,
+            "-d",
+            odoodb,
+            "-c",
+            str(odoocfg),
+            "-i",
+            addon_name,
+            "--stop-after-init",
+        ]
+    )
+
+    if not os.path.exists(i18n_path):
+        os.makedirs(i18n_path)
+    if os.path.exists(pot_filepath):
+        os.remove(pot_filepath)
+    # create empty fr.po, that will be updated by msgmerge
+    with open(fr_filepath, "w"):
+        pass
+    assert os.path.getsize(fr_filepath) == 0
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "-d",
+            odoodb,
+            "-c",
+            str(odoocfg),
+            "--addons-dir",
+            test_addons_dir,
+            "--msgmerge",
+            "--no-fuzzy-matching",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert os.path.getsize(fr_filepath) != 0
+    with open(fr_filepath) as f:
+        assert "#, fuzzy" not in f.read()
+
+
+def test_makepot_msgmerge_purge_old(odoodb, odoocfg, tmpdir):
+    addon_name = "addon_test_makepot"
+    addon_path = os.path.join(test_addons_dir, addon_name)
+    i18n_path = os.path.join(addon_path, "i18n")
+    pot_filepath = os.path.join(i18n_path, addon_name + ".pot")
+    fr_filepath = os.path.join(i18n_path, "fr.po")
+
+    # Copy .old to .po
+    shutil.copyfile(os.path.join(i18n_path, "fr.po.old"), fr_filepath)
+
+    subprocess.check_call(
+        [
+            click_odoo.odoo_bin,
+            "-d",
+            odoodb,
+            "-c",
+            str(odoocfg),
+            "-i",
+            addon_name,
+            "--stop-after-init",
+        ]
+    )
+
+    if not os.path.exists(i18n_path):
+        os.makedirs(i18n_path)
+    if os.path.exists(pot_filepath):
+        os.remove(pot_filepath)
+    # create empty fr.po, that will be updated by msgmerge
+    with open(fr_filepath, "w"):
+        pass
+    assert os.path.getsize(fr_filepath) == 0
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "-d",
+            odoodb,
+            "-c",
+            str(odoocfg),
+            "--addons-dir",
+            test_addons_dir,
+            "--msgmerge",
+            "--purge-old-translations",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert os.path.getsize(fr_filepath) != 0
+    with open(fr_filepath) as f:
+        assert "#~ msgid" not in f.read()
+
+
 def test_makepot_msgmerge_if_new_pot(odoodb, odoocfg, tmpdir):
     addon_name = "addon_test_makepot"
     addon_path = os.path.join(test_addons_dir, addon_name)

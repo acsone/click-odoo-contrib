@@ -22,7 +22,15 @@ POT_FILE_EXT = ".pot"
 
 
 def export_pot(
-    env, module, addons_dir, msgmerge, commit, msgmerge_if_new_pot, commit_message
+    env,
+    module,
+    addons_dir,
+    msgmerge,
+    commit,
+    msgmerge_if_new_pot,
+    commit_message,
+    fuzzy_matching,
+    purge_old_translations,
 ):
     addon_name = module.name
     addon_dir = os.path.join(addons_dir, addon_name)
@@ -56,9 +64,19 @@ def export_pot(
         try:
             if msgmerge or (msgmerge_if_new_pot and pot_is_new):
                 files_to_commit.add(lang_filepath)
-                subprocess.check_call(
-                    ["msgmerge", "--quiet", "-U", lang_filepath, pot_filepath]
-                )
+                cmd = ["msgmerge", "--quiet", "-U", lang_filepath, pot_filepath]
+                if not fuzzy_matching:
+                    cmd.append("--no-fuzzy-matching")
+                subprocess.check_call(cmd)
+                # Purge old translations
+                if purge_old_translations:
+                    cmd = [
+                        "msgattrib",
+                        "--output-file=%s" % lang_filepath,
+                        "--no-obsolete",
+                        lang_filepath,
+                    ]
+                    subprocess.check_call(cmd)
             else:
                 # check .po is valid
                 subprocess.check_output(
@@ -92,6 +110,20 @@ def export_pot(
     "a new .pot file has been created.",
 )
 @click.option(
+    "--fuzzy-matching / --no-fuzzy-matching",
+    show_default=True,
+    default=True,
+    help="Use fuzzy matching when merging .pot changes into .po files. "
+    "Only applies when --msgmerge or --msgmerge-if-new-pot are passed.",
+)
+@click.option(
+    "--purge-old-translations / --no-purge-old-translations",
+    show_default=True,
+    default=False,
+    help="Remove comment lines containing old translations from .po files. "
+    "Only applies when --msgmerge or --msgmerge-if-new-pot are passed.",
+)
+@click.option(
     "--commit / --no-commit",
     show_default=True,
     help="Git commit exported .pot files if needed.",
@@ -99,7 +131,16 @@ def export_pot(
 @click.option(
     "--commit-message", show_default=True, default="[UPD] Update {addon_name}.pot"
 )
-def main(env, addons_dir, msgmerge, commit, msgmerge_if_new_pot, commit_message):
+def main(
+    env,
+    addons_dir,
+    msgmerge,
+    commit,
+    msgmerge_if_new_pot,
+    commit_message,
+    fuzzy_matching,
+    purge_old_translations,
+):
     """Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
     Check that existing .po file are syntactically correct.
@@ -120,6 +161,8 @@ def main(env, addons_dir, msgmerge, commit, msgmerge_if_new_pot, commit_message)
                 commit,
                 msgmerge_if_new_pot,
                 commit_message,
+                fuzzy_matching,
+                purge_old_translations,
             )
 
 
