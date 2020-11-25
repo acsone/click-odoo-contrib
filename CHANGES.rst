@@ -3,6 +3,16 @@ Changes
 
 .. towncrier release notes start
 
+1.12.0 (2020-11-25)
+-------------------
+
+**Features**
+
+- ``click-odoo-makepot`` gained new options controlling how it merges
+  new strings in existing ``.po`` files: ``--no-fuzzy-matching`` and
+  ``--purge-old-translation``. (`#87 <https://github.com/acsone/click-odoo-contrib/issues/87>`_)
+
+
 1.11.0 (2020-10-01)
 -------------------
 
