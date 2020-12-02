@@ -281,7 +281,7 @@ Development
 
 To run tests, type ``tox``. Tests are made using pytest. To run tests matching
 a specific keyword for, say, Odoo 12 and python 3.6, use
-``tox -e py36-12.0 -- -k keyword``.
+``tox -e py36-12.0 -- -k keyword``. For running tests you need a postgres server accessible for your user without a password at ``/var/run/postgresql/.s.PGSQL.5432``.
 
 This project uses `black <https://github.com/ambv/black>`_
 as code formatting convention, as well as isort and flake8.
