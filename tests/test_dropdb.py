@@ -4,13 +4,12 @@
 import os
 import shutil
 import subprocess
+import sys
 
 import pytest
-from click.testing import CliRunner
 from click_odoo import odoo
 
 from click_odoo_contrib._dbutils import db_exists
-from click_odoo_contrib.dropdb import main
 
 TEST_DBNAME = "click-odoo-contrib-testdropdb"
 
@@ -39,23 +38,50 @@ def pgdb():
         _dropdb(TEST_DBNAME)
 
 
-def tests_dropdb(pgdb, filestore):
+def test_dropdb_exists(pgdb, filestore):
     filestore_dir = odoo.tools.config.filestore(TEST_DBNAME)
     # sanity check for fixture
     assert os.path.isdir(filestore_dir)
     assert db_exists(TEST_DBNAME)
     # drop
-    result = CliRunner().invoke(main, [TEST_DBNAME])
-    assert result.exit_code == 0
-    assert not os.path.exists(filestore_dir)
+    subprocess.check_call(
+        [
+            sys.executable,
+            "-m",
+            "click_odoo_contrib.dropdb",
+            "--if-exists",
+            "--log-level=debug_sql",
+            TEST_DBNAME,
+        ],
+        universal_newlines=True,
+    )
+    assert not os.path.exists(filestore_dir), filestore_dir
     assert not db_exists(TEST_DBNAME)
 
 
-def tests_dropdb_not_exists():
+def test_dropdb_not_exists():
     assert not db_exists(TEST_DBNAME)
-    result = CliRunner().invoke(main, [TEST_DBNAME])
-    assert result.exit_code != 0
-    assert "Database does not exist" in result.output
-    result = CliRunner().invoke(main, ["--if-exists", TEST_DBNAME])
-    assert result.exit_code == 0
-    assert "Database does not exist" in result.output
+    with pytest.raises(subprocess.CalledProcessError) as e:
+        subprocess.check_output(
+            [
+                sys.executable,
+                "-m",
+                "click_odoo_contrib.dropdb",
+                TEST_DBNAME,
+            ],
+            universal_newlines=True,
+            stderr=subprocess.STDOUT,
+        )
+    assert "Database does not exist" in e.value.output
+    output = subprocess.check_output(
+        [
+            sys.executable,
+            "-m",
+            "click_odoo_contrib.dropdb",
+            "--if-exists",
+            TEST_DBNAME,
+        ],
+        universal_newlines=True,
+        stderr=subprocess.STDOUT,
+    )
+    assert "Database does not exist" in output

@@ -3,6 +3,8 @@
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
+import os
+
 import click
 import click_odoo
 from click_odoo import odoo
@@ -28,4 +30,17 @@ def main(env, dbname, if_exists=False):
         else:
             raise click.ClickException(msg)
     with db_management_enabled():
+        # Work around odoo.service.db.list_dbs() not finding the database
+        # when postgres connection info is passed as PG* environment
+        # variables.
+        if odoo.release.version_info < (12, 0):
+            for v in ("host", "port", "user", "password"):
+                odoov = "db_" + v.lower()
+                pgv = "PG" + v.upper()
+                if not odoo.tools.config[odoov] and pgv in os.environ:
+                    odoo.tools.config[odoov] = os.environ[pgv]
         odoo.service.db.exp_drop(dbname)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
