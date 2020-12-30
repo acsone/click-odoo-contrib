@@ -4,7 +4,6 @@ on:
   pull_request:
   push:
     branches:
-      - "gha-test"
       - "master"
     tags:
       - "[0-9].[0-9].[0-9]"
