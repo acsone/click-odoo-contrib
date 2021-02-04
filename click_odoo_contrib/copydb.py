@@ -31,15 +31,24 @@ def _copy_filestore(source, dest, copy_mode="default"):
     filestore_source = odoo.tools.config.filestore(source)
     if os.path.isdir(filestore_source):
         filestore_dest = odoo.tools.config.filestore(dest)
-        if copy_mode == "rsync":
+        if copy_mode == "hardlink" or copy_mode == "rsync":
             try:
-                cmd = [
-                    "rsync",
-                    "-a",
-                    "--delete-delay",
-                    filestore_source + "/",
-                    filestore_dest,
-                ]
+                if copy_mode == "hardlink":
+                    hardlink_option = ["--link-dest=" + filestore_source]
+                else:
+                    hardlink_option = []
+                cmd = (
+                    [
+                        "rsync",
+                        "-a",
+                        "--delete-delay",
+                    ]
+                    + hardlink_option
+                    + [
+                        filestore_source + "/",
+                        filestore_dest,
+                    ]
+                )
                 subprocess.check_call(cmd)
             except Exception as e:
                 msg = "Error syncing filestore to: {}, {}".format(dest, e)
@@ -70,12 +79,14 @@ def _copy_filestore(source, dest, copy_mode="default"):
 )
 @click.option(
     "--filestore-copy-mode",
-    type=click.Choice(["default", "rsync"]),
+    type=click.Choice(["default", "rsync", "hardlink"]),
     default="default",
-    help="Mode for copying the filestore. Default uses python shutil copytree"
-    " which copies everything. If the target filestore already exists and"
-    " just needs an update you can use rsync to rsync the filestore "
-    "instead.",
+    help="Mode for copying the filestore. Default uses python shutil copytree "
+    "which copies everything. If the target filestore already exists and "
+    "just needs an update you can use rsync to rsync the filestore "
+    "instead. If both the target filestore already exists and is on the same "
+    "disk you might use hardlink which hardlinks all files to the inode in the "
+    "source filestore and saves you space.",
 )
 @click.argument("source", required=True)
 @click.argument("dest", required=True)
