@@ -176,6 +176,18 @@ def _get_checksum_dir(cr, module_name):
     return checksum_dir
 
 
+def _is_installable(module_name):
+    try:
+        manifest = odoo.modules.load_information_from_description_file(module_name)
+        return manifest["installable"]
+    except Exception:
+        # load_information_from_description_file populates default value
+        # so the exception would be KeyError if the module does not exist
+        # in addons path, or an error parsing __manifest__.py. In either
+        # case the module will not be installable.
+        return False
+
+
 def _update_db_nolock(
     conn,
     database,
@@ -193,6 +205,9 @@ def _update_db_nolock(
             checksums = _load_installed_checksums(cr)
             cr.execute("SELECT name FROM ir_module_module WHERE state = 'installed'")
             for (module_name,) in cr.fetchall():
+                if not _is_installable(module_name):
+                    # if the module is not installable, do not try to update it
+                    continue
                 if module_name in ignore_addons:
                     continue
                 if _get_checksum_dir(cr, module_name) != checksums.get(module_name):
@@ -351,7 +366,7 @@ def main(
             return
         else:
             raise click.ClickException(msg)
-    # TODO: warn/err if modules to upgrade
+    # TODO: warn if modules to upgrade ?
 
 
 if __name__ == "__main__":  # pragma: no cover

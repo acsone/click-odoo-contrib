@@ -44,10 +44,10 @@ def _check_expected(odoodb, v):
             state, version = env.cr.fetchone()
             expected_state = expected_data.get("state")
             if expected_state:
-                assert state == expected_state
+                assert state == expected_state, addon_name
             expected_version = expected_data.get("version")
             if expected_version:
-                assert version.split(".")[2:] == expected_version.split(".")
+                assert version.split(".")[2:] == expected_version.split("."), addon_name
 
 
 def _install_one(odoodb, v):
@@ -116,6 +116,9 @@ def test_update(odoodb):
         assert checksums.get("addon_app") == "bb1ff827fd6084e69180557c3183989100ddb62b"
         assert checksums.get("addon_d1") == "ff46eefbe846e1a46ff3de74e117fd285b72f298"
         assert checksums.get("addon_d2") == "edf58645e2e55a2d282320206f73df09a746a4ab"
+    # 3.1 sets addons_d1 as uninstallable: it stays installed
+    _update_one(odoodb, "v3.1")
+    _check_expected(odoodb, "v3.1")
     _update_one(odoodb, "v4")
     _check_expected(odoodb, "v4")
     _update_one(odoodb, "v5")

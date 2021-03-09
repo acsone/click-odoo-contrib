@@ -1,13 +1,14 @@
 {
     "addon_app": {
         "state": "installed",
-        "version": "4.0"
+        "version": "3.1"
     },
     "addon_d1": {
         "state": "installed",
-        "version": "4.0"
+        "version": "3.1"
     },
     "addon_d2": {
-        "state": "installed"
+        "state": "installed",
+        "version": "3.0"
     }
 }
