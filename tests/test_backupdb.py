@@ -245,3 +245,45 @@ def tests_backupdb_folder_restore(odoodb, odoocfg, tmp_path):
         assert db_exists(TEST_DBNAME)
     finally:
         _dropdb_odoo(TEST_DBNAME)
+
+
+@pytest.mark.parametrize("no_filestore", [True, False])
+def tests_backupdb_dump(pgdb, tmp_path, no_filestore):
+    dump_path = tmp_path.joinpath("test.dump")
+    assert not dump_path.exists()
+    dump_filename = dump_path.as_posix()
+    args = ["--format=dump", pgdb, dump_filename]
+    if no_filestore:
+        args.insert(0, "--no-filestore")
+    result = CliRunner().invoke(main, args)
+    assert result.exit_code == 0
+    assert dump_path.exists()
+
+
+def tests_backupdb_force_dump(pgdb, tmp_path):
+    dump_path = tmp_path.joinpath("test.dump")
+    dump_path.write_text(u"empty")
+    dump_filename = dump_path.as_posix()
+    result = CliRunner().invoke(main, ["--format=dump", pgdb, dump_filename])
+    assert result.exit_code != 0
+    assert "Destination already exist" in result.output
+    result = CliRunner().invoke(main, ["--format=dump", "--force", pgdb, dump_filename])
+    assert result.exit_code == 0
+    assert "Destination already exist" in result.output
+
+
+def tests_backupdb_dump_restore(odoodb, odoocfg, tmp_path):
+    """Test dump backup compatibility with native Odoo restore API"""
+    dump_path = tmp_path.joinpath("test.dump")
+    dump_filename = dump_path.as_posix()
+    result = CliRunner().invoke(main, ["--format=dump", odoodb, dump_filename])
+    assert result.exit_code == 0
+    assert dump_path.exists()
+    try:
+        assert not db_exists(TEST_DBNAME)
+        with odoo.api.Environment.manage():
+            odoo.service.db.restore_db(TEST_DBNAME, dump_filename, copy=True)
+            odoo.sql_db.close_db(TEST_DBNAME)
+        assert db_exists(TEST_DBNAME)
+    finally:
+        _dropdb_odoo(TEST_DBNAME)

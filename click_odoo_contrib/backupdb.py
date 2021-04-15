@@ -23,7 +23,7 @@ FILESTORE_DIRNAME = "filestore"
 def _dump_db(dbname, backup):
     cmd = ["pg_dump", "--no-owner", dbname]
     filename = "dump.sql"
-    if backup.format == "folder":
+    if backup.format in {"dump", "folder"}:
         cmd.insert(-1, "--format=c")
         filename = DBDUMP_FILENAME
     _stdin, stdout = odoo.tools.exec_pg_command_pipe(*cmd)
@@ -59,7 +59,7 @@ def _backup_filestore(dbname, backup):
 )
 @click.option(
     "--format",
-    type=click.Choice(["zip", "folder"]),
+    type=click.Choice(["zip", "dump", "folder"]),
     default="zip",
     show_default=True,
     help="Output format",
@@ -108,12 +108,15 @@ def main(env, dbname, dest, force, if_exists, format, filestore):
                 os.unlink(dest)
             else:
                 shutil.rmtree(dest)
+    if format == "dump":
+        filestore = False
     db = odoo.sql_db.db_connect(dbname)
     try:
         with backup(
             format, dest, "w"
         ) as _backup, db.cursor() as cr, db_management_enabled():
-            _create_manifest(cr, dbname, _backup)
+            if format != "dump":
+                _create_manifest(cr, dbname, _backup)
             if filestore:
                 _backup_filestore(dbname, _backup)
             _dump_db(dbname, _backup)
