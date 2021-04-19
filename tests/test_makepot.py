@@ -47,6 +47,72 @@ def test_makepot_base(odoodb, odoocfg, tmpdir):
         assert "myfield" in f.read()
 
 
+def test_makepot_modules(odoodb, odoocfg, tmpdir):
+    subprocess.check_call(
+        [
+            click_odoo.odoo_bin,
+            "-d",
+            odoodb,
+            "-c",
+            str(odoocfg),
+            "-i",
+            "addon_test_makepot,addon_test_makepot_2",
+            "--stop-after-init",
+        ]
+    )
+    addon_name = "addon_test_makepot"
+    addon_path = os.path.join(test_addons_dir, addon_name)
+    i18n_path = os.path.join(addon_path, "i18n")
+    pot_filepath = os.path.join(i18n_path, addon_name + ".pot")
+
+    if os.path.exists(pot_filepath):
+        os.remove(pot_filepath)
+
+    addon_name_2 = "addon_test_makepot_2"
+    addon_path_2 = os.path.join(test_addons_dir, addon_name_2)
+    i18n_path_2 = os.path.join(addon_path_2, "i18n")
+    pot_filepath_2 = os.path.join(i18n_path_2, addon_name_2 + ".pot")
+
+    if os.path.exists(pot_filepath_2):
+        os.remove(pot_filepath_2)
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "-d",
+            odoodb,
+            "-c",
+            str(odoocfg),
+            "--addons-dir",
+            test_addons_dir,
+            "--modules",
+            "addon_test_makepot_2",
+        ],
+    )
+    assert result.exit_code == 0
+    assert not os.path.isdir(pot_filepath)
+    assert os.path.isdir(i18n_path_2)
+    assert os.path.isfile(pot_filepath_2)
+    with open(pot_filepath_2) as f:
+        assert "myfield" in f.read()
+
+
+def test_makepot_absent_module(odoodb):
+    result = CliRunner().invoke(
+        main,
+        [
+            "-d",
+            odoodb,
+            "--addons-dir",
+            test_addons_dir,
+            "--modules",
+            "not_existing_module",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "Module(s) was not found" in result.stdout
+
+
 def test_makepot_msgmerge(odoodb, odoocfg, tmpdir):
     addon_name = "addon_test_makepot"
     addon_path = os.path.join(test_addons_dir, addon_name)
