@@ -70,10 +70,10 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get install -qq --no-install-recommends \
-            tox \
             libxml2-dev libxslt1-dev \
             libldap2-dev libsasl2-dev \
             gettext
+          pip install tox virtualenv
       - name: Run tox
         run: tox -e ${{ matrix.toxenv }}
       - uses: codecov/codecov-action@v1
