@@ -50,8 +50,8 @@ def _restore_from_folder(dbname, backup, copy=True, jobs=1):
 
 
 def _restore_from_file(dbname, backup, copy=True):
-    with db_management_enabled(), open(backup, "rb") as backup_file:
-        odoo.service.db.restore_db(dbname, backup_file, copy)
+    with db_management_enabled():
+        odoo.service.db.restore_db(dbname, backup, copy)
         odoo.sql_db.close_db(dbname)
 
 
