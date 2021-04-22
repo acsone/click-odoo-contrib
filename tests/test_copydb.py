@@ -56,6 +56,15 @@ def _assert_ir_config_reset(db1, db2):
         assert v != params2[k]
 
 
+def _has_rsync():
+    try:
+        subprocess.check_call(["which", "rsync"])
+        return True
+    except subprocess.CalledProcessError as e:
+        print(e)
+        return False
+
+
 @pytest.fixture
 def filestore():
     filestore_dir = odoo.tools.config.filestore(TEST_DBNAME)
@@ -190,3 +199,116 @@ def test_copydb_no_source_filestore(odoodb, ir_config_param_test_values):
         assert not os.path.isdir(filestore_dir_new)
     finally:
         _dropdb(TEST_DBNAME_NEW)
+
+
+@pytest.mark.skipif(not _has_rsync(), reason="Cannot find `rsync` on test system")
+def test_copydb_rsync(odoodb):
+    # given an db with an existing filestore directory
+    filestore_dir_new = odoo.tools.config.filestore(TEST_DBNAME_NEW)
+    filestore_dir_original = odoo.tools.config.filestore(odoodb)
+    if not os.path.exists(filestore_dir_original):
+        os.makedirs(filestore_dir_original)
+    try:
+        # when running copydb with mode rsync
+        result = CliRunner().invoke(
+            main, ["--filestore-copy-mode=rsync", odoodb, TEST_DBNAME_NEW]
+        )
+
+        # then the sync should be successful
+        assert result.exit_code == 0
+        # and the new db should exist
+        _assert_ir_config_reset(odoodb, TEST_DBNAME_NEW)
+        # and the filestore directory for the copied db should have been created
+        assert os.path.isdir(filestore_dir_new)
+    finally:
+        # cleanup: drop copied db and created filestore dir
+        _dropdb(TEST_DBNAME_NEW)
+        if os.path.isdir(filestore_dir_new):
+            shutil.rmtree(filestore_dir_new)
+
+
+@pytest.mark.skipif(not _has_rsync(), reason="Cannot find `rsync` on test system")
+def test_copydb_rsync_preexisting_filestore_dir(odoodb):
+    # given an db with an existing filestore directory
+    filestore_dir_new = odoo.tools.config.filestore(TEST_DBNAME_NEW)
+    filestore_dir_original = odoo.tools.config.filestore(odoodb)
+    if not os.path.exists(filestore_dir_original):
+        os.makedirs(filestore_dir_original)
+    # and an existing target filestore
+    if not os.path.exists(filestore_dir_new):
+        os.makedirs(filestore_dir_new)
+    try:
+        # when running copydb with mode rsync
+        result = CliRunner().invoke(
+            main, ["--filestore-copy-mode=rsync", odoodb, TEST_DBNAME_NEW]
+        )
+
+        # then the sync should be successful
+        assert result.exit_code == 0
+        # and the new db should exist
+        _assert_ir_config_reset(odoodb, TEST_DBNAME_NEW)
+        # and the filestore directory for the copied db should have been created
+        assert os.path.isdir(filestore_dir_new)
+    finally:
+        # cleanup: drop copied db and created filestore dir
+        _dropdb(TEST_DBNAME_NEW)
+        if os.path.isdir(filestore_dir_new):
+            shutil.rmtree(filestore_dir_new)
+
+
+@pytest.mark.skipif(not _has_rsync(), reason="Cannot find `rsync` on test system")
+def test_copydb_rsync_hardlinks(odoodb):
+    # given an db with an existing filestore directory
+    filestore_dir_new = odoo.tools.config.filestore(TEST_DBNAME_NEW)
+    filestore_dir_original = odoo.tools.config.filestore(odoodb)
+    if not os.path.exists(filestore_dir_original):
+        os.makedirs(filestore_dir_original)
+    try:
+        # when running copydb with mode rsync
+        result = CliRunner().invoke(
+            main, ["--filestore-copy-mode=hardlink", odoodb, TEST_DBNAME_NEW]
+        )
+
+        # then the sync should be successful
+        assert result.exit_code == 0
+        # and the new db should exist
+        _assert_ir_config_reset(odoodb, TEST_DBNAME_NEW)
+        # and the filestore directory for the copied db should have been created
+        assert os.path.isdir(filestore_dir_new)
+    finally:
+        # cleanup: drop copied db and created filestore dir
+        _dropdb(TEST_DBNAME_NEW)
+        if os.path.isdir(filestore_dir_new):
+            shutil.rmtree(filestore_dir_new)
+
+
+@pytest.mark.skipif(not _has_rsync(), reason="Cannot find `rsync` on test system")
+def test_copydb_rsync_error(odoodb):
+    # given an db with an existing filestore directory
+    filestore_dir_new = odoo.tools.config.filestore(TEST_DBNAME_NEW)
+    filestore_dir_original = odoo.tools.config.filestore(odoodb)
+    if not os.path.exists(filestore_dir_original):
+        os.makedirs(filestore_dir_original)
+    # and an existing target filestore
+    if not os.path.exists(filestore_dir_new):
+        os.makedirs(filestore_dir_new)
+    # that cannot be read nor written
+    os.chmod(filestore_dir_new, 0)
+
+    try:
+        # when running copydb with mode rsync
+        result = CliRunner().invoke(
+            main, ["--filestore-copy-mode=rsync", odoodb, TEST_DBNAME_NEW]
+        )
+
+        # then the sync should be erroneous
+        assert result.exit_code != 0
+        # and an error should be given for the filestore
+        assert "Error syncing filestore" in result.output
+    finally:
+        # cleanup: drop copied db and created filestore dir
+        _dropdb(TEST_DBNAME_NEW)
+        if os.path.isdir(filestore_dir_new):
+            # make target dir writable again to be able to delete it
+            os.chmod(filestore_dir_new, 0o700)
+            shutil.rmtree(filestore_dir_new)
