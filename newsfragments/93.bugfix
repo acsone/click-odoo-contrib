@@ -1,0 +1,3 @@
+Fix dependencies expansion: handle active=True correctly
+`active=True` in a module's manifest is a deprecated equivalent to `auto_install=True`,
+so we should handle that key the same way we handle the `auto_install` one.
