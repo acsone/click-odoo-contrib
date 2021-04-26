@@ -177,6 +177,8 @@ click-odoo-makepot (stable)
     -d, --database TEXT         ...
     ...
     --addons-dir TEXT           [default: .]
+    -m, --modules TEXT          Comma separated list of addons to export
+                                translation.
     --msgmerge / --no-msgmerge  Merge .pot changes into all .po files
                                 [default: False]
     --msgmerge-if-new-pot / --no-msg-merge-if-new-pot

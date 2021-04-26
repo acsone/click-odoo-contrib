@@ -3,6 +3,7 @@
 /.pytest_cache
 /tmp
 /tests/data/test_makepot/addon_test_makepot/i18n/*
+/tests/data/test_makepot/addon_test_makepot_2/i18n/*
 /.vscode
 
 # Byte-compiled / optimized / DLL files
