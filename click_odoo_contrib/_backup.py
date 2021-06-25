@@ -90,6 +90,20 @@ class ZipBackup(AbstractBackup):
             os.unlink(self._path)
 
 
+class DumpBackup(AbstractBackup):
+    format = "dump"
+
+    def write(self, stream, arcname):
+        with open(os.path.join(self._path), "wb") as f:
+            shutil.copyfileobj(stream, f)
+
+    def close(self):
+        pass
+
+    def delete(self):
+        os.remove(self._path)
+
+
 class FolderBackup(AbstractBackup):
 
     format = "folder"
@@ -116,7 +130,11 @@ class FolderBackup(AbstractBackup):
         shutil.rmtree(self._path)
 
 
-BACKUP_FORMAT = {ZipBackup.format: ZipBackup, FolderBackup.format: FolderBackup}
+BACKUP_FORMAT = {
+    ZipBackup.format: ZipBackup,
+    DumpBackup.format: DumpBackup,
+    FolderBackup.format: FolderBackup,
+}
 
 
 @contextmanager
