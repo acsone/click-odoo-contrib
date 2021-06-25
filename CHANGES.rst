@@ -3,6 +3,23 @@ Changes
 
 .. towncrier release notes start
 
+1.13.0 (2021-06-25)
+-------------------
+
+**Features**
+
+- Backup and restore commands: add support for "dump" format (`#79 <https://github.com/acsone/click-odoo-contrib/issues/79>`_)
+- ``click-odoo-makepot``: add --modules option to select modules to export. (`#92 <https://github.com/acsone/click-odoo-contrib/issues/92>`_)
+- ``click-odoo-update``: also pass all modified modules in ``to upgrade`` state to
+  Odoo for update; this helps upgrading when there are new dependencies, in
+  combination with Odoo `#72661 <https://github.com/odoo/odoo/pull/72661>`__. (`#97 <https://github.com/acsone/click-odoo-contrib/issues/97>`_)
+
+
+**Bugfixes**
+
+- ``click-odoo-update``: do not attempt to update addons that are uninstallable. (`#89 <https://github.com/acsone/click-odoo-contrib/issues/89>`_)
+
+
 1.12.0 (2020-11-25)
 -------------------
 
