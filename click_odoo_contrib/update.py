@@ -203,7 +203,10 @@ def _update_db_nolock(
     else:
         with conn.cursor() as cr:
             checksums = _load_installed_checksums(cr)
-            cr.execute("SELECT name FROM ir_module_module WHERE state = 'installed'")
+            cr.execute(
+                "SELECT name FROM ir_module_module "
+                "WHERE state in ('installed', 'to upgrade')"
+            )
             for (module_name,) in cr.fetchall():
                 if not _is_installable(module_name):
                     # if the module is not installable, do not try to update it
