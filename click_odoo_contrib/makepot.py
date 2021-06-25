@@ -99,6 +99,11 @@ def export_pot(
 @click_odoo.env_options(with_rollback=False, default_log_level="error")
 @click.option("--addons-dir", default=".", show_default=True)
 @click.option(
+    "--modules",
+    "-m",
+    help="Comma separated list of addons to export translation.",
+)
+@click.option(
     "--msgmerge / --no-msgmerge",
     show_default=True,
     help="Merge .pot changes into all .po files.",
@@ -134,6 +139,7 @@ def export_pot(
 def main(
     env,
     addons_dir,
+    modules,
     msgmerge,
     commit,
     msgmerge_if_new_pot,
@@ -148,6 +154,16 @@ def main(
     them up to date. Commit changes to git, if any.
     """
     addon_names = [addon_name for addon_name, _, _ in manifest.find_addons(addons_dir)]
+    if modules:
+        modules = set(map(str.strip, modules.split(",")))
+        not_existing_modules = modules - set(addon_names)
+        if not_existing_modules:
+            raise click.ClickException(
+                "Module(s) was not found: " + ", ".join(not_existing_modules)
+            )
+        addon_names = [
+            addon_name for addon_name in addon_names if addon_name in modules
+        ]
     if addon_names:
         modules = env["ir.module.module"].search(
             [("state", "=", "installed"), ("name", "in", addon_names)]
