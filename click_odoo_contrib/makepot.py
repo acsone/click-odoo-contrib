@@ -155,7 +155,7 @@ def main(
     """
     addon_names = [addon_name for addon_name, _, _ in manifest.find_addons(addons_dir)]
     if modules:
-        modules = set(map(str.strip, modules.split(",")))
+        modules = {m.strip() for m in modules.split(",")}
         not_existing_modules = modules - set(addon_names)
         if not_existing_modules:
             raise click.ClickException(
