@@ -295,6 +295,7 @@ Contributors:
 - Jairo Llopis (Tecnativa_)
 - Laurent Mignon (ACSONE_)
 - Lois Rilo (ForgeFlow_)
+- Dmitry Voronin
 
 .. _ACSONE: https://acsone.eu
 .. _Tecnativa: https://tecnativa.com
