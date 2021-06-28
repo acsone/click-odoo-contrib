@@ -37,6 +37,16 @@ click-odoo-copydb (beta)
                             exists.
     --if-source-exists      Don't report error if source database does not
                             exist.
+    --filestore-copy-mode   [default|rsync|hardlink]
+                            Mode for copying the filestore. Default uses
+                            python shutil copytree which copies
+                            everything. If the target filestore already
+                            exists and just needs an update you can use
+                            rsync to rsync the filestore instead. If both
+                            filestores are on the same filesystem supporting
+                            hardlinks you can use the option hardlink to hard
+                            link the files to the inodes of the files of the
+                            source directory which saves on space on the disk.
     --help                  Show this message and exit.
 
 click-odoo-dropdb (stable)
@@ -275,7 +285,7 @@ Development
 
 To run tests, type ``tox``. Tests are made using pytest. To run tests matching
 a specific keyword for, say, Odoo 12 and python 3.6, use
-``tox -e py36-12.0 -- -k keyword``.
+``tox -e py36-12.0 -- -k keyword``. For running tests you need a postgres server accessible for your user without a password at ``/var/run/postgresql/.s.PGSQL.5432``.
 
 This project uses `black <https://github.com/ambv/black>`_
 as code formatting convention, as well as isort and flake8.
