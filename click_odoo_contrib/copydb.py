@@ -50,6 +50,12 @@ def _copy_filestore(source, dest, copy_mode="default"):
                     ]
                 )
                 subprocess.check_call(cmd)
+            # we use one generic exception clause here because subprocess.check_call
+            # may not only raise the documented  subprocess.CalledProcessError
+            # (when the command exits with a return code != 0) but also with at least a
+            # few other Exceptions like PermissionError when the given command is not
+            # executable (by the current user) or a FileNotFoundError if the given
+            # command is not in the users PATH or cannot be found on the system
             except Exception as e:
                 msg = "Error syncing filestore to: {}, {}".format(dest, e)
                 raise click.ClickException(msg)
