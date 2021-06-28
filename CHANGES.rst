@@ -3,6 +3,15 @@ Changes
 
 .. towncrier release notes start
 
+1.14.0 (2021-06-28)
+-------------------
+
+**Features**
+
+- Adding a new option to enable using rsync and hardlinks for copying filestore:
+  `--filestore-copy-mode [default|rsync|hardlink]`. (`#86 <https://github.com/acsone/click-odoo-contrib/issues/86>`_)
+
+
 1.13.0 (2021-06-25)
 -------------------
 
