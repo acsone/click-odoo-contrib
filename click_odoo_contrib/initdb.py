@@ -65,9 +65,12 @@ def _patch_ir_attachment_store(force_db_storage):
             IrAttachment._storage = orig
 
 
-def odoo_createdb(dbname, demo, module_names, force_db_storage):
+def odoo_createdb(dbname, demo, module_names, force_db_storage, lang, password, login, country, phone):
     with _patch_ir_attachment_store(force_db_storage):
-        odoo.service.db._create_empty_database(dbname)
+#         odoo.service.db._create_empty_database(dbname)
+
+        odoo.service.db.exp_create_database(dbname, demo, lang, password, login, country, phone)
+
         odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
         odoo.tools.config["without_demo"] = not demo
         if _odoo_version < odoo.tools.parse_version("10"):
@@ -379,6 +382,30 @@ class DbCache:
     is_flag=True,
     help="Don't report error if database already exists.",
 )
+@click.option(
+    "--lang",
+    default='en_EN',
+    show_default=True,
+    help="Language to use for the new database",
+)
+@click.option(
+    "--password",
+    help="Password for the admin user",
+)
+@click.option(
+    "--login",
+    help="Login for the admin user",
+)
+@click.option(
+    "--country",
+    default='GB',
+    show_default=True,
+    help="Country for the new database",
+)
+@click.option(
+    "--phone",
+    help="Phone of the admin user",
+)
 def main(
     env,
     new_database,
@@ -389,6 +416,11 @@ def main(
     cache_max_age,
     cache_max_size,
     unless_exists,
+    lang,
+    password,
+    login,
+    country,
+    phone,
 ):
     """Create an Odoo database with pre-installed modules.
 
@@ -410,7 +442,7 @@ def main(
     module_names = [m.strip() for m in modules.split(",")]
     if not cache:
         if new_database:
-            odoo_createdb(new_database, demo, module_names, False)
+            odoo_createdb(new_database, demo, module_names, False, lang, password, login, country, phone)
         else:
             _logger.info(
                 "Cache disabled and no new database name provided. " "Nothing to do."
@@ -429,7 +461,7 @@ def main(
                     )
                     refresh_module_list(new_database)
                 else:
-                    odoo_createdb(new_database, demo, module_names, True)
+                    odoo_createdb(new_database, demo, module_names, True, lang, password, login, country, phone)
                     dbcache.add(new_database, hashsum)
             if cache_max_size >= 0:
                 dbcache.trim_size(cache_max_size)
