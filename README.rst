@@ -108,6 +108,21 @@ click-odoo-initdb (stable)
                               30]
     --cache-max-size INTEGER  Keep N most recently used cache templates. Use -1
                               to disable. Use 0 to empty cache.  [default: 5]
+    --lang TEXT               Install default language on your company. 
+                              Imcompatibility with --cache and --modules if you
+                              don't use only 'base'. [default: en_EN]
+    --password TEXT           Set admin password.
+                              Imcompatibility with --cache and --modules if you
+                              don't use only 'base'. [default: admin]
+    --login TEXT              Set admin login.
+                              Imcompatibility with --cache and --modules if you
+                              don't use only 'base'. [default: admin]
+    --country TEXT            Set default country.
+                              Imcompatibility with --cache and --modules if you
+                              don't use only 'base'. [default: GB]
+    --phone TEXT              Set default phone.
+                              Imcompatibility with --cache and --modules if you
+                              don't use only 'base'.
     --unless-exists           Don't report error if database already exists.
     --help                    Show this message and exit.
 
