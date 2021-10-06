@@ -1,4 +1,4 @@
-# generated on Wed Sep 30 21:15:20 2020
+# generated on Wed Oct  6 14:58:18 2021
 account_3way_match
 account_accountant
 account_asset
@@ -15,6 +15,7 @@ account_intrastat
 account_invoice_extract
 account_invoice_extract_purchase
 account_online_sync
+account_online_synchronization
 account_plaid
 account_ponto
 account_predictive_bills
@@ -86,6 +87,7 @@ l10n_ar_edi
 l10n_ar_reports
 l10n_at_reports
 l10n_au_aba
+l10n_au_keypay
 l10n_be_coda
 l10n_be_hr_payroll
 l10n_be_hr_payroll_account
@@ -101,19 +103,24 @@ l10n_cl_reports
 l10n_co_edi
 l10n_co_edi_ubl_2_1
 l10n_co_reports
+l10n_de_pos_cert
+l10n_de_pos_res_cert
 l10n_de_reports
 l10n_dk_reports
 l10n_es_real_estates
 l10n_es_reports
+l10n_es_reports_2021
 l10n_fi_reports
 l10n_fr_hr_payroll
 l10n_fr_reports
 l10n_generic_auto_transfer_demo
 l10n_in_hr_payroll
 l10n_in_reports
+l10n_it_reports
 l10n_lt_reports
 l10n_lu_reports
 l10n_lu_reports_electronic
+l10n_lu_reports_electronic_xml_2_0
 l10n_lu_saft
 l10n_mn_reports
 l10n_mx_edi
@@ -121,6 +128,7 @@ l10n_mx_edi_landing
 l10n_mx_reports
 l10n_mx_reports_closing
 l10n_nl_intrastat
+l10n_nl_report_intrastat
 l10n_nl_reports
 l10n_no_saft
 l10n_se_reports
@@ -173,6 +181,7 @@ sale_amazon_taxcloud
 sale_coupon_taxcloud
 sale_coupon_taxcloud_delivery
 sale_ebay
+sale_ebay_account_deletion
 sale_enterprise
 sale_intrastat
 sale_renting

@@ -1,4 +1,4 @@
-# generated on Wed Sep 30 21:15:43 2020
+# generated on Wed Oct  6 14:59:33 2021
 account_3way_match
 account_accountant
 account_asset
@@ -13,6 +13,7 @@ account_intrastat
 account_invoice_extract
 account_invoice_extract_purchase
 account_online_sync
+account_online_synchronization
 account_plaid
 account_ponto
 account_predictive_bills
@@ -74,6 +75,7 @@ l10n_dk_reports
 l10n_do_reports
 l10n_es_real_estates
 l10n_es_reports
+l10n_es_reports_2021
 l10n_et_reports
 l10n_fr_reports
 l10n_gr_reports
@@ -146,6 +148,7 @@ sale_coupon_delivery
 sale_coupon_taxcloud
 sale_coupon_taxcloud_delivery
 sale_ebay
+sale_ebay_account_deletion
 sale_enterprise
 sale_intrastat
 sale_subscription
