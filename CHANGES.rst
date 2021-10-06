@@ -3,6 +3,14 @@ Changes
 
 .. towncrier release notes start
 
+1.15.0 (2021-10-06)
+-------------------
+
+**Features**
+
+- Update core addons lists, with Odoo 15 support. (`#104 <https://github.com/acsone/click-odoo-contrib/issues/104>`_)
+
+
 1.14.0 (2021-06-28)
 -------------------
 
