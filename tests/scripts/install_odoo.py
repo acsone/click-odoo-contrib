@@ -47,6 +47,16 @@ def clone_odoo():
 
 
 def install_odoo():
+    if odoo_branch in ["8.0", "9.0", "10.0", "11.0", "12.0", "13.0"]:
+        # setuptools 58 dropped support for 2to3, which is required
+        # for dependencies of older Odoo versions
+        subprocess.check_call(
+            [
+                "pip",
+                "install",
+                "setuptools<58",
+            ]
+        )
     subprocess.check_call(
         [
             "pip",
