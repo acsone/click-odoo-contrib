@@ -1,4 +1,4 @@
-# generated on Wed Sep 30 21:15:35 2020
+# generated on Wed Oct  6 14:59:05 2021
 account
 account_analytic_default
 account_bank_statement_import
@@ -188,6 +188,7 @@ payment_paypal
 payment_payumoney
 payment_sips
 payment_stripe
+payment_stripe_checkout_webhook
 payment_stripe_sca
 payment_transfer
 phone_validation
