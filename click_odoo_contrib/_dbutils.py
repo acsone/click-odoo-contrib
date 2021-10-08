@@ -3,6 +3,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import hashlib
+import warnings
 from contextlib import contextmanager
 
 from click_odoo import OdooEnvironment, odoo
@@ -12,7 +13,11 @@ from click_odoo import OdooEnvironment, odoo
 def pg_connect():
     conn = odoo.sql_db.db_connect("postgres")
     cr = conn.cursor()
-    cr.autocommit(True)
+    # We are not going to use the ORM with this connection
+    # so silence the Odoo warning about autocommit.
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        cr.autocommit(True)
     try:
         yield cr._obj
     finally:

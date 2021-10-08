@@ -13,6 +13,7 @@ import pytest
 from click.testing import CliRunner
 
 from click_odoo_contrib import initdb
+from click_odoo_contrib._dbutils import pg_connect
 from click_odoo_contrib.initdb import DbCache, main
 
 TEST_DBNAME = "click-odoo-contrib-testinitdb"
@@ -48,7 +49,8 @@ def pgdb():
 
 @pytest.fixture
 def dbcache():
-    with DbCache(TEST_PREFIX) as c:
+    with pg_connect() as pgcr:
+        c = DbCache(TEST_PREFIX, pgcr)
         try:
             yield c
         finally:
