@@ -115,7 +115,7 @@ click-odoo-initdb (stable)
     --login TEXT              Set admin login.
                               Imcompatibility with --cache. [default: admin]
     --country TEXT            Set default country.
-                              Imcompatibility with --cache. [default: GB]
+                              Imcompatibility with --cache.
     --phone TEXT              Set default phone.
                               Imcompatibility with --cache.
     --unless-exists           Don't report error if database already exists.

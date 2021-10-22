@@ -66,13 +66,17 @@ def _patch_ir_attachment_store(force_db_storage):
 
 def odoo_createdb_without_cache(dbname, demo, module_names, lang, password, login, country, phone):
     odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
-    odoo.service.db._exp_create_database(dbname, demo, lang, password, login, country, phone)
+    odoo.service.db.exp_create_database(dbname, demo, lang, password, login, country, phone)
 
     _logger.info(
         click.style(
            "Created new Odoo database {dbname}.".format(**locals()), fg="green"
         )
     )
+    
+    with odoo.sql_db.db_connect(dbname).cursor() as cr:
+        _save_installed_checksums(cr)
+    odoo.sql_db.close_db(dbname)
 
 
 def odoo_createdb(dbname, demo, module_names, force_db_storage):
@@ -408,8 +412,6 @@ class DbCache:
 )
 @click.option(
     "--country",
-    default='GB',
-    show_default=True,
     help="Country for the new database",
 )
 @click.option(
