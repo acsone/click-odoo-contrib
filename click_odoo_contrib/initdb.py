@@ -64,9 +64,9 @@ def _patch_ir_attachment_store(force_db_storage):
         finally:
             IrAttachment._storage = orig
 
-def odoo_createdb_without_cache(dbname, demo, module_names, lang, password, login, country, phone):
+def odoo_createdb_without_cache(dbname, demo, module_names, lang, password, login, country):
     odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
-    odoo.service.db.exp_create_database(dbname, demo, lang, password, login, country, phone)
+    odoo.service.db.exp_create_database(dbname, demo, lang, password, login, country)
 
     _logger.info(
         click.style(
@@ -414,11 +414,6 @@ class DbCache:
     "--country",
     help="Country for the new database",
 )
-@click.option(
-    "--phone",
-    required=False,
-    help="Phone of the admin user",
-)
 def main(
     env,
     new_database,
@@ -433,7 +428,6 @@ def main(
     password,
     login,
     country,
-    phone,
 ):
     """Create an Odoo database with pre-installed modules.
 
@@ -455,7 +449,7 @@ def main(
     module_names = [m.strip() for m in modules.split(",")]
     if not cache :
         if new_database:
-                odoo_createdb_without_cache(new_database, demo,module_names, lang, password, login, country, phone)
+                odoo_createdb_without_cache(new_database, demo,module_names, lang, password, login, country)
         else:
             _logger.info(
                 "Cache disabled and no new database name provided. " "Nothing to do."
