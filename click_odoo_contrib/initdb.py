@@ -14,7 +14,7 @@ import click
 import click_odoo
 from click_odoo import odoo
 
-from ._dbutils import advisory_lock, db_exists
+from ._dbutils import advisory_lock, db_exists, pg_connect
 from .manifest import expand_dependencies
 from .update import _save_installed_checksums
 
@@ -134,21 +134,10 @@ class DbCache:
     HASH_SIZE = hashlib.sha1().digest_size * 2
     MAX_HASHSUM = "f" * HASH_SIZE
 
-    def __init__(self, prefix):
+    def __init__(self, prefix, pgcr):
         check_cache_prefix(prefix)
         self.prefix = prefix
-        conn = odoo.sql_db.db_connect("postgres")
-        self.pgcr = conn.cursor()
-        self.pgcr.autocommit(True)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
-
-    def close(self):
-        self.pgcr.close()
+        self.pgcr = pgcr
 
     def _lock(self):
         return advisory_lock(self.pgcr, self.prefix)
@@ -416,7 +405,8 @@ def main(
                 "Cache disabled and no new database name provided. " "Nothing to do."
             )
     else:
-        with DbCache(cache_prefix) as dbcache:
+        with pg_connect() as pgcr:
+            dbcache = DbCache(cache_prefix, pgcr)
             if new_database:
                 hashsum = addons_hash(module_names, demo)
                 if dbcache.create(new_database, hashsum):
