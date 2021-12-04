@@ -3,6 +3,14 @@ Changes
 
 .. towncrier release notes start
 
+1.15.1 (2021-12-04)
+-------------------
+
+**Bugfixes**
+
+- Silence Odoo 15 noisy warnings about using autocommit. (`#105 <https://github.com/acsone/click-odoo-contrib/issues/105>`_)
+
+
 1.15.0 (2021-10-06)
 -------------------
 
