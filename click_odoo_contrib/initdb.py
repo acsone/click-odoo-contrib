@@ -64,16 +64,19 @@ def _patch_ir_attachment_store(force_db_storage):
         finally:
             IrAttachment._storage = orig
 
-def odoo_createdb_without_cache(dbname, demo, module_names, lang, password, login, country):
+
+def odoo_createdb_without_cache(
+    dbname, demo, module_names, lang, password, login, country
+):
     odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
     odoo.service.db.exp_create_database(dbname, demo, lang, password, login, country)
 
     _logger.info(
         click.style(
-           "Created new Odoo database {dbname}.".format(**locals()), fg="green"
+            "Created new Odoo database {dbname}.".format(**locals()), fg="green"
         )
     )
-    
+
     with odoo.sql_db.db_connect(dbname).cursor() as cr:
         _save_installed_checksums(cr)
     odoo.sql_db.close_db(dbname)
@@ -97,7 +100,6 @@ def odoo_createdb(dbname, demo, module_names, force_db_storage):
         with odoo.sql_db.db_connect(dbname).cursor() as cr:
             _save_installed_checksums(cr)
         odoo.sql_db.close_db(dbname)
-
 
 
 def _fnmatch(filename, patterns):
@@ -396,7 +398,7 @@ class DbCache:
 )
 @click.option(
     "--lang",
-    default='en_US',
+    default="en_US",
     show_default=True,
     help="Language to use for the new database",
 )
@@ -447,9 +449,11 @@ def main(
         click.echo(click.style(msg, fg="yellow"))
         return
     module_names = [m.strip() for m in modules.split(",")]
-    if not cache :
+    if not cache:
         if new_database:
-                odoo_createdb_without_cache(new_database, demo,module_names, lang, password, login, country)
+            odoo_createdb_without_cache(
+                new_database, demo, module_names, lang, password, login, country
+            )
         else:
             _logger.info(
                 "Cache disabled and no new database name provided. " "Nothing to do."
