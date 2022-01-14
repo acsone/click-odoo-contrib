@@ -396,7 +396,7 @@ class DbCache:
 )
 @click.option(
     "--lang",
-    default='en_EN',
+    default='en_US',
     show_default=True,
     help="Language to use for the new database",
 )
