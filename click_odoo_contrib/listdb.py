@@ -12,7 +12,7 @@ from ._dbutils import (
 
 @click.command()
 @click_odoo.env_options(
-    default_log_level="warn", with_database=False,
+    default_log_level="warn", with_database=False, with_rollback=False,
 )
 def main(
     env,
@@ -21,7 +21,7 @@ def main(
 
     This script just lists the databases.
     """
-    dbname = env.dbname
+    dbname = ''  # XXX find the default database name
     with db_management_enabled():
         databases = odoo.service.db.list_dbs(True)
     # print the list

@@ -20,7 +20,7 @@ from ._dbutils import (
     help="Execute only if database exists",
 )
 @click.option(
-    "--reset-config",
+    "--reset-config/--no-reset-config",
     is_flag=True,
     default=True,
     help="Reset the system configuration",
@@ -43,7 +43,7 @@ from ._dbutils import (
 @click.argument("dest", required=True)
 def main(
     env,
-    dbname,
+    dest,
     if_exists,
     reset_config,
     set_password,
@@ -54,6 +54,7 @@ def main(
 
     This script resets system paramters of the given database.
     """
+    dbname = dest
     if not db_exists(dbname):
         msg = "Database does not exist: {}".format(dbname)
         if if_exists:
@@ -71,10 +72,12 @@ def main(
             DELETE FROM ir_attachment
             WHERE name like '%.assets_%' AND public = true;
 
+            DO $$
             BEGIN
-                UPDATE auth_oauth_provider SET enabled = False;
+                UPDATE auth_oauth_provider SET enabled = false;
             EXCEPTION WHEN undefined_table THEN
             END;
+            $$
             """)
         if disable_cron:
             env.cr.execute("""
@@ -91,13 +94,16 @@ def main(
             """)
         if disable_mail:
             env.cr.execute("""
-            UPDATE ir_mail_server SET active = false;
-            UPDATE mail_template SET mail_server_id = NULL;
+            DO $$
+            BEGIN
+                UPDATE ir_mail_server SET active = false;
+                UPDATE mail_template SET mail_server_id = NULL;
+            EXCEPTION WHEN undefined_table THEN
+            END;
+            $$
             """)
         if set_password:
-            # from passlib.context import CryptContext
-            # crypt = CryptContext(schemes=['pbkdf2_sha512'])
-            # encrypted = crypt.encrypt(set_password)
+            # odoo will encrypt the password later on
             password_value = set_password
             env.cr.execute("""
             UPDATE res_users SET password = '{}';
