@@ -142,6 +142,33 @@ click-odoo-backupdb (beta)
     --filestore / --no-filestore  Include filestore in backup  [default: True]
     --help                        Show this message and exit.
 
+click-odoo-resetdb (beta)
+---------------------------
+
+.. code::
+
+  Usage: click-odoo-resetdb [OPTIONS] DBNAME
+
+    Reset an Odoo database.
+
+    This script allows you to reset the configuration of a database.
+
+  Options:
+    -c, --config FILE  ...
+    ...
+    --if-exists        Don't reset if the database does not exist.
+
+    --reset-config     Reset the configuration.
+                       [default: True]
+
+    --disable-cron     Disable CRON jobs.
+
+    --disable-mail     Disable mail servers.
+
+    --set-password P   Set password P on all users.
+
+    --help             Show this message and exit.
+
 click-odoo-restoredb (beta)
 ---------------------------
 
