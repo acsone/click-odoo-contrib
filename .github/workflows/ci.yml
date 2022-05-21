@@ -29,8 +29,6 @@ jobs:
             toxenv: "py36-13.0"
           - python-version: "3.6"
             toxenv: "py36-14.0"
-          - python-version: "3.7"
-            toxenv: "py37-15.0"
           - python-version: "3.8"
             toxenv: "py38-15.0"
           # - python-version: "3.8"
