@@ -22,6 +22,7 @@ setup(
     setup_requires=["setuptools-scm"],
     install_requires=[
         "click-odoo>=1.3.0",
+        "manifestoo-core>=0.7",
         "importlib_resources ; python_version<'3.9'",
     ],
     python_requires=">=3.6",

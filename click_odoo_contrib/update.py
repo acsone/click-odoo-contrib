@@ -14,10 +14,11 @@ import click
 import click_odoo
 import psycopg2
 from click_odoo import OdooEnvironment, odoo
+from manifestoo_core.core_addons import get_core_addons
+from manifestoo_core.odoo_series import OdooSeries
 
 from ._addon_hash import addon_hash
 from ._dbutils import advisory_lock
-from .core_addons import core_addons
 
 _logger = logging.getLogger(__name__)
 
@@ -271,7 +272,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     if ctx.params["ignore_addons"]:
         ignore_addons.update(ctx.params["ignore_addons"].strip().split(","))
     if ctx.params["ignore_core_addons"]:
-        ignore_addons.update(core_addons[odoo.release.series])
+        ignore_addons.update(get_core_addons(OdooSeries(odoo.release.series)))
     if ignore_addons and ctx.params["update_all"]:
         raise click.ClickException(
             "--update-all and --ignore(-core)-addons cannot be used together"
