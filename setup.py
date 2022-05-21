@@ -24,6 +24,7 @@ setup(
         "click-odoo>=1.3.0",
         "importlib_resources ; python_version<'3.9'",
     ],
+    python_requires=">=3.6",
     license="LGPLv3+",
     author="ACSONE SA/NV",
     author_email="info@acsone.eu",

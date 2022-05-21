@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 import contextlib
@@ -51,12 +50,8 @@ def _patch_ir_attachment_store(force_db_storage):
         # when recreating the db by copying the cached template
         if _odoo_version >= odoo.tools.parse_version("12"):
             from odoo.addons.base.models.ir_attachment import IrAttachment
-        elif _odoo_version >= odoo.tools.parse_version("10"):
-            from odoo.addons.base.ir.ir_attachment import IrAttachment
         else:
-            from openerp.addons.base.ir.ir_attachment import (
-                ir_attachment as IrAttachment,
-            )
+            from odoo.addons.base.ir.ir_attachment import IrAttachment
         orig = IrAttachment._storage
         IrAttachment._storage = _db_storage
         try:
@@ -197,7 +192,7 @@ class DbCache:
         )
 
     def _find_template(self, hashsum):
-        """ search same prefix and hashsum, any date """
+        """search same prefix and hashsum, any date"""
         pattern = self.prefix + "-____________-" + hashsum
         self.pgcr.execute(
             """
@@ -221,7 +216,7 @@ class DbCache:
             self._rename_db(template_name, new_template_name)
 
     def create(self, new_database, hashsum):
-        """ Create a new database from a cached template matching hashsum """
+        """Create a new database from a cached template matching hashsum"""
         with self._lock():
             template_name = self._find_template(hashsum)
             if not template_name:
@@ -232,7 +227,7 @@ class DbCache:
                 return True
 
     def add(self, new_database, hashsum):
-        """ Create a new cached template """
+        """Create a new cached template"""
         with self._lock():
             template_name = self._find_template(hashsum)
             if template_name:

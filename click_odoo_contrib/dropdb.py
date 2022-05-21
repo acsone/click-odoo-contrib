@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
@@ -21,7 +20,7 @@ from ._dbutils import db_exists, db_management_enabled
 )
 @click.argument("dbname", nargs=1)
 def main(env, dbname, if_exists=False):
-    """ Drop an Odoo database and associated file store. """
+    """Drop an Odoo database and associated file store."""
     if not db_exists(dbname):
         msg = "Database does not exist: {}".format(dbname)
         if if_exists:
