@@ -22,7 +22,7 @@ jobs:
       matrix:
         include:
           - python-version: "3.6"
-            toxenv: "py35-11.0"
+            toxenv: "py36-11.0"
           - python-version: "3.6"
             toxenv: "py36-12.0"
           - python-version: "3.6"
