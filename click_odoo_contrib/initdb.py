@@ -15,6 +15,7 @@ import click_odoo
 from click_odoo import odoo
 
 from ._dbutils import advisory_lock, db_exists, pg_connect
+from .core_addons import core_addons
 from .manifest import expand_dependencies
 from .update import _save_installed_checksums
 
@@ -65,9 +66,15 @@ def _patch_ir_attachment_store(force_db_storage):
             IrAttachment._storage = orig
 
 
-def odoo_createdb(dbname, demo, module_names, force_db_storage):
+def odoo_createdb(dbcache, dbname, demo, module_names, force_db_storage):
+    core_module_names = set(module_names).intersection(core_addons[odoo.release.series])
+    extra_module_names = list(set(module_names) - core_module_names)
+    if dbcache and core_module_names and extra_module_names:
+        create_new_database(dbcache, dbname, list(core_module_names), demo)
+        module_names = extra_module_names
     with _patch_ir_attachment_store(force_db_storage):
-        odoo.service.db._create_empty_database(dbname)
+        if not extra_module_names:
+            odoo.service.db._create_empty_database(dbname)
         odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
         odoo.tools.config["without_demo"] = not demo
         if _odoo_version < odoo.tools.parse_version("10"):
@@ -121,6 +128,22 @@ def addons_hash(module_names, with_demo):
 def refresh_module_list(dbname):
     with click_odoo.OdooEnvironment(database=dbname) as env:
         env["ir.module.module"].update_list()
+
+
+def create_new_database(dbcache, dbname, module_names, demo):
+    hashsum = addons_hash(module_names, demo)
+    if dbcache.create(dbname, hashsum):
+        _logger.info(
+            click.style(
+                "Found matching database template! ✨ 🍰 ✨",
+                fg="green",
+                bold=True,
+            )
+        )
+        refresh_module_list(dbname)
+    else:
+        odoo_createdb(dbcache, dbname, demo, module_names, True)
+        dbcache.add(dbname, hashsum)
 
 
 class DbCache:
@@ -399,7 +422,7 @@ def main(
     module_names = [m.strip() for m in modules.split(",")]
     if not cache:
         if new_database:
-            odoo_createdb(new_database, demo, module_names, False)
+            odoo_createdb(None, new_database, demo, module_names, False)
         else:
             _logger.info(
                 "Cache disabled and no new database name provided. " "Nothing to do."
@@ -408,19 +431,7 @@ def main(
         with pg_connect() as pgcr:
             dbcache = DbCache(cache_prefix, pgcr)
             if new_database:
-                hashsum = addons_hash(module_names, demo)
-                if dbcache.create(new_database, hashsum):
-                    _logger.info(
-                        click.style(
-                            "Found matching database template! ✨ 🍰 ✨",
-                            fg="green",
-                            bold=True,
-                        )
-                    )
-                    refresh_module_list(new_database)
-                else:
-                    odoo_createdb(new_database, demo, module_names, True)
-                    dbcache.add(new_database, hashsum)
+                create_new_database(dbcache, new_database, module_names, demo)
             if cache_max_size >= 0:
                 dbcache.trim_size(cache_max_size)
             if cache_max_age >= 0:
