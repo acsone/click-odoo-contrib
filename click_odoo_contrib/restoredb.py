@@ -38,7 +38,7 @@ def _restore_from_folder(dbname, backup, copy=True, jobs=1):
     with OdooEnvironment(dbname) as env:
         if os.path.exists(filestore_dir_path):
             filestore_dest = env["ir.attachment"]._filestore()
-            shutil.move(filestore_dir_path, filestore_dest)
+            shutil.copytree(filestore_dir_path, filestore_dest)
 
         if odoo.tools.config["unaccent"]:
             try:
