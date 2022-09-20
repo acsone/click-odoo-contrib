@@ -153,10 +153,10 @@ def tests_backupdb_no_list_db(odoodb, filestore, tmp_path):
     odoo_cfg = tmp_path / "odoo.cfg"
     odoo_cfg.write_text(
         textwrap.dedent(
-            u"""\
-        [options]
-        list_db = False
-    """
+            """\
+                [options]
+                list_db = False
+            """
         )
     )
     cmd = [
@@ -196,7 +196,7 @@ def tests_backupdb_force_folder(pgdb, filestore, tmp_path, manifest):
 
 def tests_backupdb_force_zip(pgdb, filestore, tmp_path, manifest):
     zip_path = tmp_path.joinpath("test.zip")
-    zip_path.write_text(u"empty")
+    zip_path.write_text("empty")
     zip_filename = zip_path.as_posix()
     result = CliRunner().invoke(main, ["--format=zip", TEST_DBNAME, zip_filename])
     assert result.exit_code != 0
@@ -262,7 +262,7 @@ def tests_backupdb_dump(pgdb, tmp_path, no_filestore):
 
 def tests_backupdb_force_dump(pgdb, tmp_path):
     dump_path = tmp_path.joinpath("test.dump")
-    dump_path.write_text(u"empty")
+    dump_path.write_text("empty")
     dump_filename = dump_path.as_posix()
     result = CliRunner().invoke(main, ["--format=dump", pgdb, dump_filename])
     assert result.exit_code != 0

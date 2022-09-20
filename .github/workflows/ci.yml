@@ -21,22 +21,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python-version: "2.7"
-            toxenv: "py27-8.0"
-          - python-version: "2.7"
-            toxenv: "py27-9.0"
-          - python-version: "2.7"
-            toxenv: "py27-10.0"
-          - python-version: "3.5"
-            toxenv: "py35-11.0"
+          - python-version: "3.6"
+            toxenv: "py36-11.0"
           - python-version: "3.6"
             toxenv: "py36-12.0"
           - python-version: "3.6"
             toxenv: "py36-13.0"
           - python-version: "3.6"
             toxenv: "py36-14.0"
-          - python-version: "3.7"
-            toxenv: "py37-15.0"
           - python-version: "3.8"
             toxenv: "py38-15.0"
           # - python-version: "3.8"
@@ -71,6 +63,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ matrix.toxenv }}
       - name: Install system dependencies
         run: |
+          sudo apt-get update -qq
           sudo apt-get install -qq --no-install-recommends \
             libxml2-dev libxslt1-dev \
             libldap2-dev libsasl2-dev \

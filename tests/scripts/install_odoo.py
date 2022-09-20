@@ -10,17 +10,10 @@ odoo_dir = sys.argv[2]
 def odoo_installed():
     try:
         import odoo  # noqa
-
-        return True
     except ImportError:
-        # odoo < 10
-        try:
-            import openerp  # noqa
-
-            return True
-        except ImportError:
-            # odoo not installed
-            return False
+        return False
+    else:
+        return True
 
 
 def odoo_cloned():
@@ -39,15 +32,10 @@ def clone_odoo():
             odoo_dir,
         ]
     )
-    if "PGHOST" in os.environ and odoo_branch == "8.0":
-        # Patch postgres connection mechanism to support connection with PGHOST
-        # environment variable. This patch is a backport from 9.0.
-        patch_path = os.path.join(os.path.dirname(__file__), "sql_db-8.patch")
-        subprocess.check_call(["patch", "-p1", "-i", patch_path], cwd=odoo_dir)
 
 
 def install_odoo():
-    if odoo_branch in ["8.0", "9.0", "10.0", "11.0", "12.0", "13.0"]:
+    if odoo_branch in ["11.0", "12.0", "13.0"]:
         # setuptools 58 dropped support for 2to3, which is required
         # for dependencies of older Odoo versions
         subprocess.check_call(

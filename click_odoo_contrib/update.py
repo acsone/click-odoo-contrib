@@ -80,10 +80,7 @@ class DbLockWatcher(threading.Thread):
         """
         # See https://stackoverflow.com/a/35319598/1468388
         terminate_session = "SELECT pg_terminate_backend(%s)"
-        if odoo.release.version_info < (9, 0):
-            params = {"dsn": odoo.sql_db.dsn(self.database)[1]}
-        else:
-            params = odoo.sql_db.connection_info_for(self.database)[1]
+        params = odoo.sql_db.connection_info_for(self.database)[1]
         # Need a separate raw psycopg2 cursor without transactioning to avoid
         # weird concurrency errors; this cursor will only trigger SELECTs, and
         # it needs to access current Postgres server status, monitoring other
