@@ -295,15 +295,6 @@ def test_create_cmd_nocache(dbcache):
                 [("name", "=", "auth_signup"), ("state", "=", "installed")]
             )
             assert m, "auth_signup module not installed"
-            env.cr.execute(
-                """
-                SELECT COUNT(*) FROM ir_attachment
-                WHERE store_fname IS NULL
-            """
-            )
-            assert (
-                env.cr.fetchone()[0] == 0
-            ), "some attachments are not stored in filestore"
     finally:
         _dropdb(TEST_DBNAME_NEW)
 
