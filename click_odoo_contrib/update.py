@@ -176,7 +176,12 @@ def _get_checksum_dir(cr, module_name):
 
 def _is_installable(module_name):
     try:
-        manifest = odoo.modules.load_information_from_description_file(module_name)
+        if odoo.tools.parse_version(odoo.release.version) <= odoo.tools.parse_version(
+            "15"
+        ):
+            manifest = odoo.modules.load_information_from_description_file(module_name)
+        else:
+            manifest = odoo.modules.get_manifest(module_name)
         return manifest["installable"]
     except Exception:
         # load_information_from_description_file populates default value
