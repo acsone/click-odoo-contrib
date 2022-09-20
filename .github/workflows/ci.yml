@@ -31,9 +31,9 @@ jobs:
             toxenv: "py36-14.0"
           - python-version: "3.8"
             toxenv: "py38-15.0"
-          # - python-version: "3.8"
-          #   toxenv: "py38-master"
-          - python-version: "3.8"
+          - python-version: "3.10"
+            toxenv: "py310-16.0"
+          - python-version: "3.10"
             toxenv: "twine_check"
     services:
       postgres:
