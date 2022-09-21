@@ -3,6 +3,20 @@ Changes
 
 .. towncrier release notes start
 
+1.16.0 (2022-09-21)
+-------------------
+
+**Features**
+
+- Add dependency on manifestoo_core to obtain Odoo core addons list (used by
+  click-odoo-update to ignore core addons). (`#114 <https://github.com/acsone/click-odoo-contrib/issues/114>`_)
+- Adapt click-odoo-update for Odoo 16. (`#119 <https://github.com/acsone/click-odoo-contrib/issues/119>`_)
+
+**Deprecations and Removals**
+
+- Remove support for Python < 3.6 and Odoo < 11. (`#110 <https://github.com/acsone/click-odoo-contrib/issues/110>`_)
+
+
 1.15.1 (2021-12-04)
 -------------------
 
