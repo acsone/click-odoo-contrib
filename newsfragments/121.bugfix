@@ -1,0 +1,2 @@
+Ignore ``active`` flag in manifests in Odoo < 13. Handle ``auto_install=[]``  as meaning
+unconditional automatic installation in Odoo >= 13.
