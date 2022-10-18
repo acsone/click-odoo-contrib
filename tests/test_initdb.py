@@ -6,9 +6,9 @@ import subprocess
 import sys
 import textwrap
 from datetime import datetime, timedelta
+from unittest import mock
 
 import click_odoo
-import mock
 import pytest
 from click.testing import CliRunner
 
