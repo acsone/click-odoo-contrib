@@ -18,7 +18,6 @@ from .manifest import expand_dependencies
 from .update import _save_installed_checksums
 
 _logger = logging.getLogger(__name__)
-_odoo_version = odoo.tools.parse_version(odoo.release.version)
 
 
 EXCLUDE_PATTERNS = ("*.pyc", "*.pyo")
@@ -48,7 +47,7 @@ def _patch_ir_attachment_store(force_db_storage):
         # make sure attachments created during db initialization
         # are stored in database, so we get something consistent
         # when recreating the db by copying the cached template
-        if _odoo_version >= odoo.tools.parse_version("12"):
+        if odoo.release.version_info >= (12, 0):
             from odoo.addons.base.models.ir_attachment import IrAttachment
         else:
             from odoo.addons.base.ir.ir_attachment import IrAttachment
@@ -65,11 +64,7 @@ def odoo_createdb(dbname, demo, module_names, force_db_storage):
         odoo.service.db._create_empty_database(dbname)
         odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
         odoo.tools.config["without_demo"] = not demo
-        if _odoo_version < odoo.tools.parse_version("10"):
-            Registry = odoo.modules.registry.RegistryManager
-        else:
-            Registry = odoo.modules.registry.Registry
-        Registry.new(dbname, force_demo=demo, update_module=True)
+        odoo.modules.registry.Registry.new(dbname, force_demo=demo, update_module=True)
         _logger.info(
             click.style(
                 "Created new Odoo database {dbname}.".format(**locals()), fg="green"
