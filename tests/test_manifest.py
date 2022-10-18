@@ -32,7 +32,7 @@ def test_manifest_expand_dependencies():
     assert "base_import" in res
     assert "base" in res  # obviously
     assert "web" in res  # base_import depends on web
-    if odoo.tools.parse_version(odoo.release.version) < odoo.tools.parse_version("12"):
+    if odoo.release.version_info < (12, 0):
         assert "auth_crypt" not in res
     else:
         assert "iap" not in res  # iap is auto_install
@@ -42,7 +42,7 @@ def test_manifest_expand_dependencies_auto_install():
     res = manifest.expand_dependencies(["auth_signup"], include_auto_install=True)
     assert "auth_signup" in res
     assert "base" in res  # obviously
-    if odoo.tools.parse_version(odoo.release.version) < odoo.tools.parse_version("12"):
+    if odoo.release.version_info < (12, 0):
         assert "auth_crypt" in res  # auth_crypt is autoinstall
     else:
         assert "iap" in res  # iap is auto_install

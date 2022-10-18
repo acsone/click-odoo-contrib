@@ -227,11 +227,7 @@ def _update_db_nolock(
         return
     if i18n_overwrite:
         odoo.tools.config["overwrite_existing_translations"] = True
-    if odoo.tools.parse_version(odoo.release.version) < odoo.tools.parse_version("10"):
-        Registry = odoo.modules.registry.RegistryManager
-    else:
-        Registry = odoo.modules.registry.Registry
-    Registry.new(database, update_module=True)
+    odoo.modules.registry.Registry.new(database, update_module=True)
     if watcher and watcher.aborted:
         # If you get here, the updating session has been terminated and it
         # somehow has recovered by opening a new cursor and continuing;
