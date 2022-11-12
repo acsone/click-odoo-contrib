@@ -5,9 +5,7 @@ import click
 import click_odoo
 from click_odoo import odoo
 
-from ._dbutils import (
-    db_management_enabled,
-)
+from ._dbutils import db_management_enabled
 
 
 @click.command()
@@ -21,12 +19,11 @@ def main(
 
     This script just lists the databases.
     """
-    dbname = ''  # XXX find the default database name
     with db_management_enabled():
         databases = odoo.service.db.list_dbs(True)
     # print the list
     for database in databases:
-        msg = "{}{}".format(database, ' *' if database == dbname else '')
+        msg = " {}".format(database)
         click.echo(click.style(msg))
 
 

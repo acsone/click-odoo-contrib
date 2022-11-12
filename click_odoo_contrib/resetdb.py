@@ -4,15 +4,12 @@
 import click
 import click_odoo
 
-from ._dbutils import (
-    db_exists,
-    reset_config_parameters,
-)
+from ._dbutils import db_exists, reset_config_parameters
 
 
 @click.command()
 @click_odoo.env_options(
-    default_log_level="warn", with_database=True,
+    default_log_level="warn", with_database=False,
 )
 @click.option(
     "--if-exists",
@@ -27,8 +24,13 @@ from ._dbutils import (
 )
 @click.option(
     "--set-password",
-    metavar="P",
+    metavar="PASS",
     help="Set the password P on all users",
+)
+@click.option(
+    "--wipe-config",
+    metavar="KEYS",
+    help="Set blank value for the given system configuration (comma-separated list)",
 )
 @click.option(
     "--disable-cron",
@@ -47,6 +49,7 @@ def main(
     if_exists,
     reset_config,
     set_password,
+    wipe_config,
     disable_cron,
     disable_mail,
 ):
@@ -64,10 +67,13 @@ def main(
             raise click.ClickException(msg)
     # reset common parameters
     if reset_config:
+        click.echo('- reset parameters')
         reset_config_parameters(dbname)
     # additional changes
     with click_odoo.OdooEnvironment(dbname) as env:
         if reset_config:
+            click.echo('- remove generated assets')
+            click.echo('- disable oauth providers')
             env.cr.execute("""
             DELETE FROM ir_attachment
             WHERE name like '%.assets_%' AND public = true;
@@ -79,7 +85,16 @@ def main(
             END;
             $$
             """)
+        if wipe_config:
+            props = [p.strip() for p in wipe_config.split(',')]
+            click.echo('- wipe config parameters')
+            env.cr.execute("""
+            UPDATE ir_config_parameter
+            SET value = null
+            WHERE key IN (%s)
+            """, tuple(props))
         if disable_cron:
+            click.echo('- disable cron')
             env.cr.execute("""
             UPDATE ir_cron SET active = false;
             UPDATE ir_cron SET active = true
@@ -93,6 +108,7 @@ def main(
             );
             """)
         if disable_mail:
+            click.echo('- disable mail servers')
             env.cr.execute("""
             DO $$
             BEGIN
@@ -103,13 +119,14 @@ def main(
             $$
             """)
         if set_password:
+            click.echo('- reset passwords')
             # odoo will encrypt the password later on
             password_value = set_password
             env.cr.execute("""
             UPDATE res_users SET password = '{}';
             """.format(password_value.replace("'", "''")))
-    msg = "Database is reset: {}".format(dbname)
-    click.echo(click.style(msg))
+    msg = "Database reset finished: {}".format(dbname)
+    click.echo(click.style(msg, fg="green"))
 
 
 if __name__ == "__main__":  # pragma: no cover

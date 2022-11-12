@@ -167,6 +167,8 @@ click-odoo-resetdb (beta)
 
     --set-password P   Set password P on all users.
 
+    --wipe-config KS   Set blank value for the given system configuration
+
     --help             Show this message and exit.
 
 click-odoo-restoredb (beta)
