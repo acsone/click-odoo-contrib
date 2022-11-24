@@ -25,7 +25,7 @@ _logger = logging.getLogger(__name__)
 
 PARAM_INSTALLED_CHECKSUMS = "module_auto_update.installed_checksums"
 PARAM_EXCLUDE_PATTERNS = "module_auto_update.exclude_patterns"
-DEFAULT_EXCLUDE_PATTERNS = "*.pyc,*.pyo,i18n/*.pot,i18n_extra/*.pot,static/*"
+DEFAULT_EXCLUDE_PATTERNS = "*.pyc,*.pyo,i18n/*.pot,i18n_extra/*.pot,static/*,tests/*"
 
 
 class DbLockWatcher(threading.Thread):
