@@ -7,7 +7,7 @@ import zipfile
 from contextlib import contextmanager
 
 
-class AbstractBackup(object):
+class AbstractBackup:
     """Abstract class with methods to open, read, write, close,
     a backup
     """
@@ -53,11 +53,10 @@ class AbstractBackup(object):
 
 
 class ZipBackup(AbstractBackup):
-
     format = "zip"
 
     def __init__(self, path, mode):
-        super(ZipBackup, self).__init__(path, mode)
+        super().__init__(path, mode)
         self._zipFile = zipfile.ZipFile(
             self._path, self._mode, compression=zipfile.ZIP_DEFLATED, allowZip64=True
         )
@@ -105,11 +104,10 @@ class DumpBackup(AbstractBackup):
 
 
 class FolderBackup(AbstractBackup):
-
     format = "folder"
 
     def __init__(self, path, mode):
-        super(FolderBackup, self).__init__(path, mode)
+        super().__init__(path, mode)
         os.mkdir(self._path)
 
     def addtree(self, src, arcname):
