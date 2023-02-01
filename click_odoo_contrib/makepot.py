@@ -2,7 +2,6 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import base64
-import io
 import os
 import re
 import subprocess
@@ -50,7 +49,7 @@ def export_pot(
     files_to_commit = set()
 
     files_to_commit.add(pot_filepath)
-    with io.open(pot_filepath, "w", encoding="utf-8") as pot_file:
+    with open(pot_filepath, "w", encoding="utf-8") as pot_file:
         file_content = base64.b64decode(lang_export.data).decode("utf-8")
         for pattern in LINE_PATTERNS_TO_REMOVE:
             file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)

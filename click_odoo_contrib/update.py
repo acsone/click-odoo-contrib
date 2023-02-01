@@ -30,7 +30,7 @@ DEFAULT_EXCLUDE_PATTERNS = "*.pyc,*.pyo,i18n/*.pot,i18n_extra/*.pot,static/*"
 
 class DbLockWatcher(threading.Thread):
     def __init__(self, database, max_seconds):
-        super(DbLockWatcher, self).__init__()
+        super().__init__()
         self.daemon = True
         self.database = database
         self.max_seconds = max_seconds
