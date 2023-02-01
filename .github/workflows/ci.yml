@@ -10,25 +10,32 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.machine}}
     strategy:
       fail-fast: false
       matrix:
         include:
           - python-version: "3.6"
             toxenv: "py36-11.0"
+            machine: ubuntu-20.04
           - python-version: "3.6"
             toxenv: "py36-12.0"
+            machine: ubuntu-20.04
           - python-version: "3.6"
             toxenv: "py36-13.0"
+            machine: ubuntu-20.04
           - python-version: "3.6"
             toxenv: "py36-14.0"
+            machine: ubuntu-20.04
           - python-version: "3.8"
             toxenv: "py38-15.0"
+            machine: ubuntu-22.04
           - python-version: "3.10"
             toxenv: "py310-16.0"
+            machine: ubuntu-22.04
           - python-version: "3.10"
             toxenv: "twine_check"
+            machine: ubuntu-22.04
     services:
       postgres:
         image: postgres:12
