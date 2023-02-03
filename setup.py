@@ -50,6 +50,7 @@ setup(
         click-odoo-copydb=click_odoo_contrib.copydb:main
         click-odoo-dropdb=click_odoo_contrib.dropdb:main
         click-odoo-initdb=click_odoo_contrib.initdb:main
+        click-odoo-listdb=click_odoo_contrib.listdb:main
         click-odoo-backupdb=click_odoo_contrib.backupdb:main
         click-odoo-restoredb=click_odoo_contrib.restoredb:main
         click-odoo-makepot=click_odoo_contrib.makepot:main

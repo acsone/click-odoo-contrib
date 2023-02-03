@@ -2,6 +2,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import hashlib
+import os
 import warnings
 from contextlib import contextmanager
 
@@ -46,12 +47,23 @@ def terminate_connections(dbname):
 
 @contextmanager
 def db_management_enabled():
-    list_db = odoo.tools.config["list_db"]
+    old_params = {"list_db": odoo.tools.config["list_db"]}
     odoo.tools.config["list_db"] = True
+    # Work around odoo.service.db.list_dbs() not finding the database
+    # when postgres connection info is passed as PG* environment
+    # variables.
+    if odoo.release.version_info < (12, 0):
+        for v in ("host", "port", "user", "password"):
+            odoov = "db_" + v.lower()
+            pgv = "PG" + v.upper()
+            if not odoo.tools.config[odoov] and pgv in os.environ:
+                old_params[odoov] = odoo.tools.config[odoov]
+                odoo.tools.config[odoov] = os.environ[pgv]
     try:
         yield
     finally:
-        odoo.tools.config["list_db"] = list_db
+        for key, value in old_params.items():
+            odoo.tools.config[key] = value
 
 
 @contextmanager

@@ -26,6 +26,7 @@ def _createdb(dbname):
 
 
 def _dropdb(dbname):
+    odoo.sql_db.close_all()
     subprocess.check_call(["dropdb", "--if-exists", dbname])
 
 
