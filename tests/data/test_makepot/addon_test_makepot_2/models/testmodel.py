@@ -1,7 +1,4 @@
-try:
-    from odoo import models, fields
-except ImportError:
-    from openerp import models, fields
+from odoo import models, fields
 
 
 class TestModel2(models.Model):

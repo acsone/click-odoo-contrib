@@ -37,7 +37,7 @@ def read_manifest(addon_dir):
 
 
 def find_addons(addons_dir, installable_only=True):
-    """ yield (addon_name, addon_dir, manifest) """
+    """yield (addon_name, addon_dir, manifest)"""
     for addon_name in sorted(os.listdir(addons_dir)):
         addon_dir = os.path.join(addons_dir, addon_name)
         try:

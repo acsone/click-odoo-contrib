@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
@@ -75,10 +74,7 @@ def reset_config_parameters(dbname):
     (dbuuid, ...)
     """
     with OdooEnvironment(dbname) as env:
-        if odoo.release.version_info < (10, 0):
-            env.registry("ir.config_parameter").init(env.cr, force=True)
-        else:
-            env["ir.config_parameter"].init(force=True)
+        env["ir.config_parameter"].init(force=True)
 
         # reset enterprise keys if exists
         env.cr.execute(

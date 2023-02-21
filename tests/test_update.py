@@ -130,7 +130,7 @@ def test_update(odoodb):
         assert "base" not in checksums  # because ignore_Core_addons=True
     with pytest.raises(subprocess.CalledProcessError):
         _update_one(odoodb, "v7")
-    if odoo.tools.parse_version(odoo.release.version) >= odoo.tools.parse_version("12"):
+    if odoo.release.version_info >= (12, 0):
         # Odoo >= 12 does -u in a transaction
         _check_expected(odoodb, "v6")
 

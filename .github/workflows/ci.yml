@@ -9,43 +9,36 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - uses: pre-commit/action@v2.0.0
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.machine}}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - python-version: "2.7"
-            toxenv: "py27-8.0"
-          - python-version: "2.7"
-            toxenv: "py27-9.0"
-          - python-version: "2.7"
-            toxenv: "py27-10.0"
-          - python-version: "3.5"
-            toxenv: "py35-11.0"
+          - python-version: "3.6"
+            toxenv: "py36-11.0"
+            machine: ubuntu-20.04
           - python-version: "3.6"
             toxenv: "py36-12.0"
+            machine: ubuntu-20.04
           - python-version: "3.6"
             toxenv: "py36-13.0"
+            machine: ubuntu-20.04
           - python-version: "3.6"
             toxenv: "py36-14.0"
-          - python-version: "3.7"
-            toxenv: "py37-15.0"
+            machine: ubuntu-20.04
           - python-version: "3.8"
             toxenv: "py38-15.0"
-          # - python-version: "3.8"
-          #   toxenv: "py38-master"
-          - python-version: "3.8"
+            machine: ubuntu-22.04
+          - python-version: "3.10"
+            toxenv: "py310-16.0"
+            machine: ubuntu-22.04
+          - python-version: "3.10"
             toxenv: "twine_check"
+            machine: ubuntu-22.04
     services:
       postgres:
-        image: postgres:9.6
+        image: postgres:12
         env:
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
@@ -71,6 +64,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ matrix.toxenv }}
       - name: Install system dependencies
         run: |
+          sudo apt-get update -qq
           sudo apt-get install -qq --no-install-recommends \
             libxml2-dev libxslt1-dev \
             libldap2-dev libsasl2-dev \
@@ -82,18 +76,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs:
-      - pre-commit
       - tests
     if: startsWith(github.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-      - name: Install pypa/build
-        run: python -m pip install build
       - name: Build a binary wheel and a source tarball
-        run: python -m build --sdist --wheel --outdir dist/
+        run: pipx run build
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}

@@ -22,8 +22,10 @@ setup(
     setup_requires=["setuptools-scm"],
     install_requires=[
         "click-odoo>=1.3.0",
+        "manifestoo-core>=0.7",
         "importlib_resources ; python_version<'3.9'",
     ],
+    python_requires=">=3.6",
     license="LGPLv3+",
     author="ACSONE SA/NV",
     author_email="info@acsone.eu",
@@ -33,10 +35,11 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: "
         "GNU Lesser General Public License v3 or later (LGPLv3+)",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Framework :: Odoo",
     ],
     entry_points="""
