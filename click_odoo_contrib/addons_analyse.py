@@ -59,6 +59,8 @@ def _get_addon_base_info(module):
 
 def _addons_info_to_rows(addons_info):
     info_values = addons_info.values()
+    if not isinstance(info_values, list):
+        info_values = list(info_values)
     info_values.sort(key=lambda a: (a["author"], a["name"]))
     return info_values
 
