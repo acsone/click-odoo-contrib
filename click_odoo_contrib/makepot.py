@@ -55,6 +55,7 @@ def export_pot(
             file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)
         pot_file.write(file_content)
 
+    output_details = ["--no-wrap"]
     invalid_po = 0
     for lang_filename in os.listdir(i18n_path):
         if not lang_filename.endswith(PO_FILE_EXT):
@@ -66,6 +67,7 @@ def export_pot(
                 cmd = ["msgmerge", "--quiet", "-U", lang_filepath, pot_filepath]
                 if not fuzzy_matching:
                     cmd.append("--no-fuzzy-matching")
+                cmd.extend(output_details)
                 subprocess.check_call(cmd)
                 # Purge old translations
                 if purge_old_translations:
@@ -73,6 +75,7 @@ def export_pot(
                         "msgattrib",
                         "--output-file=%s" % lang_filepath,
                         "--no-obsolete",
+                        *output_details,
                         lang_filepath,
                     ]
                     subprocess.check_call(cmd)
