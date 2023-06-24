@@ -30,6 +30,7 @@ def export_pot(
     commit_message,
     fuzzy_matching,
     purge_old_translations,
+    width,
 ):
     addon_name = module.name
     addon_dir = os.path.join(addons_dir, addon_name)
@@ -55,7 +56,12 @@ def export_pot(
             file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)
         pot_file.write(file_content)
 
-    output_details = ["--no-wrap"]
+    if not width:
+        output_details = []
+    elif width > 0:
+        output_details = ["--width", str(width)]
+    else:
+        output_details = ["--no-wrap"]
     invalid_po = 0
     for lang_filename in os.listdir(i18n_path):
         if not lang_filename.endswith(PO_FILE_EXT):
@@ -131,6 +137,12 @@ def export_pot(
     "Only applies when --msgmerge or --msgmerge-if-new-pot are passed.",
 )
 @click.option(
+    "--width",
+    show_default=False,
+    type=int,
+    help="Width of lines in the generated po files.",
+)
+@click.option(
     "--commit / --no-commit",
     show_default=True,
     help="Git commit exported .pot files if needed.",
@@ -148,6 +160,7 @@ def main(
     commit_message,
     fuzzy_matching,
     purge_old_translations,
+    width,
 ):
     """Export translation (.pot) files of addons
     installed in the database and present in addons_dir.
@@ -181,6 +194,7 @@ def main(
                 commit_message,
                 fuzzy_matching,
                 purge_old_translations,
+                width,
             )
 
 
