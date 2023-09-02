@@ -211,6 +211,26 @@ click-odoo-makepot (stable)
                                 [default: False]
     --help                      Show this message and exit.
 
+click-odoo-listdb (beta)
+------------------------
+
+.. code::
+
+  Usage: click-odoo-listdb [OPTIONS]
+
+    List Odoo databases.
+
+  Options:
+    -c, --config FILE  Specify the Odoo configuration file. Other ways to
+                      provide it are with the ODOO_RC or OPENERP_SERVER
+                      environment variables, or ~/.odoorc (Odoo >= 10) or
+                      ~/.openerp_serverrc.
+    --log-level TEXT   Specify the logging level. Accepted values depend on the
+                      Odoo version, and include debug, info, warn, error.
+                      [default: warn]
+    --logfile FILE     Specify the log file.
+    --help             Show this message and exit.
+
 click-odoo-uninstall (stable)
 -----------------------------
 
@@ -302,7 +322,7 @@ Contributors:
 - Stéphane Bidoul (ACSONE_)
 - Thomas Binsfeld (ACSONE_)
 - Benjamin Willig (ACSONE_)
-- Jairo Llopis (Tecnativa_)
+- Jairo Llopis
 - Laurent Mignon (ACSONE_)
 - Lois Rilo (ForgeFlow_)
 - Dmitry Voronin
