@@ -180,6 +180,26 @@ def _get_checksum_dir(cr, module_name):
     return checksum_dir
 
 
+def _get_modules_to_update(cr, ignore_addons=None):
+    if ignore_addons is None:
+        ignore_addons = []
+    modules_to_update = []
+    checksums = _load_installed_checksums(cr)
+    cr.execute(
+        "SELECT name FROM ir_module_module "
+        "WHERE state in ('installed', 'to upgrade')"
+    )
+    for (module_name,) in cr.fetchall():
+        if not _is_installable(module_name):
+            # if the module is not installable, do not try to update it
+            continue
+        if module_name in ignore_addons:
+            continue
+        if _get_checksum_dir(cr, module_name) != checksums.get(module_name):
+            modules_to_update.append(module_name)
+    return modules_to_update
+
+
 def _is_installable(module_name):
     try:
         if odoo.release.version_info < (16, 0):
@@ -209,19 +229,8 @@ def _update_db_nolock(
         to_update["base"] = 1
     else:
         with conn.cursor() as cr:
-            checksums = _load_installed_checksums(cr)
-            cr.execute(
-                "SELECT name FROM ir_module_module "
-                "WHERE state in ('installed', 'to upgrade')"
-            )
-            for (module_name,) in cr.fetchall():
-                if not _is_installable(module_name):
-                    # if the module is not installable, do not try to update it
-                    continue
-                if module_name in ignore_addons:
-                    continue
-                if _get_checksum_dir(cr, module_name) != checksums.get(module_name):
-                    to_update[module_name] = 1
+            for module_name in _get_modules_to_update(cr, ignore_addons):
+                to_update[module_name] = 1
         if to_update:
             _logger.info(
                 "Updating addons for their hash changed: %s.",
