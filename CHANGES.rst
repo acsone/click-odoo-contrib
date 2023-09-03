@@ -3,6 +3,17 @@ Changes
 
 .. towncrier release notes start
 
+1.17.0 (2023-09-03)
+-------------------
+
+**Features**
+
+- New ``click-odoo-listdb`` command. (`#126 <https://github.com/acsone/click-odoo-contrib/issues/126>`_)
+- ``click-odoo-update``: exclude the ``tests/`` directory from checksum computation
+  A modification in tests alone should not require a database upgrade. (`#125 <https://github.com/acsone/click-odoo-contrib/issues/125>`_)
+- ``click-odoo-update``: set ``create_date`` and ``write_date`` on the ``ir_config_parameter`` checksums record (`#128 <https://github.com/acsone/click-odoo-contrib/issues/128>`_)
+
+
 1.16.0 (2022-09-21)
 -------------------
 
