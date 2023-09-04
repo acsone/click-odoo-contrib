@@ -140,7 +140,8 @@ def export_pot(
     "--width",
     show_default=False,
     type=int,
-    help="Width of lines in the generated po files.",
+    help="Width of lines in the generated po files. "
+    "Set a negative number for no wrapping.",
 )
 @click.option(
     "--commit / --no-commit",
