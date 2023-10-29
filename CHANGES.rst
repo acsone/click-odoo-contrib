@@ -3,6 +3,14 @@ Changes
 
 .. towncrier release notes start
 
+1.18.0 (2023-10-29)
+-------------------
+
+**Features**
+
+- Support Odoo 17. (`#190 <https://github.com/acsone/click-odoo-contrib/issues/190>`_)
+
+
 1.17.0 (2023-09-03)
 -------------------
 
