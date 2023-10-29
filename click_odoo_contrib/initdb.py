@@ -65,11 +65,7 @@ def odoo_createdb(dbname, demo, module_names, force_db_storage):
         odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
         odoo.tools.config["without_demo"] = not demo
         odoo.modules.registry.Registry.new(dbname, force_demo=demo, update_module=True)
-        _logger.info(
-            click.style(
-                "Created new Odoo database {dbname}.".format(**locals()), fg="green"
-            )
-        )
+        _logger.info(click.style(f"Created new Odoo database {dbname}.", fg="green"))
         with odoo.sql_db.db_connect(dbname).cursor() as cr:
             _save_installed_checksums(cr)
         odoo.sql_db.close_db(dbname)
@@ -151,39 +147,32 @@ class DbCache:
     def _create_db_from_template(self, dbname, template):
         _logger.info(
             click.style(
-                "Creating database {dbname} "
-                "from template {template}".format(**locals()),
+                f"Creating database {dbname} from template {template}",
                 fg="green",
             )
         )
         self.pgcr.execute(
-            """
+            f"""
             CREATE DATABASE "{dbname}"
             ENCODING 'unicode'
             TEMPLATE "{template}"
-        """.format(
-                **locals()
-            )
+            """
         )
 
     def _rename_db(self, dbname_from, dbname_to):
         self.pgcr.execute(
-            """
+            f"""
             ALTER DATABASE "{dbname_from}"
             RENAME TO "{dbname_to}"
-        """.format(
-                **locals()
-            )
+            """
         )
 
     def _drop_db(self, dbname):
-        _logger.info("Dropping database {dbname}".format(**locals()))
+        _logger.info(f"Dropping database {dbname}")
         self.pgcr.execute(
-            """
+            f"""
             DROP DATABASE "{dbname}"
-        """.format(
-                **locals()
-            )
+            """
         )
 
     def _find_template(self, hashsum):
@@ -194,7 +183,7 @@ class DbCache:
             SELECT datname FROM pg_database
             WHERE datname like %s
             ORDER BY datname DESC  -- MRU first
-        """,
+            """,
             (pattern,),
         )
         r = self.pgcr.fetchone()
