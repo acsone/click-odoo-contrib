@@ -60,11 +60,11 @@ jobs:
       PGUSER: odoo
       PGPASSWORD: odoo
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "${{ matrix.python-version }}"
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ matrix.toxenv }}
@@ -78,7 +78,7 @@ jobs:
           pip install tox virtualenv
       - name: Run tox
         run: tox -e ${{ matrix.toxenv }}
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v3
   deploy:
     runs-on: ubuntu-latest
     needs:
