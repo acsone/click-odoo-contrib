@@ -13,11 +13,14 @@ from click_odoo import OdooEnvironment, odoo
 def pg_connect():
     conn = odoo.sql_db.db_connect("postgres")
     cr = conn.cursor()
-    # We are not going to use the ORM with this connection
-    # so silence the Odoo warning about autocommit.
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore")
-        cr.autocommit(True)
+    if odoo.release.version_info > (16, 0):
+        cr._cnx.autocommit = True
+    else:
+        # We are not going to use the ORM with this connection
+        # so silence the Odoo warning about autocommit.
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore")
+            cr.autocommit(True)
     try:
         yield cr._obj
     finally:

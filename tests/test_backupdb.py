@@ -12,6 +12,7 @@ from filecmp import dircmp
 import pytest
 from click.testing import CliRunner
 from click_odoo import odoo
+from click_odoo.compat import environment_manage  # not a public function of click-odoo!
 
 from click_odoo_contrib._dbutils import db_exists
 from click_odoo_contrib.backupdb import main
@@ -217,7 +218,7 @@ def tests_backupdb_zip_restore(odoodb, odoocfg, tmp_path):
     assert zip_path.exists()
     try:
         assert not db_exists(TEST_DBNAME)
-        with odoo.api.Environment.manage():
+        with environment_manage():
             odoo.service.db.restore_db(TEST_DBNAME, zip_filename, copy=True)
             odoo.sql_db.close_db(TEST_DBNAME)
         assert db_exists(TEST_DBNAME)
@@ -239,7 +240,7 @@ def tests_backupdb_folder_restore(odoodb, odoocfg, tmp_path):
     try:
         assert not db_exists(TEST_DBNAME)
         dumpfile = os.path.join(backup_dir, "db.dump")
-        with odoo.api.Environment.manage():
+        with environment_manage():
             odoo.service.db.restore_db(TEST_DBNAME, dumpfile, copy=True)
             odoo.sql_db.close_db(TEST_DBNAME)
         assert db_exists(TEST_DBNAME)
@@ -281,7 +282,7 @@ def tests_backupdb_dump_restore(odoodb, odoocfg, tmp_path):
     assert dump_path.exists()
     try:
         assert not db_exists(TEST_DBNAME)
-        with odoo.api.Environment.manage():
+        with environment_manage():
             odoo.service.db.restore_db(TEST_DBNAME, dump_filename, copy=True)
             odoo.sql_db.close_db(TEST_DBNAME)
         assert db_exists(TEST_DBNAME)
