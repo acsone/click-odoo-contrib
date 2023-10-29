@@ -55,12 +55,10 @@ def odoocfg(request, tmpdir):
     odoo_cfg = tmpdir / "odoo.cfg"
     odoo_cfg.write(
         textwrap.dedent(
-            """\
-        [options]
-        addons_path = {}
-    """.format(
-                ",".join(addons_path)
-            )
+            f"""\
+            [options]
+            addons_path = {",".join(addons_path)}
+            """
         )
     )
     yield odoo_cfg

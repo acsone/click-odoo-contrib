@@ -251,12 +251,10 @@ def test_create_cmd_cache(dbcache, tmpdir):
         odoo_cfg = tmpdir / "odoo.cfg"
         odoo_cfg.write(
             textwrap.dedent(
-                """\
-            [options]
-            addons_path = {}
-        """.format(
-                    ADDONS_PATH
-                )
+                f"""\
+                [options]
+                addons_path = {ADDONS_PATH}
+                """
             )
         )
         cmd = [
