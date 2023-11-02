@@ -108,3 +108,27 @@ def test_db_restore_move(backup):
         _check_default_params(TEST_DBNAME, original_db, operator.eq)
     finally:
         _dropdb_odoo(TEST_DBNAME)
+
+
+def test_db_restore_neutralize(backup):
+    assert not db_exists(TEST_DBNAME)
+    backup_path, _original_db = backup
+    try:
+        result = CliRunner().invoke(
+            restoredb, ["--neutralize", TEST_DBNAME, backup_path]
+        )
+        if odoo.release.version_info < (16, 0):
+            assert result.exit_code != 0, result.output
+            assert (
+                "--neutralize option is only available in odoo 16.0 and above"
+                in result.output
+            )
+            assert not db_exists(TEST_DBNAME)
+        else:
+            assert result.exit_code == 0
+            assert db_exists(TEST_DBNAME)
+            with click_odoo.OdooEnvironment(database=TEST_DBNAME) as env:
+                IrConfigParameters = env["ir.config_parameter"]
+                assert IrConfigParameters.get_param("database.is_neutralized") == "true"
+    finally:
+        _dropdb_odoo(TEST_DBNAME)
