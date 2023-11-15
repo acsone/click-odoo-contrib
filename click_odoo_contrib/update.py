@@ -240,6 +240,9 @@ def _update_db_nolock(
         odoo.tools.config["update"] = {}
         _logger.info("List-only selected, update is not performed.")
         return
+    if not to_update:
+        _logger.info("No module needs updating, update is not performed.")
+        return
     if i18n_overwrite:
         odoo.tools.config["overwrite_existing_translations"] = True
     odoo.modules.registry.Registry.new(database, update_module=True)
