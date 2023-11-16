@@ -3,6 +3,14 @@ Changes
 
 .. towncrier release notes start
 
+1.18.1 (2023-11-16)
+-------------------
+
+**Features**
+
+- click-odoo-update : Do not run/update Odoo when no module needs updating. (`#144 <https://github.com/acsone/click-odoo-contrib/issues/144>`_)
+
+
 1.18.0 (2023-10-29)
 -------------------
 
