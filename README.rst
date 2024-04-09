@@ -166,6 +166,11 @@ click-odoo-restoredb (beta)
                        exists. If force and destination database exists, it will
                        be dropped before restore.  [default: False]
 
+    --neutralize       Neutralize the database after restore. This will disable
+                       scheduled actions, outgoing emails, and sets other
+                       external providers in test mode. This works only in odoo
+                       16.0 and above.
+
     --jobs INTEGER     Uses this many parallel jobs to restore. Only used to
                        restore folder format backup.
 
