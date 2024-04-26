@@ -3,6 +3,14 @@ Changes
 
 .. towncrier release notes start
 
+1.9 (2024-04-26)
+----------------
+
+**Features**
+
+- click-odoo-restoredb: Add ``--neutralize`` option. This works only in odoo 16.0 and above. (`#143 <https://github.com/acsone/click-odoo-contrib/issues/143>`_)
+
+
 1.18.1 (2023-11-16)
 -------------------
 
