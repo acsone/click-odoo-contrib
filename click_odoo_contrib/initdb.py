@@ -64,6 +64,7 @@ def odoo_createdb(dbname, demo, module_names, force_db_storage):
         odoo.service.db._create_empty_database(dbname)
         odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
         odoo.tools.config["without_demo"] = not demo
+        odoo.service.server.load_server_wide_modules()
         odoo.modules.registry.Registry.new(dbname, force_demo=demo, update_module=True)
         _logger.info(click.style(f"Created new Odoo database {dbname}.", fg="green"))
         with odoo.sql_db.db_connect(dbname).cursor() as cr:
