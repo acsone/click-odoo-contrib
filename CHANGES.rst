@@ -3,7 +3,7 @@ Changes
 
 .. towncrier release notes start
 
-1.9 (2024-04-26)
+1.9 (2024-07-22)
 ----------------
 
 **Features**
