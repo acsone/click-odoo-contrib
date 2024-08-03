@@ -245,6 +245,7 @@ def _update_db_nolock(
         return
     if i18n_overwrite:
         odoo.tools.config["overwrite_existing_translations"] = True
+    odoo.service.server.load_server_wide_modules()
     odoo.modules.registry.Registry.new(database, update_module=True)
     if watcher and watcher.aborted:
         # If you get here, the updating session has been terminated and it
