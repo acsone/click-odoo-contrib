@@ -27,7 +27,9 @@ def _dump_db(dbname, backup):
     if backup.format in {"dump", "folder"}:
         cmd.insert(-1, "--format=c")
         filename = DBDUMP_FILENAME
-    stdout = subprocess.Popen(cmd, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE).stdout
+    stdout = subprocess.Popen(
+        cmd, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE
+    ).stdout
     backup.write(stdout, filename)
 
 
