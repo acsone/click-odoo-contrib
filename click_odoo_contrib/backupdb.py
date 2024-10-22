@@ -5,6 +5,7 @@
 import json
 import os
 import shutil
+import subprocess
 import tempfile
 
 import click
@@ -21,11 +22,14 @@ FILESTORE_DIRNAME = "filestore"
 
 def _dump_db(dbname, backup):
     cmd = ["pg_dump", "--no-owner", dbname]
+    env = odoo.tools.misc.exec_pg_environ()
     filename = "dump.sql"
     if backup.format in {"dump", "folder"}:
         cmd.insert(-1, "--format=c")
         filename = DBDUMP_FILENAME
-    _stdin, stdout = odoo.tools.exec_pg_command_pipe(*cmd)
+    stdout = subprocess.Popen(
+        cmd, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE
+    ).stdout
     backup.write(stdout, filename)
 
 
