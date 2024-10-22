@@ -294,6 +294,9 @@ click-odoo-update (stable)
                                  update process. Default: 0 (disabled).
     --list-only                  Log the list of addons to update without
                                  actually updating them.
+    --only-compute-hashes        Initialise hash values of installed addons.
+                                 Use this when you are sure all your addons are up-to-date
+                                 and you don't want to run `click-odoo-update --update-all`.
     --help                       Show this message and exit.
 
 Useful links
@@ -331,6 +334,7 @@ Contributors:
 - Laurent Mignon (ACSONE_)
 - Lois Rilo (ForgeFlow_)
 - Dmitry Voronin
+- Michael Tietz (MT Software)
 
 .. _ACSONE: https://acsone.eu
 .. _Tecnativa: https://tecnativa.com
