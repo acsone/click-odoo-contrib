@@ -50,11 +50,12 @@ def _check_expected(odoodb, v):
                 assert version.split(".")[2:] == expected_version.split("."), addon_name
 
 
-def _install_one(odoodb, v):
+def _install_one(odoodb, v, addon_name=None):
+    addon_name = addon_name or "addon_app"
     cmd = [
         odoo_bin,
         "--addons-path",
-        _addons_path("v1"),
+        _addons_path(v),
         "-d",
         odoodb,
         "-i",
@@ -92,6 +93,24 @@ def _update_list(odoodb, v):
         odoodb,
         "--list-only",
     ]
+    subprocess.check_call(cmd)
+
+
+def _only_compute_hashes(odoodb, v, ignore_addons=None, ignore_core_addons=None):
+    cmd = [
+        sys.executable,
+        "-m",
+        "click_odoo_contrib.update",
+        "--addons-path",
+        _addons_path(v),
+        "-d",
+        odoodb,
+        "--only-compute-hashes",
+    ]
+    if ignore_addons:
+        cmd += ["--ignore-addons", ignore_addons]
+    if ignore_core_addons:
+        cmd += ["--ignore-core-addons"]
     subprocess.check_call(cmd)
 
 
@@ -170,3 +189,38 @@ def test_parallel_watcher(odoodb):
     ]
     subprocess.check_call(cmd)
     # TODO Test an actual lock
+
+
+def test_only_compute_hashes(odoodb):
+    version = "v8"
+    _install_one(odoodb, version)
+    with OdooEnvironment(odoodb) as env:
+        checksums = _load_installed_checksums(env.cr)
+        assert "base" not in checksums
+        assert "addon_hashes" not in checksums
+        assert "addon_hashes_d1" not in checksums
+        assert "addon_hashes_d2" not in checksums
+
+    _only_compute_hashes(odoodb, version, "addon_hashes_d1,addon_hashes_d2", True)
+    with OdooEnvironment(odoodb) as env:
+        checksums = _load_installed_checksums(env.cr)
+        assert "base" not in checksums
+        assert "addon_hashes" in checksums
+        assert "addon_hashes_d1" not in checksums
+        assert "addon_hashes_d2" not in checksums
+
+    _only_compute_hashes(odoodb, version, None, True)
+    with OdooEnvironment(odoodb) as env:
+        checksums = _load_installed_checksums(env.cr)
+        assert "base" not in checksums
+        assert "addon_hashes" in checksums
+        assert "addon_hashes_d1" in checksums
+        assert "addon_hashes_d2" in checksums
+
+    _only_compute_hashes(odoodb, version)
+    with OdooEnvironment(odoodb) as env:
+        checksums = _load_installed_checksums(env.cr)
+        assert "base" in checksums
+        assert "addon_hashes" in checksums
+        assert "addon_hashes_d1" in checksums
+        assert "addon_hashes_d2" in checksums

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2024 Michael Tietz (MT Software) <mtietz@mt-software.de>
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import json
@@ -223,7 +224,14 @@ def _update_db_nolock(
     watcher=None,
     list_only=False,
     ignore_addons=None,
+    only_compute_hashes=False,
 ):
+    if only_compute_hashes:
+        with conn.cursor() as cr:
+            _save_installed_checksums(cr, ignore_addons)
+        _logger.info("Only compute module hashes, update is not performed.")
+        return
+
     to_update = odoo.tools.config["update"]
     if update_all:
         to_update["base"] = 1
@@ -264,6 +272,7 @@ def _update_db(
     watcher=None,
     list_only=False,
     ignore_addons=None,
+    only_compute_hashes=False,
 ):
     conn = odoo.sql_db.db_connect(database)
     with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
@@ -275,6 +284,7 @@ def _update_db(
             watcher,
             list_only,
             ignore_addons,
+            only_compute_hashes,
         )
 
 
@@ -303,6 +313,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
             watcher,
             ctx.params["list_only"],
             ignore_addons,
+            ctx.params["only_compute_hashes"],
         )
     finally:
         if watcher:
@@ -354,6 +365,15 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     is_flag=True,
     help="Log the list of addons to update without actually updating them.",
 )
+@click.option(
+    "--only-compute-hashes",
+    is_flag=True,
+    help=(
+        "Initialise hash values of installed addons. "
+        "Use this when you are sure all your addons are up-to-date "
+        "and you don't want to run `click-odoo-update --update-all`."
+    ),
+)
 def main(
     env,
     i18n_overwrite,
@@ -363,6 +383,7 @@ def main(
     list_only,
     ignore_addons,
     ignore_core_addons,
+    only_compute_hashes,
 ):
     """Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
