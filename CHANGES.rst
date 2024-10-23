@@ -3,6 +3,16 @@ Changes
 
 .. towncrier release notes start
 
+1.10 (2024-10-23)
+-----------------
+
+**Features**
+
+- Odoo 18 compatibility (`#150
+  <https://github.com/acsone/click-odoo-contrib/pull/150>`_, `#152
+  <https://github.com/acsone/click-odoo-contrib/pull/152>`_, `#154
+  <https://github.com/acsone/click-odoo-contrib/pull/154>`_)
+
 1.9 (2024-07-22)
 ----------------
 
