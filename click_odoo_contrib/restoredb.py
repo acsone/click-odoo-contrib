@@ -4,6 +4,7 @@
 
 import os
 import shutil
+import subprocess
 
 import click
 import click_odoo
@@ -29,7 +30,15 @@ def _restore_from_folder(dbname, backup, copy=True, jobs=1, neutralize=False):
 
     odoo.service.db._create_empty_database(dbname)
     pg_args = ["--jobs", str(jobs), "--dbname", dbname, "--no-owner", dbdump_file_path]
-    if odoo.tools.exec_pg_command("pg_restore", *pg_args):
+    pg_env = odoo.tools.misc.exec_pg_environ()
+    r = subprocess.run(
+        "pg_restore",
+        pg_args,
+        env=pg_env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.STDOUT,
+    )
+    if r.returncode != 0:
         raise click.ClickException("Couldn't restore database")
     if copy:
         # if it's a copy of a database, force generation of a new dbuuid
