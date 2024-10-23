@@ -14,7 +14,7 @@ Changes
   <https://github.com/acsone/click-odoo-contrib/pull/154>`_)
 
 1.19 (2024-07-22)
-----------------
+-----------------
 
 **Features**
 
