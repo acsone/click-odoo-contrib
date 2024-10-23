@@ -32,8 +32,7 @@ def _restore_from_folder(dbname, backup, copy=True, jobs=1, neutralize=False):
     pg_args = ["--jobs", str(jobs), "--dbname", dbname, "--no-owner", dbdump_file_path]
     pg_env = odoo.tools.misc.exec_pg_environ()
     r = subprocess.run(
-        "pg_restore",
-        pg_args,
+        ["pg_restore", *pg_args],
         env=pg_env,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT,
