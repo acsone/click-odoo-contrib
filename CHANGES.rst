@@ -3,7 +3,7 @@ Changes
 
 .. towncrier release notes start
 
-1.10 (2024-10-23)
+1.20 (2024-10-23)
 -----------------
 
 **Features**
@@ -13,7 +13,7 @@ Changes
   <https://github.com/acsone/click-odoo-contrib/pull/152>`_, `#154
   <https://github.com/acsone/click-odoo-contrib/pull/154>`_)
 
-1.9 (2024-07-22)
+1.19 (2024-07-22)
 ----------------
 
 **Features**
