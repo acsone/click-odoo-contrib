@@ -280,6 +280,7 @@ def _update_db(
 
 @contextmanager
 def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
+    threading.current_thread().dbname = database
     # Watch for database locks while Odoo updates
     watcher = None
     if ctx.params["watcher_max_seconds"] > 0:
