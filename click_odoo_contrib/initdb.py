@@ -262,10 +262,11 @@ class DbCache:
                 self._drop_db(datname)
 
     def trim_age(self, max_age):
+        max_trim = max_age + timedelta(minutes=1)
         with self._lock():
             pattern = self._make_pattern()
             max_name = self._make_pattern(
-                dt=datetime.utcnow() - max_age, hs=self.MAX_HASHSUM
+                dt=datetime.utcnow() - max_trim, hs=self.MAX_HASHSUM
             )
             self.pgcr.execute(
                 """
