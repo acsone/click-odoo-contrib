@@ -381,7 +381,7 @@ def main(
             odoo_createdb(new_database, demo, module_names, False)
         else:
             _logger.info(
-                "Cache disabled and no new database name provided. " "Nothing to do."
+                "Cache disabled and no new database name provided. Nothing to do."
             )
     else:
         with pg_connect() as pgcr:

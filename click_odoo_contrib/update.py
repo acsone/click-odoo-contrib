@@ -186,8 +186,7 @@ def _get_modules_to_update(cr, ignore_addons=None):
     modules_to_update = []
     checksums = _load_installed_checksums(cr)
     cr.execute(
-        "SELECT name FROM ir_module_module "
-        "WHERE state in ('installed', 'to upgrade')"
+        "SELECT name FROM ir_module_module WHERE state in ('installed', 'to upgrade')"
     )
     for (module_name,) in cr.fetchall():
         if not _is_installable(module_name):
