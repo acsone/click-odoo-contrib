@@ -59,14 +59,10 @@ def _patch_ir_attachment_store(force_db_storage):
             IrAttachment._storage = orig
 
 
-def odoo_createdb(dbname, demo, module_names, force_db_storage):
+def odoo_createdb(dbname, demo, module_names, force_db_storage, exists):
     with _patch_ir_attachment_store(force_db_storage):
-        try:
+        if not exists:
             odoo.service.db._create_empty_database(dbname)
-        except odoo.service.db.DatabaseExists:
-            if db_initialized(dbname):
-                # Why are you creating a DB that exists and is initialized?
-                raise
         if odoo.release.version_info >= (19, 0):
             odoo.tools.config["with_demo"] = demo
             odoo.modules.registry.Registry.new(
@@ -83,7 +79,14 @@ def odoo_createdb(dbname, demo, module_names, force_db_storage):
                 force_demo=demo,
                 update_module=True,
             )
-        _logger.info(click.style(f"Created new Odoo database {dbname}.", fg="green"))
+        if not exists:
+            _logger.info(
+                click.style(f"Created new Odoo database {dbname}.", fg="green")
+            )
+        else:
+            _logger.info(
+                click.style(f"Initialized Odoo database {dbname}.", fg="green")
+            )
         with odoo.sql_db.db_connect(dbname).cursor() as cr:
             _save_installed_checksums(cr)
         odoo.sql_db.close_db(dbname)
@@ -363,12 +366,18 @@ class DbCache:
 @click.option(
     "--unless-exists",
     is_flag=True,
-    help="If database exists, do nothing and exit without error.",
+    help=(
+        "If database exists, do nothing and exit without error, "
+        "else create and initialize it."
+    ),
 )
 @click.option(
     "--unless-initialized",
     is_flag=True,
-    help="If database exists and is initialized, do nothing and exit without error.",
+    help=(
+        "If database exists and is initialized, do nothing and exit without error, "
+        "else create and/or initialize it."
+    ),
 )
 def main(
     env,
@@ -382,7 +391,7 @@ def main(
     unless_exists,
     unless_initialized,
 ):
-    """Create an Odoo database with pre-installed modules.
+    """Create or initialize an Odoo database with pre-installed modules.
 
     Almost like standard Odoo does with the -i option,
     except this script manages a cache of database templates with
@@ -394,21 +403,51 @@ def main(
     dependencies and corresponding auto_install modules.
 
     By default, if the database already exists, the script will fail.
+    With --unless-exists, the script succeeds but does nothing when the database
+    exists. With --unless-initialized, the script succeeds but does nothing when
+    the database exists and is already initialized, otherwise it initizalizes
+    Odoo in the existing database.
     """
+    if unless_exists and unless_initialized:
+        raise click.ClickException(
+            "You cannot use both --unless-exists and --unless-initialized"
+        )
     if new_database:
         check_dbname(new_database)
-    if unless_exists and db_exists(new_database):
-        msg = "Database already exists: {}".format(new_database)
-        click.echo(click.style(msg, fg="yellow"))
-        return
-    if unless_initialized and db_initialized(new_database):
-        msg = "Database already initialized: {}".format(new_database)
-        click.echo(click.style(msg, fg="yellow"))
-        return
+    exists = db_exists(new_database)
+    if exists:
+        if unless_exists:
+            msg = "Database already exists: {}".format(new_database)
+            click.echo(click.style(msg, fg="yellow"))
+            return
+        initialized = db_initialized(new_database)
+        if initialized:
+            if unless_initialized:
+                msg = "Database already initialized: {}".format(new_database)
+                click.echo(click.style(msg, fg="yellow"))
+                return
+            else:
+                raise click.ClickException(
+                    "Database already exists and initialized: {}".format(new_database)
+                )
+        else:
+            # not initialized
+            if unless_initialized:
+                pass  # continue with initialization
+            else:
+                raise click.ClickException(
+                    "Database already exists: {}".format(new_database)
+                )
     module_names = [m.strip() for m in modules.split(",")]
     if not cache:
         if new_database:
-            odoo_createdb(new_database, demo, module_names, False)
+            odoo_createdb(
+                new_database,
+                demo,
+                module_names,
+                force_db_storage=False,
+                exists=exists,
+            )
         else:
             _logger.info(
                 "Cache disabled and no new database name provided. Nothing to do."
@@ -418,7 +457,7 @@ def main(
             dbcache = DbCache(cache_prefix, pgcr)
             if new_database:
                 hashsum = addons_hash(module_names, demo)
-                if dbcache.create(new_database, hashsum):
+                if not exists and dbcache.create(new_database, hashsum):
                     _logger.info(
                         click.style(
                             "Found matching database template! ✨ 🍰 ✨",
@@ -428,7 +467,13 @@ def main(
                     )
                     refresh_module_list(new_database)
                 else:
-                    odoo_createdb(new_database, demo, module_names, True)
+                    odoo_createdb(
+                        new_database,
+                        demo,
+                        module_names,
+                        force_db_storage=True,
+                        exists=exists,
+                    )
                     dbcache.add(new_database, hashsum)
             if cache_max_size >= 0:
                 dbcache.trim_size(cache_max_size)
