@@ -17,16 +17,16 @@ jobs:
         include:
           - python-version: "3.6"
             toxenv: "py36-11.0"
-            machine: ubuntu-20.04
+            machine: ubuntu-22.04
           - python-version: "3.6"
             toxenv: "py36-12.0"
-            machine: ubuntu-20.04
+            machine: ubuntu-22.04
           - python-version: "3.6"
             toxenv: "py36-13.0"
-            machine: ubuntu-20.04
+            machine: ubuntu-22.04
           - python-version: "3.6"
             toxenv: "py36-14.0"
-            machine: ubuntu-20.04
+            machine: ubuntu-22.04
           - python-version: "3.8"
             toxenv: "py38-15.0"
             machine: ubuntu-22.04
@@ -63,11 +63,13 @@ jobs:
       PGUSER: odoo
       PGPASSWORD: odoo
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
         with:
-          python-version: "${{ matrix.python-version }}"
-      - uses: actions/cache@v3
+          mise_toml: |
+            [tools]
+            python = "${{ matrix.python-version }}"
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ matrix.toxenv }}
@@ -78,7 +80,7 @@ jobs:
             libxml2-dev libxslt1-dev \
             libldap2-dev libsasl2-dev \
             gettext
-          pip install tox virtualenv
+          python${{ matrix.python-version}} -m pip install tox virtualenv
       - name: Run tox
-        run: tox -e ${{ matrix.toxenv }}
+        run: python${{ matrix.python-version}} -m tox -e ${{ matrix.toxenv }}
       - uses: codecov/codecov-action@v3
