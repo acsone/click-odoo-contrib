@@ -115,9 +115,11 @@ def main(env, dbname, dest, force, if_exists, format, filestore):
         filestore = False
     db = odoo.sql_db.db_connect(dbname)
     try:
-        with backup(
-            format, dest, "w"
-        ) as _backup, db.cursor() as cr, db_management_enabled():
+        with (
+            backup(format, dest, "w") as _backup,
+            db.cursor() as cr,
+            db_management_enabled(),
+        ):
             if format != "dump":
                 _create_manifest(cr, dbname, _backup)
             if filestore:
