@@ -99,7 +99,7 @@ def _update_list(odoodb, v):
     subprocess.check_call(cmd)
 
 
-def _only_compute_hashes(odoodb, v, ignore_addons=None, ignore_core_addons=None):
+def _only_compute_hashes(odoodb, v, ignore_addons, ignore_core_addons):
     cmd = [
         sys.executable,
         "-m",
@@ -197,10 +197,7 @@ def test_parallel_watcher(odoodb):
 def test_only_compute_hashes(odoodb):
     version = "v3"
     _install_one(odoodb, version)
-    _update_one(
-        odoodb,
-        version,
-    )
+    _update_one(odoodb, version)
 
     conn = odoo.sql_db.db_connect(odoodb)
     with conn.cursor() as cr:
@@ -215,7 +212,9 @@ def test_only_compute_hashes(odoodb):
         assert "addon_d1" not in checksums
         assert "addon_d2" not in checksums
 
-    _only_compute_hashes(odoodb, version, "addon_d1,addon_d2", True)
+    _only_compute_hashes(
+        odoodb, version, ignore_addons="addon_d1,addon_d2", ignore_core_addons=True
+    )
     with OdooEnvironment(odoodb) as env:
         checksums = _load_installed_checksums(env.cr)
         assert "base" not in checksums
@@ -223,7 +222,7 @@ def test_only_compute_hashes(odoodb):
         assert "addon_d1" not in checksums
         assert "addon_d2" not in checksums
 
-    _only_compute_hashes(odoodb, version, None, True)
+    _only_compute_hashes(odoodb, version, ignore_addons=None, ignore_core_addons=True)
     with OdooEnvironment(odoodb) as env:
         checksums = _load_installed_checksums(env.cr)
         assert "base" not in checksums
@@ -231,7 +230,7 @@ def test_only_compute_hashes(odoodb):
         assert "addon_d1" in checksums
         assert "addon_d2" in checksums
 
-    _only_compute_hashes(odoodb, version)
+    _only_compute_hashes(odoodb, version, ignore_addons=None, ignore_core_addons=False)
     with OdooEnvironment(odoodb) as env:
         checksums = _load_installed_checksums(env.cr)
         assert "base" in checksums
