@@ -6,7 +6,7 @@ import shutil
 import subprocess
 
 import click_odoo
-from click.testing import CliRunner
+from .compat import CliRunner
 
 from click_odoo_contrib.makepot import main
 
@@ -110,7 +110,7 @@ def test_makepot_absent_module(odoodb):
         ],
     )
     assert result.exit_code != 0
-    assert "Module(s) was not found" in result.stdout
+    assert "Module(s) was not found" in result.stderr
 
 
 def test_makepot_msgmerge(odoodb, odoocfg, tmpdir):

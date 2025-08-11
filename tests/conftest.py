@@ -25,6 +25,7 @@ def _init_odoo_db(dbname, test_addons_dir=None):
         ]
         cmd.append("--addons-path")
         cmd.append(",".join(addons_path))
+    print(cmd)
     subprocess.check_call(cmd)
 
 
