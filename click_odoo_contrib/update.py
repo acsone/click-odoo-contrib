@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2024 Michael Tietz (MT Software) <mtietz@mt-software.de>
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import json
@@ -264,9 +265,17 @@ def _update_db(
     watcher=None,
     list_only=False,
     ignore_addons=None,
+    only_compute_hashes=False,
 ):
     conn = odoo.sql_db.db_connect(database)
     with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
+        if only_compute_hashes:
+            _save_installed_checksums(cr, ignore_addons)
+            _logger.info(
+                "Only computed and stored module hashes, update is not performed."
+            )
+            return
+
         _update_db_nolock(
             conn,
             database,
@@ -278,6 +287,15 @@ def _update_db(
         )
 
 
+def _get_ignore_addons(ignore_addons_str=None, ignore_core_addons=None):
+    ignore_addons = set()
+    if ignore_addons_str:
+        ignore_addons.update(ignore_addons_str.strip().split(","))
+    if ignore_core_addons:
+        ignore_addons.update(get_core_addons(OdooSeries(odoo.release.series)))
+    return ignore_addons
+
+
 @contextmanager
 def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     # Watch for database locks while Odoo updates
@@ -285,11 +303,9 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     if ctx.params["watcher_max_seconds"] > 0:
         watcher = DbLockWatcher(database, ctx.params["watcher_max_seconds"])
         watcher.start()
-    ignore_addons = set()
-    if ctx.params["ignore_addons"]:
-        ignore_addons.update(ctx.params["ignore_addons"].strip().split(","))
-    if ctx.params["ignore_core_addons"]:
-        ignore_addons.update(get_core_addons(OdooSeries(odoo.release.series)))
+    ignore_addons = _get_ignore_addons(
+        ctx.params["ignore_addons"], ctx.params["ignore_core_addons"]
+    )
     if ignore_addons and ctx.params["update_all"]:
         raise click.ClickException(
             "--update-all and --ignore(-core)-addons cannot be used together"
@@ -303,6 +319,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
             watcher,
             ctx.params["list_only"],
             ignore_addons,
+            ctx.params["only_compute_hashes"],
         )
     finally:
         if watcher:
@@ -354,6 +371,15 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     is_flag=True,
     help="Log the list of addons to update without actually updating them.",
 )
+@click.option(
+    "--only-compute-hashes",
+    is_flag=True,
+    help=(
+        "Initialise hash values of installed addons. "
+        "Use this when you are sure all your addons are up-to-date "
+        "and you don't want to run `click-odoo-update --update-all`."
+    ),
+)
 def main(
     env,
     i18n_overwrite,
@@ -363,6 +389,7 @@ def main(
     list_only,
     ignore_addons,
     ignore_core_addons,
+    only_compute_hashes,
 ):
     """Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
