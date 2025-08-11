@@ -9,3 +9,6 @@ build-backend = "setuptools.build_meta"
     issue_format = "`#{issue} <https://github.com/acsone/click-odoo-contrib/issues/{issue}>`_"
     directory = "newsfragments/"
     filename = "CHANGES.rst"
+
+[tool.ruff]
+target-version = "py37"
