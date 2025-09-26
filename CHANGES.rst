@@ -3,7 +3,7 @@ Changes
 
 .. towncrier release notes start
 
-1.21 (2025-09-26)
+1.21 (2025-08-11)
 -----------------
 
 **Features**
