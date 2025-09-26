@@ -300,6 +300,7 @@ def _get_ignore_addons(ignore_addons_str=None, ignore_core_addons=None):
 
 @contextmanager
 def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
+    threading.current_thread().dbname = database
     # Watch for database locks while Odoo updates
     watcher = None
     if ctx.params["watcher_max_seconds"] > 0:
