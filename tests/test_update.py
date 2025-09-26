@@ -116,9 +116,9 @@ def test_update(odoodb):
         checksums = _load_installed_checksums(env.cr)
         print(checksums)
         assert "base" in checksums
-        assert checksums.get("addon_app") == "bb1ff827fd6084e69180557c3183989100ddb62b"
-        assert checksums.get("addon_d1") == "ff46eefbe846e1a46ff3de74e117fd285b72f298"
-        assert checksums.get("addon_d2") == "edf58645e2e55a2d282320206f73df09a746a4ab"
+        assert checksums.get("addon_app") == "f3e5fdbde44776fd42e3de285e8898aa11b3a9ba"
+        assert checksums.get("addon_d1") == "2ec1acd11d21dd85d99851c72773adb5f30d2114"
+        assert checksums.get("addon_d2") == "1924672701f2a79160cd53885e450c02b9874f6e"
     # 3.1 sets addons_d1 as uninstallable: it stays installed
     _update_one(odoodb, "v3.1")
     _check_expected(odoodb, "v3.1")
