@@ -3,6 +3,14 @@ Changes
 
 .. towncrier release notes start
 
+1.21 (2025-09-26)
+-----------------
+
+**Features**
+
+- click-odoo-update: ``--only-compute-hashes``. (`#153 <https://github.com/acsone/click-odoo-contrib/issues/153>`_)
+
+
 1.20 (2024-10-23)
 -----------------
 
