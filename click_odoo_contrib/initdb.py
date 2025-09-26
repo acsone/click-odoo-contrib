@@ -65,10 +65,14 @@ def odoo_createdb(dbname, demo, module_names, force_db_storage):
         odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
         if odoo.release.version_info >= (19, 0):
             odoo.tools.config["with_demo"] = demo
-            odoo.modules.registry.Registry.new(dbname, new_db_demo=demo, update_module=True)
+            odoo.modules.registry.Registry.new(
+                dbname, new_db_demo=demo, update_module=True
+            )
         else:
             odoo.tools.config["without_demo"] = not demo
-            odoo.modules.registry.Registry.new(dbname, force_demo=demo, update_module=True)
+            odoo.modules.registry.Registry.new(
+                dbname, force_demo=demo, update_module=True
+            )
         _logger.info(click.style(f"Created new Odoo database {dbname}.", fg="green"))
         with odoo.sql_db.db_connect(dbname).cursor() as cr:
             _save_installed_checksums(cr)
