@@ -59,6 +59,23 @@ def _patch_ir_attachment_store(force_db_storage):
             IrAttachment._storage = orig
 
 
+def odoo_createdb_without_cache(
+    dbname, demo, module_names, lang, password, login, country
+):
+    odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
+    odoo.service.db.exp_create_database(dbname, demo, lang, password, login, country)
+
+    _logger.info(
+        click.style(
+            "Created new Odoo database {dbname}.".format(**locals()), fg="green"
+        )
+    )
+
+    with odoo.sql_db.db_connect(dbname).cursor() as cr:
+        _save_installed_checksums(cr)
+    odoo.sql_db.close_db(dbname)
+
+
 def odoo_createdb(dbname, demo, module_names, force_db_storage):
     with _patch_ir_attachment_store(force_db_storage):
         odoo.service.db._create_empty_database(dbname)
@@ -360,6 +377,26 @@ class DbCache:
     is_flag=True,
     help="Don't report error if database already exists.",
 )
+@click.option(
+    "--lang",
+    default="en_US",
+    show_default=True,
+    help="Language to use for the new database",
+)
+@click.option(
+    "--password",
+    required=False,
+    help="Password for the admin user",
+)
+@click.option(
+    "--login",
+    required=False,
+    help="Login for the admin user",
+)
+@click.option(
+    "--country",
+    help="Country for the new database",
+)
 def main(
     env,
     new_database,
@@ -370,6 +407,10 @@ def main(
     cache_max_age,
     cache_max_size,
     unless_exists,
+    lang,
+    password,
+    login,
+    country,
 ):
     """Create an Odoo database with pre-installed modules.
 
@@ -391,7 +432,9 @@ def main(
     module_names = [m.strip() for m in modules.split(",")]
     if not cache:
         if new_database:
-            odoo_createdb(new_database, demo, module_names, False)
+            odoo_createdb_without_cache(
+                new_database, demo, module_names, lang, password, login, country
+            )
         else:
             _logger.info(
                 "Cache disabled and no new database name provided. Nothing to do."
