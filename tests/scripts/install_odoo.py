@@ -70,7 +70,12 @@ def install_odoo():
         )
     with odoo_requirements(odoo_branch) as requirements:
         subprocess.check_call(["pip", "install", *requirements])
-    subprocess.check_call(["pip", "install", "-e", odoo_dir])
+    odoo_install_cmd = ["pip", "install", "-e", odoo_dir]
+    if sys.version_info >= (3, 7):
+        odoo_install_cmd.extend(
+            ["--use-pep517", "--config-setting=editable_mode=compat"]
+        )
+    subprocess.check_call(odoo_install_cmd)
 
 
 def main():

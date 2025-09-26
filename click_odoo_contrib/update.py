@@ -224,28 +224,31 @@ def _update_db_nolock(
     list_only=False,
     ignore_addons=None,
 ):
-    to_update = odoo.tools.config["update"]
     if update_all:
-        to_update["base"] = 1
+        modules_to_update = ["base"]
     else:
         with conn.cursor() as cr:
-            for module_name in _get_modules_to_update(cr, ignore_addons):
-                to_update[module_name] = 1
-        if to_update:
+            modules_to_update = _get_modules_to_update(cr, ignore_addons)
+        if modules_to_update:
             _logger.info(
                 "Updating addons for their hash changed: %s.",
-                ",".join(to_update.keys()),
+                ",".join(modules_to_update),
             )
     if list_only:
-        odoo.tools.config["update"] = {}
         _logger.info("List-only selected, update is not performed.")
         return
-    if not to_update:
+    if not modules_to_update:
         _logger.info("No module needs updating, update is not performed.")
         return
     if i18n_overwrite:
         odoo.tools.config["overwrite_existing_translations"] = True
-    odoo.modules.registry.Registry.new(database, update_module=True)
+    if odoo.release.version_info >= (19, 0):
+        odoo.modules.registry.Registry.new(
+            database, update_module=True, upgrade_modules=modules_to_update
+        )
+    else:
+        odoo.tools.config["update"] = dict.fromkeys(modules_to_update, 1)
+        odoo.modules.registry.Registry.new(database, update_module=True)
     if watcher and watcher.aborted:
         # If you get here, the updating session has been terminated and it
         # somehow has recovered by opening a new cursor and continuing;

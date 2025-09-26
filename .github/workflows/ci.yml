@@ -42,12 +42,15 @@ jobs:
           - python-version: "3.12"
             toxenv: "py312-18.0"
             machine: ubuntu-24.04
+          - python-version: "3.13"
+            toxenv: "py313-19.0"
+            machine: ubuntu-24.04
           - python-version: "3.10"
             toxenv: "twine_check"
             machine: ubuntu-22.04
     services:
       postgres:
-        image: postgres:12
+        image: postgres:13
         env:
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo

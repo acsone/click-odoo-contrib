@@ -61,6 +61,8 @@ def pgdb():
 
 @pytest.fixture
 def manifest():
+    import odoo.service.db
+
     _original_f = odoo.service.db.dump_db_manifest
     try:
         odoo.service.db.dump_db_manifest = lambda a: {"manifest": "backupdb"}
