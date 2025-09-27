@@ -35,7 +35,7 @@ ADDONS_PATH = ",".join(
 
 
 def _dropdb(dbname):
-    subprocess.check_call(["dropdb", "--if-exists", dbname])
+    subprocess.check_call(["dropdb", "--if-exists", "--force", dbname])
 
 
 @pytest.fixture
@@ -45,6 +45,20 @@ def pgdb():
         yield TEST_DBNAME
     finally:
         _dropdb(TEST_DBNAME)
+
+
+@pytest.fixture
+def pgdb_initialized(pgdb):
+    subprocess.check_call(
+        [
+            "psql",
+            "-d",
+            pgdb,
+            "-c",
+            "CREATE TABLE ir_module_module (id INT)",
+        ]
+    )
+    yield pgdb
 
 
 @pytest.fixture
@@ -305,10 +319,35 @@ def test_dbcache_add_concurrency(pgdb, dbcache):
     assert dbcache.size == 1
 
 
-def test_unless_exists_exists(pgdb):
-    result = CliRunner().invoke(main, ["--unless-exists", "-n", TEST_DBNAME])
-    assert result.exit_code == 0
-    assert "Database already exists" in result.output
-    result = CliRunner().invoke(main, ["-n", TEST_DBNAME])
+def test_exists_not_initialized(pgdb):
+    """Test --unless-exists and --unless-initialized options in presence of
+    an existing but not initialized database."""
+    result = CliRunner().invoke(main, ["-n", pgdb])
     assert result.exit_code != 0
     assert "already exists" in result.output
+    result = CliRunner().invoke(main, ["--unless-exists", "-n", pgdb])
+    assert result.exit_code == 0
+    assert "Database already exists" in result.output
+    result = CliRunner().invoke(
+        main, ["--unless-initialized", "-n", pgdb, "--no-cache"]
+    )
+    assert result.exit_code == 0
+    with click_odoo.OdooEnvironment(database=pgdb) as env:
+        m = env["ir.module.module"].search(
+            [("name", "=", "base"), ("state", "=", "installed")]
+        )
+        assert m, "base module not installed"
+
+
+def test_exists_initialized(pgdb_initialized):
+    """Test --unless-exists and --unless-initialized options in presence of
+    an existing and initialized database."""
+    result = CliRunner().invoke(main, ["-n", pgdb_initialized])
+    assert result.exit_code != 0
+    assert "already exists" in result.output
+    result = CliRunner().invoke(main, ["--unless-exists", "-n", pgdb_initialized])
+    assert result.exit_code == 0
+    assert "Database already exists" in result.output
+    result = CliRunner().invoke(main, ["--unless-initialized", "-n", pgdb_initialized])
+    assert result.exit_code == 0
+    assert "Database already initialized" in result.output

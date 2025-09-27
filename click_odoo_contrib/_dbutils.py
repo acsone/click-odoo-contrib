@@ -10,8 +10,8 @@ from click_odoo import OdooEnvironment, odoo
 
 
 @contextmanager
-def pg_connect():
-    conn = odoo.sql_db.db_connect("postgres")
+def pg_connect_odoocr(dbname="postgres"):
+    conn = odoo.sql_db.db_connect(dbname)
     cr = conn.cursor()
     if odoo.release.version_info > (16, 0):
         cr._cnx.autocommit = True
@@ -22,9 +22,15 @@ def pg_connect():
             warnings.filterwarnings("ignore")
             cr.autocommit(True)
     try:
-        yield cr._obj
+        yield cr
     finally:
         cr.close()
+
+
+@contextmanager
+def pg_connect(dbname="postgres"):
+    with pg_connect_odoocr(dbname) as cr:
+        yield cr._obj
 
 
 def db_exists(dbname):
@@ -35,6 +41,13 @@ def db_exists(dbname):
             (dbname,),
         )
         return bool(cr.fetchone())
+
+
+def db_initialized(dbname):
+    if not db_exists(dbname):
+        return False
+    with pg_connect_odoocr(dbname) as cr:
+        return odoo.modules.db.is_initialized(cr)
 
 
 def terminate_connections(dbname):

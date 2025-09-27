@@ -71,16 +71,21 @@ click-odoo-initdb (stable)
 
   Usage: click-odoo-initdb [OPTIONS]
 
-    Create an Odoo database with pre-installed modules.
+    Create or initialize an Odoo database with pre-installed modules.
 
     Almost like standard Odoo does with the -i option, except this script
-    manages a cache of database templates with the exact same addons
-    installed. This is particularly useful to save time when initializing test
-    databases.
+    manages a cache of database templates with the exact same addons installed.
+    This is particularly useful to save time when initializing test databases.
 
     Cached templates are identified by computing a sha1 checksum of modules
-    provided with the -m option, including their dependencies and
-    corresponding auto_install modules.
+    provided with the -m option, including their dependencies and corresponding
+    auto_install modules.
+
+    By default, if the database already exists, the script will fail. With
+    --unless-exists, the script succeeds but does nothing when the database
+    exists. With --unless-initialized, the script succeeds but does nothing when
+    the database exists and is already initialized, otherwise it initizalizes
+    Odoo in the existing database.
 
   Options:
     -c, --config FILE         ...
@@ -90,14 +95,14 @@ click-odoo-initdb (stable)
                               operation is executed.
     -m, --modules TEXT        Comma separated list of addons to install.
                               [default: base]
-    --demo / --no-demo        Load Odoo demo data.  [default: True]
+    --demo / --no-demo        Load Odoo demo data.  [default: demo]
     --cache / --no-cache      Use a cache of database templates with the exact
                               same addons installed. Disabling this option also
                               disables all other cache-related operations such
                               as max-age or size. Note: when the cache is
                               enabled, all attachments created during database
                               initialization are stored in database instead of
-                              the default Odoo file store.  [default: True]
+                              the default Odoo file store.  [default: cache]
     --cache-prefix TEXT       Prefix to use when naming cache template databases
                               (max 8 characters). CAUTION: all databases named
                               like {prefix}-____________-% will eventually be
@@ -108,7 +113,10 @@ click-odoo-initdb (stable)
                               30]
     --cache-max-size INTEGER  Keep N most recently used cache templates. Use -1
                               to disable. Use 0 to empty cache.  [default: 5]
-    --unless-exists           Don't report error if database already exists.
+    --unless-exists           If database exists, do nothing and exit without
+                              error, else create and initialize it.
+    --unless-initialized      If database exists and is initialized, do nothing
+                              and exit without error, else create and/or initialize it.
     --help                    Show this message and exit.
 
 click-odoo-backupdb (beta)
