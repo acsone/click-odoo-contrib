@@ -50,6 +50,16 @@ def test_manifest_expand_dependencies_auto_install():
     assert "base_import" in res  # base_import is indirect autoinstall
 
 
+def test_manifest_expand_dependencies_no_active():
+    res = manifest.expand_dependencies(["mail"], include_auto_install=True)
+    assert "mail" in res
+    assert "base" in res  # obviously
+    assert "web" in res  # web is autoinstall
+    assert "base_import" in res  # base_import is indirect autoinstall
+    assert "l10n_fi" not in res  # is active
+    assert "account" not in res  # is dependency of account
+
+
 def test_manifest_expand_dependencies_not_found():
     with pytest.raises(manifest.ModuleNotFound):
         manifest.expand_dependencies(["not_a_module"])
