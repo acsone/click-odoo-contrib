@@ -99,10 +99,8 @@ click-odoo-initdb (stable)
     --cache / --no-cache      Use a cache of database templates with the exact
                               same addons installed. Disabling this option also
                               disables all other cache-related operations such
-                              as max-age or size. Note: when the cache is
-                              enabled, all attachments created during database
-                              initialization are stored in database instead of
-                              the default Odoo file store.  [default: cache]
+                              as max-age or size. Note: enabling the cache
+                              implies --attachements-in-db.  [default: cache]
     --cache-prefix TEXT       Prefix to use when naming cache template databases
                               (max 8 characters). CAUTION: all databases named
                               like {prefix}-____________-% will eventually be
@@ -113,6 +111,9 @@ click-odoo-initdb (stable)
                               30]
     --cache-max-size INTEGER  Keep N most recently used cache templates. Use -1
                               to disable. Use 0 to empty cache.  [default: 5]
+    --attachments-in-db TEXT  Store attachements created during database
+                              initialization in the database instead of the
+                              default file store.
     --unless-exists           If database exists, do nothing and exit without
                               error, else create and initialize it.
     --unless-initialized      If database exists and is initialized, do nothing

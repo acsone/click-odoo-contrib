@@ -332,10 +332,7 @@ class DbCache:
     help="Use a cache of database templates with the exact "
     "same addons installed. Disabling this option "
     "also disables all other cache-related operations "
-    "such as max-age or size. Note: when the cache is "
-    "enabled, all attachments created during database "
-    "initialization are stored in database instead "
-    "of the default Odoo file store.",
+    "such as max-age or size. Note: enabling the cache implies --attachements-in-db.",
 )
 @click.option(
     "--cache-prefix",
@@ -364,6 +361,14 @@ class DbCache:
     "-1 to disable. Use 0 to empty cache.",
 )
 @click.option(
+    "--attachments-in-db",
+    is_flag=True,
+    help=(
+        "Store attachements created during database initialization in the database "
+        "instead of the default file store."
+    ),
+)
+@click.option(
     "--unless-exists",
     is_flag=True,
     help=(
@@ -390,6 +395,7 @@ def main(
     cache_max_size,
     unless_exists,
     unless_initialized,
+    attachments_in_db,
 ):
     """Create or initialize an Odoo database with pre-installed modules.
 
@@ -445,7 +451,7 @@ def main(
                 new_database,
                 demo,
                 module_names,
-                force_db_storage=False,
+                force_db_storage=attachments_in_db,
                 exists=exists,
             )
         else:
