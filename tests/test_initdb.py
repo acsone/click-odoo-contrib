@@ -351,3 +351,35 @@ def test_exists_initialized(pgdb_initialized):
     result = CliRunner().invoke(main, ["--unless-initialized", "-n", pgdb_initialized])
     assert result.exit_code == 0
     assert "Database already initialized" in result.output
+
+
+def test_attachments_in_db_default(pgdb):
+    """Initializing a database creates attachments in the file store by default."""
+    result = CliRunner().invoke(
+        main, ["-n", pgdb, "--no-cache", "--unless-initialized"]
+    )
+    assert result.exit_code == 0, result.output
+    with click_odoo.OdooEnvironment(database=pgdb) as env:
+        env.cr.execute(
+            """
+            SELECT COUNT(*) FROM ir_attachment
+            WHERE store_fname IS NOT NULL
+        """
+        )
+        assert env.cr.fetchone()[0] != 0, "all attachments are stored in db"
+
+
+def test_attachments_in_db(pgdb):
+    """Initializing a database with --attachments-in-db does not use the file store."""
+    result = CliRunner().invoke(
+        main, ["-n", pgdb, "--no-cache", "--unless-initialized", "--attachments-in-db"]
+    )
+    assert result.exit_code == 0, result.output
+    with click_odoo.OdooEnvironment(database=pgdb) as env:
+        env.cr.execute(
+            """
+            SELECT COUNT(*) FROM ir_attachment
+            WHERE store_fname IS NOT NULL
+        """
+        )
+        assert env.cr.fetchone()[0] == 0, "some attachments are not stored in db"
