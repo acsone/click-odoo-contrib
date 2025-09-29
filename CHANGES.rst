@@ -8,11 +8,11 @@ Changes
 
 **Features**
 
+- Support Odoo 19 (`#165 <https://github.com/acsone/click-odoo-contrib/issues/165>`_)
 - click-odoo-initdb: add ``--attachments-in-db`` option, to store attachements created
   during database initialization in the database instead of the default Odoo file store. (`#146 <https://github.com/acsone/click-odoo-contrib/issues/146>`_)
+- click-odoo-initdb: Add `--unless-initialized` option to initialize an already existing database. (`#168 <https://github.com/acsone/click-odoo-contrib/issues/168>`_)
 - click-odoo-update: add database name to log entries (`#156 <https://github.com/acsone/click-odoo-contrib/issues/156>`_)
-- Support Odoo 19 (`#165 <https://github.com/acsone/click-odoo-contrib/issues/165>`_)
-- initdb: Add `--unless-initialized` option to initialize an already existing database. (`#168 <https://github.com/acsone/click-odoo-contrib/issues/168>`_)
 
 
 1.21 (2025-08-11)
