@@ -215,6 +215,10 @@ def _is_installable(module_name):
         return False
 
 
+def _neutralize(cr):
+    odoo.modules.neutralize.neutralize_database(cr)
+
+
 def _update_db_nolock(
     conn,
     database,
@@ -268,6 +272,7 @@ def _update_db(
     list_only=False,
     ignore_addons=None,
     only_compute_hashes=False,
+    neutralize=False,
 ):
     conn = odoo.sql_db.db_connect(database)
     with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
@@ -287,6 +292,10 @@ def _update_db(
             list_only,
             ignore_addons,
         )
+
+        if neutralize:
+            with conn.cursor() as cr:
+                _neutralize(cr)
 
 
 def _get_ignore_addons(ignore_addons_str=None, ignore_core_addons=None):
@@ -323,6 +332,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
             ctx.params["list_only"],
             ignore_addons,
             ctx.params["only_compute_hashes"],
+            ctx.params["neutralize"],
         )
     finally:
         if watcher:
@@ -383,6 +393,11 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
         "and you don't want to run `click-odoo-update --update-all`."
     ),
 )
+@click.option(
+    "--neutralize",
+    is_flag=True,
+    help="Neutralize the database after the update process.",
+)
 def main(
     env,
     i18n_overwrite,
@@ -393,6 +408,7 @@ def main(
     ignore_addons,
     ignore_core_addons,
     only_compute_hashes,
+    neutralize,
 ):
     """Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
