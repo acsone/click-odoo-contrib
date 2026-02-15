@@ -5,7 +5,7 @@ import click
 import click_odoo
 
 from ._dbutils import get_dev_demo_dbname
-from .drobdb import _drop_db
+from .dropdb import _drop_db
 from .initdb import _init_db
 
 
