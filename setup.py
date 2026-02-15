@@ -55,5 +55,6 @@ setup(
         click-odoo-restoredb=click_odoo_contrib.restoredb:main
         click-odoo-makepot=click_odoo_contrib.makepot:main
         click-odoo-initaddonhashes=click_odoo_contrib.initaddonhashes:main
+        click-odoo-resetdemo=click_odoo_contrib.resetdemo:main
     """,
 )

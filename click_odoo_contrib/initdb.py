@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
-# Copyright 2026 Michael Tietz (MT Software) <mtietz@mt-software.de>
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 import contextlib
 import hashlib
@@ -14,7 +13,7 @@ import click
 import click_odoo
 from click_odoo import odoo
 
-from ._dbutils import advisory_lock, db_exists, pg_connect, get_dev_demo_dbname
+from ._dbutils import advisory_lock, db_exists, pg_connect
 from .manifest import expand_dependencies
 from .update import _save_installed_checksums
 
@@ -281,6 +280,65 @@ class DbCache:
                 self._drop_db(datname)
 
 
+def _init_db(
+    env,
+    new_database=None,
+    modules="base",
+    demo=True,
+    cache=True,
+    cache_prefix="cache",
+    cache_max_age=30,
+    cache_max_size=5,
+    unless_exists=False,
+):
+    """Create an Odoo database with pre-installed modules.
+
+    Almost like standard Odoo does with the -i option,
+    except this script manages a cache of database templates with
+    the exact same addons installed. This is particularly useful to
+    save time when initializing test databases.
+
+    Cached templates are identified by computing a sha1
+    checksum of modules provided with the -m option, including their
+    dependencies and corresponding auto_install modules.
+    """
+    if new_database:
+        check_dbname(new_database)
+    if unless_exists and db_exists(new_database):
+        msg = "Database already exists: {}".format(new_database)
+        click.echo(click.style(msg, fg="yellow"))
+        return
+    module_names = [m.strip() for m in modules.split(",")]
+    if not cache:
+        if new_database:
+            odoo_createdb(new_database, demo, module_names, False)
+        else:
+            _logger.info(
+                "Cache disabled and no new database name provided. " "Nothing to do."
+            )
+    else:
+        with pg_connect() as pgcr:
+            dbcache = DbCache(cache_prefix, pgcr)
+            if new_database:
+                hashsum = addons_hash(module_names, demo)
+                if dbcache.create(new_database, hashsum):
+                    _logger.info(
+                        click.style(
+                            "Found matching database template! ✨ 🍰 ✨",
+                            fg="green",
+                            bold=True,
+                        )
+                    )
+                    refresh_module_list(new_database)
+                else:
+                    odoo_createdb(new_database, demo, module_names, True)
+                    dbcache.add(new_database, hashsum)
+            if cache_max_size >= 0:
+                dbcache.trim_size(cache_max_size)
+            if cache_max_age >= 0:
+                dbcache.trim_age(timedelta(days=cache_max_age))
+
+
 @click.command()
 @click_odoo.env_options(
     default_log_level="warn",
@@ -359,54 +417,17 @@ def main(
     cache_max_size,
     unless_exists,
 ):
-    """Create an Odoo database with pre-installed modules.
-
-    Almost like standard Odoo does with the -i option,
-    except this script manages a cache of database templates with
-    the exact same addons installed. This is particularly useful to
-    save time when initializing test databases.
-
-    Cached templates are identified by computing a sha1
-    checksum of modules provided with the -m option, including their
-    dependencies and corresponding auto_install modules.
-    """
-    if not new_database:
-        new_database = get_dev_demo_dbname()
-    if new_database:
-        check_dbname(new_database)
-    if unless_exists and db_exists(new_database):
-        msg = "Database already exists: {}".format(new_database)
-        click.echo(click.style(msg, fg="yellow"))
-        return
-    module_names = [m.strip() for m in modules.split(",")]
-    if not cache:
-        if new_database:
-            odoo_createdb(new_database, demo, module_names, False)
-        else:
-            _logger.info(
-                "Cache disabled and no new database name provided. " "Nothing to do."
-            )
-    else:
-        with pg_connect() as pgcr:
-            dbcache = DbCache(cache_prefix, pgcr)
-            if new_database:
-                hashsum = addons_hash(module_names, demo)
-                if dbcache.create(new_database, hashsum):
-                    _logger.info(
-                        click.style(
-                            "Found matching database template! ✨ 🍰 ✨",
-                            fg="green",
-                            bold=True,
-                        )
-                    )
-                    refresh_module_list(new_database)
-                else:
-                    odoo_createdb(new_database, demo, module_names, True)
-                    dbcache.add(new_database, hashsum)
-            if cache_max_size >= 0:
-                dbcache.trim_size(cache_max_size)
-            if cache_max_age >= 0:
-                dbcache.trim_age(timedelta(days=cache_max_age))
+    _init_db(
+        env,
+        new_database,
+        modules,
+        demo,
+        cache,
+        cache_prefix,
+        cache_max_age,
+        cache_max_size,
+        unless_exists,
+    )
 
 
 if __name__ == "__main__":  # pragma: no cover
