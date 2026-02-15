@@ -28,12 +28,16 @@ def parse_manifest(s):
     return ast.literal_eval(s)
 
 
+def _read_manifest(manifest_path):
+    with open(manifest_path) as mf:
+        return parse_manifest(mf.read())
+
+
 def read_manifest(addon_dir):
     manifest_path = get_manifest_path(addon_dir)
     if not manifest_path:
         raise NoManifestFound("no Odoo manifest found in %s" % addon_dir)
-    with open(manifest_path) as mf:
-        return parse_manifest(mf.read())
+    return _read_manifest(manifest_path)
 
 
 def find_addons(addons_dir, installable_only=True):
@@ -47,6 +51,22 @@ def find_addons(addons_dir, installable_only=True):
         if installable_only and not manifest.get("installable", True):
             continue
         yield addon_name, addon_dir, manifest
+
+
+def find_addons_bidir(addons_dir, installable_only=True):
+    addons_list = list(find_addons(addons_dir, installable_only=True))
+    if addons_list:
+        return addons_list
+    addons_dir_path = Path(addons_dir).absolute()
+    manifest_path = None
+    while not manifest_path and addons_dir_path.name:
+        manifest_path = get_manifest_path(addons_dir)
+        if not manifest_path:
+            addons_dir_path = addons_dir_path.parent
+    if manifest_path:
+        return [
+            (addons_dir_path.name, str(addons_dir_path), _read_manifest(manifest_path))
+        ]
 
 
 def expand_dependencies(module_names, include_auto_install=False, include_active=False):
