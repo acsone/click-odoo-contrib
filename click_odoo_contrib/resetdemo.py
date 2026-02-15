@@ -7,6 +7,7 @@ import click_odoo
 from ._dbutils import get_dev_demo_dbname
 from .dropdb import _drop_db
 from .initdb import _init_db
+from .manifest import find_addons_bidir
 
 
 @click.command()
@@ -32,6 +33,9 @@ def main(
         dbname = get_dev_demo_dbname()
     if not dbname:
         raise click.ClickException("No dbname provided")
+    if modules == ".":
+        addons = find_addons_bidir(modules)
+        modules = ",".join(addon[0] for addon in addons)
 
     _drop_db(env, dbname)
     _init_db(
