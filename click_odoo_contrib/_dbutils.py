@@ -1,4 +1,5 @@
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2026 Michael Tietz (MT Software) <mtietz@mt-software.de>
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import hashlib
@@ -108,3 +109,14 @@ def reset_config_parameters(dbname):
 
         """
         )
+
+
+def get_dev_demo_dbname():
+    environ = os.environ
+    dev_mode_env_name = "DEV_MODE"
+    if odoo.release.version_info >= (19, 0):
+        dev_mode_env_name = "ODOO_DEV"
+    if dev_mode_env_name in environ:
+        click_odoo_demo_dbname_env_name = "CLICK_ODOO_DEV_DEMO_DBNAME"
+        if click_odoo_demo_dbname_env_name in environ:
+            return environ[click_odoo_demo_dbname_env_name]

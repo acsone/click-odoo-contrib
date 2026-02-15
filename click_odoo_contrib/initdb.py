@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2018 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2026 Michael Tietz (MT Software) <mtietz@mt-software.de>
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 import contextlib
 import hashlib
@@ -13,7 +14,7 @@ import click
 import click_odoo
 from click_odoo import odoo
 
-from ._dbutils import advisory_lock, db_exists, pg_connect
+from ._dbutils import advisory_lock, db_exists, pg_connect, get_dev_demo_dbname
 from .manifest import expand_dependencies
 from .update import _save_installed_checksums
 
@@ -369,6 +370,8 @@ def main(
     checksum of modules provided with the -m option, including their
     dependencies and corresponding auto_install modules.
     """
+    if not new_database:
+        new_database = get_dev_demo_dbname()
     if new_database:
         check_dbname(new_database)
     if unless_exists and db_exists(new_database):
