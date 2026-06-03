@@ -223,6 +223,7 @@ def _update_db_nolock(
     watcher=None,
     list_only=False,
     ignore_addons=None,
+    load_server_wide_modules=False,
 ):
     if update_all:
         modules_to_update = ["base"]
@@ -242,6 +243,8 @@ def _update_db_nolock(
         return
     if i18n_overwrite:
         odoo.tools.config["overwrite_existing_translations"] = True
+    if load_server_wide_modules:
+        odoo.service.server.load_server_wide_modules()
     if odoo.release.version_info >= (19, 0):
         odoo.modules.registry.Registry.new(
             database, update_module=True, upgrade_modules=modules_to_update
@@ -268,6 +271,7 @@ def _update_db(
     list_only=False,
     ignore_addons=None,
     only_compute_hashes=False,
+    load_server_wide_modules=False,
 ):
     conn = odoo.sql_db.db_connect(database)
     with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
@@ -286,6 +290,7 @@ def _update_db(
             watcher,
             list_only,
             ignore_addons,
+            load_server_wide_modules,
         )
 
 
@@ -299,7 +304,7 @@ def _get_ignore_addons(ignore_addons_str=None, ignore_core_addons=None):
 
 
 @contextmanager
-def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
+def OdooEnvironmentWithUpdate(database, ctx, load_server_wide_modules=False, **kwargs):
     threading.current_thread().dbname = database
     # Watch for database locks while Odoo updates
     watcher = None
@@ -323,6 +328,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
             ctx.params["list_only"],
             ignore_addons,
             ctx.params["only_compute_hashes"],
+            load_server_wide_modules,
         )
     finally:
         if watcher:
