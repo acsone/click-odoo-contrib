@@ -12,6 +12,7 @@ from fnmatch import fnmatch
 import click
 import click_odoo
 from click_odoo import odoo
+from pytz import country_timezones
 
 from ._dbutils import advisory_lock, db_exists, db_initialized, pg_connect
 from .manifest import expand_dependencies
@@ -67,13 +68,19 @@ def odoo_createdb(
     exists,
     *,
     force_db_storage_persistent=False,
+    language=None,
+    country=None,
+    username="admin",
+    password="admin",
 ):
     with _patch_ir_attachment_store(force_db_storage):
         if not exists:
+            if language:
+                odoo.tools.config["load_language"] = language
             odoo.service.db._create_empty_database(dbname)
         if odoo.release.version_info >= (19, 0):
             odoo.tools.config["with_demo"] = demo
-            odoo.modules.registry.Registry.new(
+            registry = odoo.modules.registry.Registry.new(
                 dbname,
                 new_db_demo=demo,
                 update_module=True,
@@ -82,11 +89,48 @@ def odoo_createdb(
         else:
             odoo.tools.config["without_demo"] = not demo
             odoo.tools.config["init"] = dict.fromkeys(module_names, 1)
-            odoo.modules.registry.Registry.new(
+            registry = odoo.modules.registry.Registry.new(
                 dbname,
                 force_demo=demo,
                 update_module=True,
             )
+
+        # Post-initialization configuration
+        with contextlib.closing(registry.cursor()) as cr:
+            env = odoo.api.Environment(cr, odoo.SUPERUSER_ID, {})
+
+            if language:
+                modules = env["ir.module.module"].search([("state", "=", "installed")])
+                modules._update_translations(language)
+
+            if country:
+                chosen_country = env["res.country"].search(
+                    [("code", "ilike", country)], limit=1
+                )
+                if chosen_country:
+                    env["res.company"].browse(1).write(
+                        {
+                            "country_id": chosen_country.id,
+                            "currency_id": chosen_country.currency_id.id,
+                        }
+                    )
+                    timezones = country_timezones.get(country, [])
+                    if len(timezones) == 1:
+                        env["res.users"].search([]).write({"tz": timezones[0]})
+
+            # Update admin user
+            values = {"password": password}
+            if language:
+                values["lang"] = language
+            if username:
+                values["login"] = username
+                emails = odoo.tools.email_split(username)
+                if emails:
+                    values["email"] = emails[0]
+            env.ref("base.user_admin").write(values)
+
+            cr.commit()
+
         if not exists:
             _logger.info(
                 click.style(f"Created new Odoo database {dbname}.", fg="green")
@@ -129,9 +173,24 @@ def _walk(top, exclude_patterns=EXCLUDE_PATTERNS):
             yield filepath
 
 
-def addons_hash(module_names, with_demo):
+def addons_hash(
+    module_names,
+    with_demo,
+    language=None,
+    country=None,
+    username="admin",
+    password="admin",
+):
     h = hashlib.sha1()
     h.update("!demo={}!".format(int(bool(with_demo))).encode("utf8"))
+    if language:
+        h.update("!language={}!".format(language).encode("utf8"))
+    if country:
+        h.update("!country={}!".format(country).encode("utf8"))
+    if username != "admin":
+        h.update("!username={}!".format(username).encode("utf8"))
+    if password != "admin":
+        h.update("!password={}!".format(password).encode("utf8"))
     for module_name in sorted(expand_dependencies(module_names, True, True)):
         module_path = odoo.modules.get_module_path(module_name)
         h.update(module_name.encode("utf8"))
@@ -410,6 +469,28 @@ class DbCache:
         "else create and/or initialize it."
     ),
 )
+@click.option(
+    "--language",
+    default=None,
+    help="Default language for the database (e.g., en_US, fr_FR).",
+)
+@click.option(
+    "--country",
+    default=None,
+    help="Country code to set on the main company (e.g., US, FR, BE).",
+)
+@click.option(
+    "--username",
+    default="admin",
+    show_default=True,
+    help="Admin username for the database.",
+)
+@click.option(
+    "--password",
+    default="admin",
+    show_default=True,
+    help="Admin password for the database.",
+)
 def main(
     env,
     new_database,
@@ -423,6 +504,10 @@ def main(
     unless_initialized,
     attachments_in_db,
     attachments_in_db_persistent,
+    username,
+    password,
+    language,
+    country,
 ):
     """Create or initialize an Odoo database with pre-installed modules.
 
@@ -481,6 +566,10 @@ def main(
                 force_db_storage=attachments_in_db or attachments_in_db_persistent,
                 force_db_storage_persistent=attachments_in_db_persistent,
                 exists=exists,
+                language=language,
+                country=country,
+                username=username,
+                password=password,
             )
         else:
             _logger.info(
@@ -490,7 +579,9 @@ def main(
         with pg_connect() as pgcr:
             dbcache = DbCache(cache_prefix, pgcr)
             if new_database:
-                hashsum = addons_hash(module_names, demo)
+                hashsum = addons_hash(
+                    module_names, demo, language, country, username, password
+                )
                 if not exists and dbcache.create(new_database, hashsum):
                     _logger.info(
                         click.style(
@@ -508,6 +599,10 @@ def main(
                         force_db_storage=True,
                         force_db_storage_persistent=attachments_in_db_persistent,
                         exists=exists,
+                        language=language,
+                        country=country,
+                        username=username,
+                        password=password,
                     )
                     dbcache.add(new_database, hashsum)
             if cache_max_size >= 0:
