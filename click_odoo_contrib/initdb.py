@@ -220,6 +220,7 @@ class DbCache:
             """
             SELECT datname FROM pg_database
             WHERE datname like %s
+              AND pg_catalog.pg_get_userbyid(datdba) = current_user
             ORDER BY datname DESC  -- MRU first
             """,
             (pattern,),
@@ -266,6 +267,7 @@ class DbCache:
                 """
                 SELECT count(*) FROM pg_database
                 WHERE datname like %s
+                  AND pg_catalog.pg_get_userbyid(datdba) = current_user
             """,
                 (pattern,),
             )
@@ -278,6 +280,7 @@ class DbCache:
                 """
                 SELECT datname FROM pg_database
                 WHERE datname like %s
+                  AND pg_catalog.pg_get_userbyid(datdba) = current_user
             """,
                 (pattern,),
             )
@@ -291,6 +294,7 @@ class DbCache:
                 """
                 SELECT datname FROM pg_database
                 WHERE datname like %s
+                  AND pg_catalog.pg_get_userbyid(datdba) = current_user
                 ORDER BY datname DESC
                 OFFSET %s
             """,
@@ -309,6 +313,7 @@ class DbCache:
                 """
                 SELECT datname FROM pg_database
                 WHERE datname like %s
+                  AND pg_catalog.pg_get_userbyid(datdba) = current_user
                   AND datname <= %s
                 ORDER BY datname DESC
             """,
@@ -357,9 +362,11 @@ class DbCache:
     show_default=True,
     help="Prefix to use when naming cache template databases "
     "(max 8 characters). CAUTION: all databases named like "
-    "{prefix}-____________-% will eventually be dropped "
-    "by the cache control mechanism, so choose the "
-    "prefix wisely.",
+    "{prefix}-____________-% and owned by the current PostgreSQL "
+    "user will eventually be dropped by the cache control mechanism. "
+    "In environments with multiple PostgreSQL users sharing the same "
+    "server, each user must use a distinct prefix to avoid name "
+    "collisions when caching the same module combination.",
 )
 @click.option(
     "--cache-max-age",
