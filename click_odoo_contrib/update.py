@@ -9,6 +9,7 @@ import os
 import threading
 from contextlib import closing, contextmanager
 from datetime import timedelta
+from pathlib import Path
 from time import sleep
 
 import click
@@ -260,6 +261,19 @@ def _update_db_nolock(
         _save_installed_checksums(cr, ignore_addons)
 
 
+def _run_pre_update_scripts(pre_update_scripts, cr):
+    if not pre_update_scripts:
+        return
+    from odoo.modules import migration
+
+    _logger.info("Running pre-update scripts...")
+    cr.execute("SELECT latest_version FROM ir_module_module WHERE name='base'")
+    installed_version = cr.fetchone()[0]
+    for script_path in pre_update_scripts:
+        _logger.info("Running pre-update script: %s", script_path)
+        migration.exec_script(cr, installed_version, script_path, "base", "pre")
+
+
 def _update_db(
     database,
     update_all,
@@ -268,6 +282,7 @@ def _update_db(
     list_only=False,
     ignore_addons=None,
     only_compute_hashes=False,
+    pre_update_scripts=None,
 ):
     conn = odoo.sql_db.db_connect(database)
     with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
@@ -277,6 +292,8 @@ def _update_db(
                 "Only computed and stored module hashes, update is not performed."
             )
             return
+
+        _run_pre_update_scripts(pre_update_scripts, cr)
 
         _update_db_nolock(
             conn,
@@ -296,6 +313,17 @@ def _get_ignore_addons(ignore_addons_str=None, ignore_core_addons=None):
     if ignore_core_addons:
         ignore_addons.update(get_core_addons(OdooSeries(odoo.release.series)))
     return ignore_addons
+
+
+def _parse_pre_update_scripts(ctx, param, value):
+    if not value:
+        return []
+    if isinstance(value, (list, tuple)):
+        values = value
+    else:
+        values = [item.strip() for item in value.split(",") if item.strip()]
+    path_type = click.Path(exists=True, dir_okay=False, path_type=Path)
+    return [path_type.convert(item, param, ctx) for item in values]
 
 
 @contextmanager
@@ -323,6 +351,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
             ctx.params["list_only"],
             ignore_addons,
             ctx.params["only_compute_hashes"],
+            ctx.params["pre_update_scripts"],
         )
     finally:
         if watcher:
@@ -383,6 +412,16 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
         "and you don't want to run `click-odoo-update --update-all`."
     ),
 )
+@click.option(
+    "--pre-update-scripts",
+    callback=_parse_pre_update_scripts,
+    help=(
+        "Comma-separated list of Python scripts to run before updating the database. "
+        "This is useful for performing custom pre-update tasks, before the Odoo update "
+        "process starts."
+        "The scripts will be executed in the order they are provided. "
+    ),
+)
 def main(
     env,
     i18n_overwrite,
@@ -393,6 +432,7 @@ def main(
     ignore_addons,
     ignore_core_addons,
     only_compute_hashes,
+    pre_update_scripts,
 ):
     """Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
@@ -414,6 +454,11 @@ def main(
             return
         else:
             raise click.ClickException(msg)
+    if pre_update_scripts:
+        _logger.info(
+            "Pre-update scripts: %s",
+            ", ".join(str(path) for path in pre_update_scripts),
+        )
     # TODO: warn if modules to upgrade ?
 
 

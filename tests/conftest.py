@@ -63,3 +63,14 @@ def odoocfg(request, tmpdir):
         )
     )
     yield odoo_cfg
+
+
+def min_odoo_version(min_version):
+    if isinstance(min_version, str):
+        min_version_parts = tuple(int(part) for part in min_version.split("."))
+    else:
+        min_version_parts = tuple(int(part) for part in str(min_version).split("."))
+    return pytest.mark.skipif(
+        odoo.release.version_info < min_version_parts,
+        reason=f"requires Odoo >= {min_version}",
+    )

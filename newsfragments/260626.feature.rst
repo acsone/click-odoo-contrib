@@ -1,0 +1,4 @@
+*click-odoo-update: New option --pre-update-scripts* This option allows users to specify a list of Python scripts that
+will be executed before the database update process begins. These scripts are similar to Odoo's pre-migration scripts
+and can be used to perform custom tasks or modifications before the update. The scripts will be executed in the order
+they are provided, and they will have access to the database cursor for executing SQL commands.
