@@ -224,7 +224,12 @@ def _update_db_nolock(
     watcher=None,
     list_only=False,
     ignore_addons=None,
+    pre_update_scripts=None,
 ):
+    if pre_update_scripts and odoo.release.version_info >= (16, 0):
+        odoo.tools.config["pre_upgrade_scripts"] = ",".join(
+            str(p) for p in pre_update_scripts
+        )
     if update_all:
         modules_to_update = ["base"]
     else:
@@ -261,19 +266,6 @@ def _update_db_nolock(
         _save_installed_checksums(cr, ignore_addons)
 
 
-def _run_pre_update_scripts(pre_update_scripts, cr):
-    if not pre_update_scripts:
-        return
-    from odoo.modules import migration
-
-    _logger.info("Running pre-update scripts...")
-    cr.execute("SELECT latest_version FROM ir_module_module WHERE name='base'")
-    installed_version = cr.fetchone()[0]
-    for script_path in pre_update_scripts:
-        _logger.info("Running pre-update script: %s", script_path)
-        migration.exec_script(cr, installed_version, script_path, "base", "pre")
-
-
 def _update_db(
     database,
     update_all,
@@ -293,8 +285,6 @@ def _update_db(
             )
             return
 
-        _run_pre_update_scripts(pre_update_scripts, cr)
-
         _update_db_nolock(
             conn,
             database,
@@ -303,6 +293,7 @@ def _update_db(
             watcher,
             list_only,
             ignore_addons,
+            pre_update_scripts,
         )
 
 
@@ -420,6 +411,10 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
         "This is useful for performing custom pre-update tasks, before the Odoo update "
         "process starts."
         "The scripts will be executed in the order they are provided. "
+        "Note: these scripts only run if at least one addon is actually updated. "
+        "If no addon checksum changed, click-odoo-update exits early and the "
+        "scripts are not executed, even though they were provided. Use "
+        "--update-all to guarantee they always run."
     ),
 )
 def main(

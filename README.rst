@@ -320,7 +320,11 @@ click-odoo-update (stable)
                                  before updating the database. This is useful for
                                  performing custom pre-update tasks, before the Odoo
                                  update process starts. The scripts will be executed
-                                 in the order they are provided.
+                                 in the order they are provided. Note: these scripts
+                                 only run if at least one addon is actually updated;
+                                 if no addon checksum changed, click-odoo-update exits
+                                 early and the scripts are not executed. Use
+                                 --update-all to guarantee they always run.
     --help                       Show this message and exit.
 
 Useful links

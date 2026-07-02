@@ -234,6 +234,7 @@ def migrate(cr, version):
         _addons_path("v1"),
         "-d",
         odoodb,
+        "--update-all",
         "--pre-update-scripts",
         str(script),
     ]
@@ -259,6 +260,7 @@ def migrate(cr, version):
         _addons_path("v1"),
         "-d",
         odoodb,
+        "--update-all",
         "--pre-update-scripts",
         str(script),
     ]
@@ -279,6 +281,7 @@ def test_pre_update_scripts_missing_migrate_aborts(odoodb, tmp_path):
         _addons_path("v1"),
         "-d",
         odoodb,
+        "--update-all",
         "--pre-update-scripts",
         str(script),
     ]
