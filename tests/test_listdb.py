@@ -15,3 +15,33 @@ def test_listdb(odoodb):
         assert result.stdout.strip() == odoodb
     finally:
         subprocess.check_call(["dropdb", f"{odoodb}-not-odoo"])
+
+
+def _fake_other_version_db(odoodb):
+    """Create a db that looks like an Odoo db of another major version."""
+    db_name = f"{odoodb}-other-version"
+    subprocess.check_call(["createdb", db_name])
+    subprocess.check_call(
+        [
+            "psql",
+            "-q",
+            "-d",
+            db_name,
+            "-c",
+            "CREATE TABLE ir_module_module (name VARCHAR, latest_version VARCHAR)",
+            "-c",
+            "INSERT INTO ir_module_module (name, latest_version) "
+            "VALUES ('base', '1.0')",
+        ],
+    )
+    return db_name
+
+
+def test_listdb_include_other_versions(odoodb):
+    """Test that --include-other-versions lists other-version dbs too."""
+    db_name = _fake_other_version_db(odoodb)
+    try:
+        result = CliRunner().invoke(main, ["--include-other-versions"])
+        assert result.stdout.strip() == f"{odoodb}\n{db_name}"
+    finally:
+        subprocess.check_call(["dropdb", db_name])

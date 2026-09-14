@@ -70,6 +70,10 @@ jobs:
       - uses: jdx/mise-action@v2
         with:
           mise_toml: |
+            [settings]
+            # python-build-standalone releases for Python < 3.9 predate
+            # sigstore attestations, so verification would always fail
+            python.github_attestations = false
             [tools]
             python = "${{ matrix.python-version }}"
       - uses: actions/cache@v4

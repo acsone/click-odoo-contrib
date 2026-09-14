@@ -75,7 +75,8 @@ def install_odoo():
             [
                 "pip",
                 "install",
-                "setuptools",
+                # setuptools 82 removed pkg_resources, which Odoo < 18 imports
+                "setuptools<82",
             ]
         )
     with odoo_requirements(odoo_branch) as requirements:
