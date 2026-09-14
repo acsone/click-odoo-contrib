@@ -70,6 +70,10 @@ jobs:
       - uses: jdx/mise-action@v2
         with:
           mise_toml: |
+            [settings]
+            # python-build-standalone dropped Python 3.8 before starting to
+            # publish GitHub artifact attestations, so verification fails
+            python.github_attestations = false
             [tools]
             python = "${{ matrix.python-version }}"
       - uses: actions/cache@v4

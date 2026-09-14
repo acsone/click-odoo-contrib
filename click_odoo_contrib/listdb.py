@@ -16,7 +16,7 @@ from ._dbutils import db_management_enabled
 def main(env):
     """List Odoo databases."""
     with db_management_enabled():
-        all_dbs = odoo.service.db.list_dbs()
+        all_dbs = odoo.service.db.list_dbs(force=True)
         bad_dbs = odoo.service.db.list_db_incompatible(all_dbs)
         good_dbs = set(all_dbs) - set(bad_dbs)
         for db in sorted(good_dbs):

@@ -68,14 +68,14 @@ def install_odoo():
                 "setuptools<58",
             ]
         )
-    if odoo_branch in ["14.0", "15.0", "16.0", "17.0"]:
-        # Odoo < 18 needs pkg_resources, to make sure setuptools (which provides
-        # pkg_resources) is installed in the venv
+    if odoo_branch in ["14.0", "15.0", "16.0"]:
+        # These branches import pkg_resources at module level, but setuptools
+        # 82 removed it, so pin an older setuptools
         subprocess.check_call(
             [
                 "pip",
                 "install",
-                "setuptools",
+                "setuptools<82",
             ]
         )
     with odoo_requirements(odoo_branch) as requirements:
