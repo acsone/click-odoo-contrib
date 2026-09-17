@@ -4,8 +4,8 @@
 
 import click
 import click_odoo
-from click_odoo import odoo
 
+from ._dbservice import drop_db
 from ._dbutils import db_exists, db_management_enabled
 
 
@@ -27,7 +27,7 @@ def main(env, dbname, if_exists=False):
         else:
             raise click.ClickException(msg)
     with db_management_enabled():
-        odoo.service.db.exp_drop(dbname)
+        drop_db(dbname)
 
 
 if __name__ == "__main__":  # pragma: no cover

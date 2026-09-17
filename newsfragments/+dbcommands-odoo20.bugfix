@@ -1,0 +1,4 @@
+Support Odoo 20 in the database commands (``click-odoo-backupdb``,
+``click-odoo-copydb``, ``click-odoo-dropdb``, ``click-odoo-initdb``,
+``click-odoo-listdb`` and ``click-odoo-restoredb``), where the database
+management helpers moved from ``odoo.service.db`` to ``odoo.modules.db``.

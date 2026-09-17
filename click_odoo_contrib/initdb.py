@@ -13,6 +13,7 @@ import click
 import click_odoo
 from click_odoo import odoo
 
+from ._dbservice import create_empty_database
 from ._dbutils import advisory_lock, db_exists, db_initialized, pg_connect
 from .manifest import expand_dependencies
 from .update import _save_installed_checksums
@@ -70,7 +71,7 @@ def odoo_createdb(
 ):
     with _patch_ir_attachment_store(force_db_storage):
         if not exists:
-            odoo.service.db._create_empty_database(dbname)
+            create_empty_database(dbname)
         if odoo.release.version_info >= (19, 0):
             odoo.tools.config["with_demo"] = demo
             odoo.modules.registry.Registry.new(

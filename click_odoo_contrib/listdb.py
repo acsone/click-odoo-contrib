@@ -6,6 +6,7 @@ import click
 import click_odoo
 from click_odoo import odoo
 
+from ._dbservice import list_db_incompatible, list_dbs
 from ._dbutils import db_management_enabled
 
 
@@ -16,8 +17,8 @@ from ._dbutils import db_management_enabled
 def main(env):
     """List Odoo databases."""
     with db_management_enabled():
-        all_dbs = odoo.service.db.list_dbs()
-        bad_dbs = odoo.service.db.list_db_incompatible(all_dbs)
+        all_dbs = list_dbs()
+        bad_dbs = list_db_incompatible(all_dbs)
         good_dbs = set(all_dbs) - set(bad_dbs)
         for db in sorted(good_dbs):
             print(db)

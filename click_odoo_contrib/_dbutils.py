@@ -65,7 +65,7 @@ def terminate_connections(dbname):
 def db_management_enabled():
     old_params = {"list_db": odoo.tools.config["list_db"]}
     odoo.tools.config["list_db"] = True
-    # Work around odoo.service.db.list_dbs() not finding the database
+    # Work around Odoo's list_dbs() not finding the database
     # when postgres connection info is passed as PG* environment
     # variables.
     if odoo.release.version_info < (12, 0):

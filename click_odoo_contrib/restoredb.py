@@ -11,6 +11,7 @@ import click_odoo
 import psycopg2
 from click_odoo import OdooEnvironment, odoo
 
+from ._dbservice import create_empty_database, drop_db, restore_db
 from ._dbutils import db_exists, db_management_enabled, reset_config_parameters
 from .backupdb import DBDUMP_FILENAME, FILESTORE_DIRNAME, MANIFEST_FILENAME
 
@@ -28,7 +29,7 @@ def _restore_from_folder(dbname, backup, copy=True, jobs=1, neutralize=False):
         )
         raise click.ClickException(msg)
 
-    odoo.service.db._create_empty_database(dbname)
+    create_empty_database(dbname)
     pg_args = ["--jobs", str(jobs), "--dbname", dbname, "--no-owner", dbdump_file_path]
     pg_env = odoo.tools.misc.exec_pg_environ()
     r = subprocess.run(
@@ -60,10 +61,7 @@ def _restore_from_folder(dbname, backup, copy=True, jobs=1, neutralize=False):
 
 def _restore_from_file(dbname, backup, copy=True, neutralize=False):
     with db_management_enabled():
-        extra_kwargs = {}
-        if odoo.release.version_info >= (16, 0):
-            extra_kwargs["neutralize_database"] = neutralize
-        odoo.service.db.restore_db(dbname, backup, copy, **extra_kwargs)
+        restore_db(dbname, backup, copy, neutralize_database=neutralize)
         odoo.sql_db.close_db(dbname)
 
 
@@ -132,7 +130,7 @@ def main(env, dbname, source, copy, force, neutralize, jobs):
         msg = "{}, dropping it as requested.".format(msg)
         click.echo(click.style(msg, fg="yellow"))
         with db_management_enabled():
-            odoo.service.db.exp_drop(dbname)
+            drop_db(dbname)
     if neutralize and odoo.release.version_info < (16, 0):
         raise click.ClickException(
             "--neutralize option is only available in odoo 16.0 and above"

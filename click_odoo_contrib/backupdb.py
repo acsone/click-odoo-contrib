@@ -13,6 +13,7 @@ import click_odoo
 from click_odoo import odoo
 
 from ._backup import backup
+from ._dbservice import dump_db_manifest
 from ._dbutils import db_exists, db_management_enabled
 
 MANIFEST_FILENAME = "manifest.json"
@@ -34,7 +35,7 @@ def _dump_db(dbname, backup):
 
 
 def _create_manifest(cr, dbname, backup):
-    manifest = odoo.service.db.dump_db_manifest(cr)
+    manifest = dump_db_manifest(cr)
     with tempfile.NamedTemporaryFile(mode="w") as f:
         json.dump(manifest, f, indent=4)
         f.seek(0)
