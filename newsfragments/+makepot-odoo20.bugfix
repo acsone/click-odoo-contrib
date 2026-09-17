@@ -1,0 +1,2 @@
+click-odoo-makepot: fix the exported ``.pot`` being unreadable on Odoo 20, where
+the export wizard returns raw bytes instead of a base64 encoded value.

@@ -21,6 +21,18 @@ PO_FILE_EXT = ".po"
 POT_FILE_EXT = ".pot"
 
 
+def _export_data_to_text(data):
+    """Return the content of the export wizard's Binary field as text.
+
+    Odoo < 20 returns the value base64 encoded, Odoo >= 20 returns a
+    ``BinaryBytes`` holding the raw bytes.
+    """
+    content = getattr(data, "content", None)
+    if content is None:
+        content = base64.b64decode(data)
+    return content.decode("utf-8")
+
+
 def export_pot(
     env,
     module,
@@ -52,7 +64,7 @@ def export_pot(
     if lang_export.data:
         files_to_commit.add(pot_filepath)
         with open(pot_filepath, "w", encoding="utf-8") as pot_file:
-            file_content = base64.b64decode(lang_export.data).decode("utf-8")
+            file_content = _export_data_to_text(lang_export.data)
             for pattern in LINE_PATTERNS_TO_REMOVE:
                 file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)
             pot_file.write(file_content)
