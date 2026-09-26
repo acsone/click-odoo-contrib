@@ -17,6 +17,11 @@ from click_odoo.compat import environment_manage  # not a public function of cli
 from click_odoo_contrib._dbutils import db_exists
 from click_odoo_contrib.backupdb import main
 
+if odoo.release.version_info >= (20,):
+    pytest.skip(
+        "backupdb not supported on Odoo 20, use 'odoo db'", allow_module_level=True
+    )
+
 TEST_DBNAME = "click-odoo-contrib-testbackupdb"
 TEST_FILESTORE_FILE = "/dir1/f.txt"
 

@@ -93,6 +93,11 @@ def main(env, dbname, dest, force, if_exists, format, filestore):
     database dump.
 
     """
+    if odoo.release.version_info >= (20,):
+        click.echo(
+            "click-odoo-backupdb not supported with Odoo 20+, use 'odoo db'", err=True
+        )
+        raise SystemExit(1)
     if not db_exists(dbname):
         msg = "Database does not exist: {}".format(dbname)
         if if_exists:

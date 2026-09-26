@@ -16,6 +16,11 @@ from click_odoo_contrib._dbutils import db_exists
 from click_odoo_contrib.backupdb import main as backupdb
 from click_odoo_contrib.restoredb import main as restoredb
 
+if odoo.release.version_info >= (20,):
+    pytest.skip(
+        "restoredb not supported on Odoo 20, use 'odoo db'", allow_module_level=True
+    )
+
 TEST_DBNAME = "click-odoo-contrib-testrestoredb"
 
 _DEFAULT_IR_CONFIG_PARAMETERS = ["database.uuid", "database.create_date"]

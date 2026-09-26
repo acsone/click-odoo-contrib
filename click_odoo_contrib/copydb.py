@@ -109,6 +109,11 @@ def main(
     This script copies using postgres CREATEDB WITH TEMPLATE.
     It also copies the filestore.
     """
+    if odoo.release.version_info >= (20,):
+        click.echo(
+            "click-odoo-copydb not supported with Odoo 20+, use 'odoo db'", err=True
+        )
+        raise SystemExit(1)
     with pg_connect() as cr:
         if db_exists(dest):
             msg = "Destination database already exists: {}".format(dest)

@@ -11,6 +11,11 @@ from click_odoo import odoo
 
 from click_odoo_contrib._dbutils import db_exists
 
+if odoo.release.version_info >= (20,):
+    pytest.skip(
+        "dropdb not supported on Odoo 20, use 'odoo db'", allow_module_level=True
+    )
+
 TEST_DBNAME = "click-odoo-contrib-testdropdb"
 
 

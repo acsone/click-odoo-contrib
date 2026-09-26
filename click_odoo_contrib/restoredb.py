@@ -125,6 +125,11 @@ def main(env, dbname, source, copy, force, neutralize, jobs):
     avoids timeout and file size limitation problems when
     databases are too large.
     """
+    if odoo.release.version_info >= (20,):
+        click.echo(
+            "click-odoo-restoredb not supported with Odoo 20+, use 'odoo db'", err=True
+        )
+        raise SystemExit(1)
     if db_exists(dbname):
         msg = "Destination database already exists: {}".format(dbname)
         if not force:
