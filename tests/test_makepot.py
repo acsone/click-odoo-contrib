@@ -371,7 +371,7 @@ def test_makepot_detect_bad_po(odoodb, odoocfg, capfd):
 
 
 @pytest.mark.skipif(
-    odoo.release.version_info < (19, 0), reason="Only Odoo 19 generates empty .pot"
+    odoo.release.version_info[0] != 19, reason="Only Odoo 19 generates empty .pot"
 )
 def test_makepot_no_translations(odoodb, odoocfg, tmp_path):
     # create a test addon without translations
