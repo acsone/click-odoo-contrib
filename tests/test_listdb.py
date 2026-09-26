@@ -2,9 +2,14 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 import subprocess
 
+import pytest
 from click.testing import CliRunner
+from click_odoo import odoo
 
 from click_odoo_contrib.listdb import main
+
+if odoo.release.version_info >= (20,):
+    pytest.skip("listdb not supported on Odoo 20", allow_module_level=True)
 
 
 def test_listdb(odoodb):

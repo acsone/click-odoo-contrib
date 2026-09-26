@@ -18,26 +18,35 @@ jobs:
           - python-version: "3.6"
             toxenv: "py36-11.0"
             machine: ubuntu-22.04
+            postgres_version: "13"
           - python-version: "3.6"
             toxenv: "py36-12.0"
             machine: ubuntu-22.04
+            postgres_version: "13"
           - python-version: "3.6"
             toxenv: "py36-13.0"
             machine: ubuntu-22.04
+            postgres_version: "13"
           - python-version: "3.6"
             toxenv: "py36-14.0"
             machine: ubuntu-22.04
+            postgres_version: "13"
           - python-version: "3.8"
             toxenv: "py38-15.0"
             machine: ubuntu-22.04
+            postgres_version: "13"
+            mise-python-github-attestations: "false"  # TODO:
           - python-version: "3.10"
             toxenv: "py310-16.0"
+            postgres_version: "13"
             machine: ubuntu-22.04
           - python-version: "3.10"
             toxenv: "py310-17.0"
+            postgres_version: "13"
             machine: ubuntu-22.04
           - python-version: "3.12"
             toxenv: "py312-17.0"
+            postgres_version: "13"
             machine: ubuntu-22.04
           - python-version: "3.12"
             toxenv: "py312-18.0"
@@ -45,12 +54,15 @@ jobs:
           - python-version: "3.13"
             toxenv: "py313-19.0"
             machine: ubuntu-24.04
+          - python-version: "3.14"
+            toxenv: "py314-20.0"
+            machine: ubuntu-26.04
           - python-version: "3.10"
             toxenv: "twine_check"
             machine: ubuntu-22.04
     services:
       postgres:
-        image: postgres:13
+        image: postgres:${{ matrix.postgres_version || '16' }}
         env:
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
@@ -72,6 +84,8 @@ jobs:
           mise_toml: |
             [tools]
             python = "${{ matrix.python-version }}"
+            [settings]
+            python.github_attestations = ${{ matrix.mise-python-github-attestations || 'true' }}
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip

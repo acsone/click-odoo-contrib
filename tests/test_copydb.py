@@ -13,6 +13,11 @@ from click_odoo import OdooEnvironment, odoo
 from click_odoo_contrib._dbutils import db_exists
 from click_odoo_contrib.copydb import main
 
+if odoo.release.version_info >= (20,):
+    pytest.skip(
+        "copydb not supported on Odoo 20, use 'odoo db'", allow_module_level=True
+    )
+
 TEST_DBNAME = "click-odoo-contrib-testcopydb"
 TEST_DBNAME_NEW = "click-odoo-contrib-testcopydb-new"
 

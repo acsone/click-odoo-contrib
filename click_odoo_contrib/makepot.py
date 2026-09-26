@@ -9,6 +9,7 @@ import subprocess
 
 import click
 import click_odoo
+from click_odoo import odoo
 
 from . import gitutils, manifest
 
@@ -52,7 +53,10 @@ def export_pot(
     if lang_export.data:
         files_to_commit.add(pot_filepath)
         with open(pot_filepath, "w", encoding="utf-8") as pot_file:
-            file_content = base64.b64decode(lang_export.data).decode("utf-8")
+            if odoo.release.version_info >= (20,):
+                file_content = lang_export.data.content.decode("utf-8")
+            else:
+                file_content = base64.b64decode(lang_export.data).decode("utf-8")
             for pattern in LINE_PATTERNS_TO_REMOVE:
                 file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)
             pot_file.write(file_content)

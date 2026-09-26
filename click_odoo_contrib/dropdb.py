@@ -19,6 +19,11 @@ from ._dbutils import db_exists, db_management_enabled
 @click.argument("dbname", nargs=1)
 def main(env, dbname, if_exists=False):
     """Drop an Odoo database and associated file store."""
+    if odoo.release.version_info >= (20,):
+        click.echo(
+            "click-odoo-dropdb not supported with Odoo 20+, use 'odoo db'", err=True
+        )
+        raise SystemExit(1)
     if not db_exists(dbname):
         msg = "Database does not exist: {}".format(dbname)
         if if_exists:

@@ -7,11 +7,15 @@ import textwrap
 
 import pytest
 from click_odoo import odoo, odoo_bin
+from odoo import netsvc
 
 # This hack is necessary because the way CliRunner patches
 # stdout is not compatible with the Odoo logging initialization
-# mechanism. Logging is therefore tested with subprocesses.
-odoo.netsvc.init_logger = lambda: None
+# mechanism (the stream has no fileno).
+# Logging is therefore tested with subprocesses.
+# For Odoo >= 18 we could use setup_logger=False.
+netsvc.init_logger = lambda: None
+os.environ["NO_COLOR"] = "1"  # needed for Odoo >= 20
 
 
 def _init_odoo_db(dbname, test_addons_dir=None):

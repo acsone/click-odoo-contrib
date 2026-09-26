@@ -15,6 +15,11 @@ from ._dbutils import db_management_enabled
 )
 def main(env):
     """List Odoo databases."""
+    if odoo.release.version_info >= (20,):
+        click.echo(
+            "click-odoo-listdb not supported with Odoo 20+, use 'odoo db'", err=True
+        )
+        raise SystemExit(1)
     with db_management_enabled():
         all_dbs = odoo.service.db.list_dbs()
         bad_dbs = odoo.service.db.list_db_incompatible(all_dbs)

@@ -28,6 +28,15 @@ def check_dbname(dbname):
         raise click.ClickException("Invalid database name '{}'".format(dbname))
 
 
+def _create_empty_database(dbname: str) -> None:
+    if odoo.release.version_info >= (20,):
+        from odoo.modules.db import _create_empty_database
+
+        _create_empty_database(dbname)
+    else:
+        odoo.service.db._create_empty_database(dbname)
+
+
 def check_cache_prefix(cache_prefix):
     if not re.match("^[A-Za-z][A-Za-z0-9-]{0,7}$", cache_prefix):
         raise click.ClickException(
@@ -70,7 +79,7 @@ def odoo_createdb(
 ):
     with _patch_ir_attachment_store(force_db_storage):
         if not exists:
-            odoo.service.db._create_empty_database(dbname)
+            _create_empty_database(dbname)
         if odoo.release.version_info >= (19, 0):
             odoo.tools.config["with_demo"] = demo
             odoo.modules.registry.Registry.new(
