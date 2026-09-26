@@ -30,6 +30,7 @@ jobs:
           - python-version: "3.8"
             toxenv: "py38-15.0"
             machine: ubuntu-22.04
+            mise-python-github-attestations: "false"  # TODO:
           - python-version: "3.10"
             toxenv: "py310-16.0"
             machine: ubuntu-22.04
@@ -72,6 +73,8 @@ jobs:
           mise_toml: |
             [tools]
             python = "${{ matrix.python-version }}"
+            [settings]
+            python.github_attestations = ${{ matrix.mise-python-github-attestations || 'true' }}
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
