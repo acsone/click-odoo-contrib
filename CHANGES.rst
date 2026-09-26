@@ -3,6 +3,17 @@ Changes
 
 .. towncrier release notes start
 
+1.24 (2026-09-26)
+-----------------
+
+**Features**
+
+- Odoo 20 support. (`#192 <https://github.com/acsone/click-odoo-contrib/issues/192>`_)
+- ``click-odoo-dropdb``, ``click-odoo-copydb``, ``click-odoo-backupdb``,
+  ``click-odoo-restoredb`` are deprecated and not supported on Odoo 20. Use the
+  ``odoo db`` commands instead. ``click-odoo-listdb`` does not work on 20 but
+  may be rescued in the future if there is no equivalent in the ``odoo db`` commands.
+
 1.23.1 (2025-11-11)
 -------------------
 
@@ -17,7 +28,7 @@ Changes
 **Features**
 
 - click-odoo-initdb: add ``--attachments-in-db-persistent`` option, to set
-  the `ir_attachment.location=db` system parameter. (`#175 <https://github.com/acsone/click-odoo-contrib/issues/175>`_)
+  the ``ir_attachment.location=db`` system parameter. (`#175 <https://github.com/acsone/click-odoo-contrib/issues/175>`_)
 
 
 1.22 (2025-09-29)
