@@ -80,17 +80,22 @@ def expand_dependencies(module_names, include_auto_install=False, include_active
         for module_name in sorted(odoo.modules.module.get_modules()):
             module_path = odoo.modules.get_module_path(module_name)
             manifest = read_manifest(module_path)
-            if manifest.get("auto_install"):
-                auto_install_list.append((module_name, manifest))
+            auto_install = manifest.get("auto_install", False)
+            if isinstance(auto_install, (list, tuple, set)):
+                triggers = set(auto_install)
+            elif auto_install:
+                triggers = set(manifest.get("depends", ["base"]))
+            else:
+                continue
+            auto_install_list.append((module_name, triggers))
         retry = True
         while retry:
             retry = False
-            for module_name, manifest in auto_install_list:
+            for module_name, triggers in auto_install_list:
                 if module_name in res:
                     continue
-                depends = set(manifest.get("depends", ["base"]))
-                if depends.issubset(res):
-                    # all dependencies of auto_install module are
+                if triggers.issubset(res):
+                    # all auto_install triggers of the module are
                     # installed so we add it
                     add_deps(module_name)
                     # retry, in case an auto_install module depends
