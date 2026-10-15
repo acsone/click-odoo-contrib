@@ -311,6 +311,12 @@ click-odoo-update (stable)
     --if-exists                  Don't report error if database doesn't exist
     --watcher-max-seconds FLOAT  Max DB lock seconds allowed before aborting the
                                  update process. Default: 0 (disabled).
+    --watcher-prioritize-update  With --watcher-max-seconds, give the update
+                                 priority instead of aborting it: terminate the
+                                 sessions that wait for it longer than that, and
+                                 the sessions that keep it waiting for a lock
+                                 longer than 1 second. The update is never
+                                 terminated. Requires Odoo 16 or later.
     --list-only                  Log the list of addons to update without
                                  actually updating them.
     --only-compute-hashes        Initialise hash values of installed addons.

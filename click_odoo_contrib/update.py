@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import threading
+import uuid
 from contextlib import closing, contextmanager
 from datetime import timedelta
 from time import sleep
@@ -27,14 +28,21 @@ _logger = logging.getLogger(__name__)
 PARAM_INSTALLED_CHECKSUMS = "module_auto_update.installed_checksums"
 PARAM_EXCLUDE_PATTERNS = "module_auto_update.exclude_patterns"
 DEFAULT_EXCLUDE_PATTERNS = "*.pyc,*.pyo,i18n/*.pot,i18n_extra/*.pot,static/*,tests/*"
+# With priority, seconds the update may wait for a lock before the sessions
+# holding it are terminated. Odoo cancels the update statements that wait
+# longer than its lock_timeout (15 s), and a waiting update risks deadlocks
+UPDATE_MAX_WAIT_SECONDS = 1
 
 
 class DbLockWatcher(threading.Thread):
-    def __init__(self, database, max_seconds):
+    def __init__(self, database, max_seconds, update_application_name=None):
         super().__init__()
         self.daemon = True
         self.database = database
         self.max_seconds = max_seconds
+        # When set, the update has priority: its connections use this
+        # application_name and are never terminated
+        self.update_application_name = update_application_name
         self.aborted = False
         self.watching = False
 
@@ -56,6 +64,8 @@ class DbLockWatcher(threading.Thread):
         """
         _logger.info("Starting DB lock watcher")
         beat = self.max_seconds / 3
+        if self.update_application_name:
+            beat = min(beat, UPDATE_MAX_WAIT_SECONDS / 2)
         max_td = timedelta(seconds=self.max_seconds)
         own_pid_query = "SELECT pg_backend_pid()"
         # SQL explained in https://wiki.postgresql.org/wiki/Lock_Monitoring
@@ -79,6 +89,36 @@ class DbLockWatcher(threading.Thread):
                 NOT pg_locks.granted
                 AND pg_stat_activity.datname = %s
             ORDER BY pg_stat_activity.query_start
+        """
+        # Sessions waiting for a lock, telling whether they are an update
+        # connection and which update and non-update sessions block them
+        update_waits_query = """
+            SELECT
+                waiting.pid,
+                waiting.state,
+                waiting.query,
+                AGE(NOW(), waiting.query_start) AS age,
+                waiting.application_name = %(application_name)s AS is_update,
+                ARRAY(
+                    SELECT blocker.pid
+                    FROM pg_stat_activity AS blocker
+                    WHERE
+                        blocker.pid = ANY(pg_blocking_pids(waiting.pid))
+                        AND blocker.application_name
+                            IS DISTINCT FROM %(application_name)s
+                ) AS other_blockers,
+                EXISTS(
+                    SELECT 1
+                    FROM pg_stat_activity AS blocker
+                    WHERE
+                        blocker.pid = ANY(pg_blocking_pids(waiting.pid))
+                        AND blocker.application_name = %(application_name)s
+                ) AS waits_for_update
+            FROM pg_stat_activity AS waiting
+            WHERE
+                waiting.datname = %(database)s
+                AND waiting.wait_event_type = 'Lock'
+            ORDER BY waiting.query_start
         """
         # See https://stackoverflow.com/a/35319598/1468388
         terminate_session = "SELECT pg_terminate_backend(%s)"
@@ -107,6 +147,14 @@ class DbLockWatcher(threading.Thread):
                         _logger.debug(
                             "DB lock watcher running with postgres PID %d", watcher_pid
                         )
+                    if self.update_application_name:
+                        self._terminate_update_waits(
+                            watcher_cr,
+                            update_waits_query,
+                            terminate_session,
+                            max_td,
+                        )
+                        continue
                     watcher_cr.execute(locks_query, (self.database,))
                     locks = watcher_cr.fetchall()
                     if locks:
@@ -122,6 +170,43 @@ class DbLockWatcher(threading.Thread):
                             )
                             self.aborted = True
                             watcher_cr.execute(terminate_session, (row["pid"],))
+
+    def _terminate_update_waits(self, watcher_cr, query, terminate_session, max_td):
+        """Terminate the sessions involved in a lock wait with the update.
+
+        A session that keeps the update waiting longer than
+        ``UPDATE_MAX_WAIT_SECONDS`` is terminated, so that the update can go
+        on before Odoo cancels it on lock timeout. A session waiting for the
+        update longer than ``max_td`` is terminated, so that it does not keep
+        an Odoo worker and a database connection busy until the update
+        commits. The update connections and the sessions whose lock waits do
+        not involve the update are left alone.
+        """
+        watcher_cr.execute(
+            query,
+            {
+                "database": self.database,
+                "application_name": self.update_application_name,
+            },
+        )
+        update_max_td = timedelta(seconds=UPDATE_MAX_WAIT_SECONDS)
+        to_terminate = {}
+        for row in watcher_cr.fetchall():
+            if row["is_update"]:
+                if row["age"] <= update_max_td:
+                    continue
+                for pid in row["other_blockers"]:
+                    to_terminate.setdefault(pid, "it has blocked the update")
+            elif row["waits_for_update"] and row["age"] > max_td:
+                to_terminate.setdefault(
+                    row["pid"],
+                    "it has waited for the update for {} running: {}".format(
+                        row["age"], row["query"]
+                    ),
+                )
+        for pid, reason in to_terminate.items():
+            _logger.warning("Terminating session with PID %d: %s", pid, reason)
+            watcher_cr.execute(terminate_session, (pid,))
 
 
 def _get_param(cr, key, default=None):
@@ -304,7 +389,23 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     # Watch for database locks while Odoo updates
     watcher = None
     if ctx.params["watcher_max_seconds"] > 0:
-        watcher = DbLockWatcher(database, ctx.params["watcher_max_seconds"])
+        update_application_name = None
+        if ctx.params["watcher_prioritize_update"]:
+            if odoo.release.version_info < (16, 0):
+                raise click.ClickException(
+                    "--watcher-prioritize-update requires Odoo 16 or later"
+                )
+            # Naming the update connections lets the watcher tell them from
+            # the others
+            update_application_name = "click-odoo-update-{}".format(uuid.uuid4().hex)
+            if odoo.tools.config.get("db_app_name"):
+                # Odoo >= 20
+                odoo.tools.config["db_app_name"] = update_application_name
+            else:
+                os.environ["ODOO_PGAPPNAME"] = update_application_name
+        watcher = DbLockWatcher(
+            database, ctx.params["watcher_max_seconds"], update_application_name
+        )
         watcher.start()
     ignore_addons = _get_ignore_addons(
         ctx.params["ignore_addons"], ctx.params["ignore_core_addons"]
@@ -370,6 +471,16 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
     ),
 )
 @click.option(
+    "--watcher-prioritize-update",
+    is_flag=True,
+    help=(
+        "With --watcher-max-seconds, give the update priority instead of "
+        "aborting it: terminate the sessions that wait for it longer than "
+        "that, and the sessions that keep it waiting for a lock longer than "
+        "1 second. The update is never terminated. Requires Odoo 16 or later."
+    ),
+)
+@click.option(
     "--list-only",
     is_flag=True,
     help="Log the list of addons to update without actually updating them.",
@@ -389,6 +500,7 @@ def main(
     update_all,
     if_exists,
     watcher_max_seconds,
+    watcher_prioritize_update,
     list_only,
     ignore_addons,
     ignore_core_addons,
@@ -401,8 +513,11 @@ def main(
     If you want to update in parallel while another Odoo instance is still
     running against the same database, you can use `--watcher-max-seconds`
     to start a watcher thread that aborts the update in case a DB
-    lock is found. You will probably need to have at least 2 odoo codebases
-    running in parallel (the old one, serving; the new one, updating) and
+    lock is found. With `--watcher-prioritize-update`, the watcher
+    terminates instead the sessions that block the update or wait for it,
+    so the update is not cancelled by Odoo's lock timeout and the waiting
+    sessions don't exhaust the workers. You will probably need to have at least 2 odoo
+    codebases running in parallel (the old one, serving; the new one, updating) and
     swap them ASAP once the update is done. This process will reduce downtime
     a lot, but it requires deeper knowledge of Odoo internals to be used
     safely, so use it at your own risk.
