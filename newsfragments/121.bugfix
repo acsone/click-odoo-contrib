@@ -1,0 +1,1 @@
+Support ``auto_install`` lists in initdb dependency expansion, including the empty list.

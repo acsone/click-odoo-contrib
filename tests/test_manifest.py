@@ -53,3 +53,38 @@ def test_manifest_expand_dependencies_auto_install():
 def test_manifest_expand_dependencies_not_found():
     with pytest.raises(manifest.ModuleNotFound):
         manifest.expand_dependencies(["not_a_module"])
+
+
+@pytest.fixture
+def fake_addons(tmp_path, monkeypatch):
+    addons = {
+        "base": {},
+        "web": {"depends": ["base"], "auto_install": True},
+        "account": {"depends": ["base"]},
+        "payment": {"depends": ["base"]},
+        "account_payment": {
+            "depends": ["account", "payment"],
+            "auto_install": ["account"],
+        },
+        "always": {"depends": ["base"], "auto_install": []},
+        "opt_in": {"depends": ["base"], "auto_install": False},
+    }
+    for name, manifest_dict in addons.items():
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "__manifest__.py").write_text(repr(manifest_dict))
+    monkeypatch.setattr(
+        manifest.odoo.modules, "get_module_path", lambda name: str(tmp_path / name)
+    )
+    monkeypatch.setattr(
+        manifest.odoo.modules.module, "get_modules", lambda: sorted(addons)
+    )
+
+
+def test_manifest_expand_dependencies_auto_install_list(fake_addons):
+    res = manifest.expand_dependencies(["account"], include_auto_install=True)
+    assert res == {"base", "web", "account", "payment", "account_payment", "always"}
+
+
+def test_manifest_expand_dependencies_auto_install_empty_list(fake_addons):
+    res = manifest.expand_dependencies(["base"], include_auto_install=True)
+    assert res == {"base", "web", "always"}
