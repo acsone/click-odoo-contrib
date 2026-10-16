@@ -16,8 +16,8 @@ as composable python functions.
 Scripts
 ~~~~~~~
 
-click-odoo-copydb (beta)
-------------------------
+click-odoo-copydb (deprecated, not working on Odoo 20+, use ``odoo db duplicate``)
+----------------------------------------------------------------------------------
 
 .. code::
 
@@ -49,8 +49,8 @@ click-odoo-copydb (beta)
                             source directory which saves on space on the disk.
     --help                  Show this message and exit.
 
-click-odoo-dropdb (stable)
---------------------------
+click-odoo-dropdb (deprecated, not working on Odoo 20+, use ``odoo db drop``)
+-----------------------------------------------------------------------------
 
 .. code::
 
@@ -130,8 +130,8 @@ click-odoo-initdb (stable)
                                     and/or initialize it.
     --help                          Show this message and exit.
 
-click-odoo-backupdb (beta)
---------------------------
+click-odoo-backupdb (deprecated, not working on Odoo 20+, use ``odoo db dump``)
+-------------------------------------------------------------------------------
 
 .. code::
 
@@ -161,8 +161,8 @@ click-odoo-backupdb (beta)
     --filestore / --no-filestore  Include filestore in backup  [default: True]
     --help                        Show this message and exit.
 
-click-odoo-restoredb (beta)
----------------------------
+click-odoo-restoredb (deprecated, not working on Odoo 20+, use ``odoo db load``)
+--------------------------------------------------------------------------------
 
 .. code::
 
@@ -235,8 +235,8 @@ click-odoo-makepot (stable)
                                 [default: False]
     --help                      Show this message and exit.
 
-click-odoo-listdb (beta)
-------------------------
+click-odoo-listdb (deprecated, not working on Odoo 20+)
+-------------------------------------------------------
 
 .. code::
 
