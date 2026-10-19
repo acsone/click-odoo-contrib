@@ -95,6 +95,10 @@ def advisory_lock(cr, name):
         cr.execute("SELECT pg_advisory_unlock(%s::bigint)", (lock_id,))
 
 
+def db_update_lock(cr, database):
+    return advisory_lock(cr, "click-odoo-update/" + database)
+
+
 def reset_config_parameters(dbname):
     """
     Reset config parameters to default value. This is useful to avoid

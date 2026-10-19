@@ -13,7 +13,13 @@ import click
 import click_odoo
 from click_odoo import odoo
 
-from ._dbutils import advisory_lock, db_exists, db_initialized, pg_connect
+from ._dbutils import (
+    advisory_lock,
+    db_exists,
+    db_initialized,
+    db_update_lock,
+    pg_connect,
+)
 from .manifest import expand_dependencies
 from .update import _save_installed_checksums
 
@@ -100,7 +106,6 @@ def odoo_createdb(
             _logger.info(
                 click.style(f"Created new Odoo database {dbname}.", fg="green")
             )
-        else:
             _logger.info(
                 click.style(f"Initialized Odoo database {dbname}.", fg="green")
             )
@@ -154,6 +159,15 @@ def addons_hash(module_names, with_demo):
 def refresh_module_list(dbname):
     with click_odoo.OdooEnvironment(database=dbname) as env:
         env["ir.module.module"].update_list()
+
+
+@contextlib.contextmanager
+def _initdb_lock(dbname):
+    if dbname:
+        with pg_connect() as pgcr, db_update_lock(pgcr, dbname):
+            yield
+    else:
+        yield
 
 
 class DbCache:
@@ -449,6 +463,7 @@ def main(
     exists. With --unless-initialized, the script succeeds but does nothing when
     the database exists and is already initialized, otherwise it initializes
     Odoo in the existing database.
+
     """
     if unless_exists and unless_initialized:
         raise click.ClickException(
@@ -456,6 +471,35 @@ def main(
         )
     if new_database:
         check_dbname(new_database)
+    with _initdb_lock(new_database):
+        _initdb(
+            new_database,
+            modules,
+            demo,
+            cache,
+            cache_prefix,
+            cache_max_age,
+            cache_max_size,
+            unless_exists,
+            unless_initialized,
+            attachments_in_db,
+            attachments_in_db_persistent,
+        )
+
+
+def _initdb(
+    new_database,
+    modules,
+    demo,
+    cache,
+    cache_prefix,
+    cache_max_age,
+    cache_max_size,
+    unless_exists,
+    unless_initialized,
+    attachments_in_db,
+    attachments_in_db_persistent,
+):
     exists = db_exists(new_database)
     if exists:
         if unless_exists:

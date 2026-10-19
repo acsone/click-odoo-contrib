@@ -19,7 +19,7 @@ from manifestoo_core.core_addons import get_core_addons
 from manifestoo_core.odoo_series import OdooSeries
 
 from ._addon_hash import addon_hash
-from ._dbutils import advisory_lock
+from ._dbutils import db_update_lock, pg_connect
 
 _logger = logging.getLogger(__name__)
 
@@ -270,9 +270,10 @@ def _update_db(
     only_compute_hashes=False,
 ):
     conn = odoo.sql_db.db_connect(database)
-    with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
+    with pg_connect() as lock_cr, db_update_lock(lock_cr, database):
         if only_compute_hashes:
-            _save_installed_checksums(cr, ignore_addons)
+            with conn.cursor() as cr:
+                _save_installed_checksums(cr, ignore_addons)
             _logger.info(
                 "Only computed and stored module hashes, update is not performed."
             )

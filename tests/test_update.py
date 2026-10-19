@@ -5,11 +5,14 @@ import json
 import os
 import subprocess
 import sys
+from contextlib import contextmanager
+from unittest import mock
 
 import pytest
 from click.testing import CliRunner
 from click_odoo import OdooEnvironment, odoo, odoo_bin
 
+import click_odoo_contrib.update as update_module
 from click_odoo_contrib.update import (
     _load_installed_checksums,
     main,
@@ -176,3 +179,38 @@ def test_parallel_watcher(odoodb):
     ]
     subprocess.check_call(cmd)
     # TODO Test an actual lock
+
+
+def test_update_uses_shared_postgres_advisory_lock():
+    events = []
+
+    @contextmanager
+    def fake_pg_connect():
+        events.append(("connect", "postgres"))
+        yield object()
+
+    @contextmanager
+    def fake_db_update_lock(lock_cr, database):
+        events.append(("lock", database))
+        yield
+        events.append(("unlock", database))
+
+    conn = mock.MagicMock()
+    with mock.patch.object(update_module.odoo.sql_db, "db_connect", return_value=conn):
+        with mock.patch.object(update_module, "pg_connect", fake_pg_connect):
+            with mock.patch.object(
+                update_module, "db_update_lock", fake_db_update_lock
+            ):
+                with mock.patch.object(update_module, "_save_installed_checksums"):
+                    update_module._update_db(
+                        "test_database",
+                        update_all=False,
+                        i18n_overwrite=False,
+                        only_compute_hashes=True,
+                    )
+
+    assert events == [
+        ("connect", "postgres"),
+        ("lock", "test_database"),
+        ("unlock", "test_database"),
+    ]
