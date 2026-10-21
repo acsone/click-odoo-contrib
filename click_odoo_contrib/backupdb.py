@@ -27,10 +27,14 @@ def _dump_db(dbname, backup):
     if backup.format in {"dump", "folder"}:
         cmd.insert(-1, "--format=c")
         filename = DBDUMP_FILENAME
-    stdout = subprocess.Popen(
+    with subprocess.Popen(
         cmd, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE
-    ).stdout
-    backup.write(stdout, filename)
+    ) as pg_dump:
+        backup.write(pg_dump.stdout, filename)
+    if pg_dump.returncode:
+        raise click.ClickException(
+            "pg_dump failed with exit code {}".format(pg_dump.returncode)
+        )
 
 
 def _create_manifest(cr, dbname, backup):
