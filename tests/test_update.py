@@ -10,8 +10,10 @@ import pytest
 from click.testing import CliRunner
 from click_odoo import OdooEnvironment, odoo, odoo_bin
 
+from .conftest import min_odoo_version
 from click_odoo_contrib.update import (
     _load_installed_checksums,
+    _parse_pre_update_scripts,
     main,
 )
 
@@ -176,3 +178,112 @@ def test_parallel_watcher(odoodb):
     ]
     subprocess.check_call(cmd)
     # TODO Test an actual lock
+
+
+def test_pre_update_scripts_invalid_path():
+    # --pre-update-scripts with a non-existing path produces a clean error
+    runner = CliRunner()
+    result = runner.invoke(
+        main, ["--pre-update-scripts", "/nonexistent/script.py", "-d", "dummy"]
+    )
+    assert result.exit_code != 0
+    assert "nonexistent" in result.output
+    # No traceback expected — Click handles BadParameter cleanly
+    assert "Traceback" not in result.output
+
+
+def test_pre_update_scripts_valid_paths(tmp_path):
+    # _parse_pre_update_scripts accepts existing files and returns Path objects.
+    script1 = tmp_path / "pre_a.py"
+    script2 = tmp_path / "pre_b.py"
+    script1.write_text("def migrate(cr, version): pass\n")
+    script2.write_text("def migrate(cr, version): pass\n")
+
+    result = _parse_pre_update_scripts(
+        ctx=None,
+        param=None,
+        value=f"{script1},{script2}",
+    )
+    assert result == [script1, script2]
+
+
+def test_pre_update_scripts_directory_rejected(tmp_path):
+    # _parse_pre_update_scripts rejects a directory (files only)
+    import click
+
+    with pytest.raises((click.exceptions.BadParameter, SystemExit)):
+        _parse_pre_update_scripts(ctx=None, param=None, value=str(tmp_path))
+
+
+@min_odoo_version("16.0")
+def test_pre_update_scripts_executed(odoodb, tmp_path):
+    # A valid pre-update script is actually called before the Odoo update.
+    marker = tmp_path / "executed.txt"
+    script = tmp_path / "pre_script.py"
+    script.write_text(
+        f"""\
+def migrate(cr, version):
+    open({str(marker)!r}, "w").close()
+"""
+    )
+    cmd = [
+        sys.executable,
+        "-m",
+        "click_odoo_contrib.update",
+        "--addons-path",
+        _addons_path("v1"),
+        "-d",
+        odoodb,
+        "--update-all",
+        "--pre-update-scripts",
+        str(script),
+    ]
+    subprocess.check_call(cmd)
+    assert marker.exists(), "pre-update script was not executed"
+
+
+@min_odoo_version("16.0")
+def test_pre_update_scripts_error_aborts_update(odoodb, tmp_path):
+    # A pre-update script that raises an exception aborts the command.
+    script = tmp_path / "pre_failing.py"
+    script.write_text(
+        """\
+def migrate(cr, version):
+    raise RuntimeError("intentional failure")
+"""
+    )
+    cmd = [
+        sys.executable,
+        "-m",
+        "click_odoo_contrib.update",
+        "--addons-path",
+        _addons_path("v1"),
+        "-d",
+        odoodb,
+        "--update-all",
+        "--pre-update-scripts",
+        str(script),
+    ]
+    with pytest.raises(subprocess.CalledProcessError):
+        subprocess.check_call(cmd)
+
+
+@min_odoo_version("18.0")
+def test_pre_update_scripts_missing_migrate_aborts(odoodb, tmp_path):
+    # A script without a migrate() function aborts the command.
+    script = tmp_path / "pre_no_migrate.py"
+    script.write_text("# no migrate function\n")
+    cmd = [
+        sys.executable,
+        "-m",
+        "click_odoo_contrib.update",
+        "--addons-path",
+        _addons_path("v1"),
+        "-d",
+        odoodb,
+        "--update-all",
+        "--pre-update-scripts",
+        str(script),
+    ]
+    with pytest.raises(subprocess.CalledProcessError):
+        subprocess.check_call(cmd)

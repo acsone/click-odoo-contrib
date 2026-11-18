@@ -9,6 +9,7 @@ import os
 import threading
 from contextlib import closing, contextmanager
 from datetime import timedelta
+from pathlib import Path
 from time import sleep
 
 import click
@@ -223,7 +224,12 @@ def _update_db_nolock(
     watcher=None,
     list_only=False,
     ignore_addons=None,
+    pre_update_scripts=None,
 ):
+    if pre_update_scripts and odoo.release.version_info >= (16, 0):
+        odoo.tools.config["pre_upgrade_scripts"] = ",".join(
+            str(p) for p in pre_update_scripts
+        )
     if update_all:
         modules_to_update = ["base"]
     else:
@@ -268,6 +274,7 @@ def _update_db(
     list_only=False,
     ignore_addons=None,
     only_compute_hashes=False,
+    pre_update_scripts=None,
 ):
     conn = odoo.sql_db.db_connect(database)
     with conn.cursor() as cr, advisory_lock(cr, "click-odoo-update/" + database):
@@ -286,6 +293,7 @@ def _update_db(
             watcher,
             list_only,
             ignore_addons,
+            pre_update_scripts,
         )
 
 
@@ -296,6 +304,17 @@ def _get_ignore_addons(ignore_addons_str=None, ignore_core_addons=None):
     if ignore_core_addons:
         ignore_addons.update(get_core_addons(OdooSeries(odoo.release.series)))
     return ignore_addons
+
+
+def _parse_pre_update_scripts(ctx, param, value):
+    if not value:
+        return []
+    if isinstance(value, (list, tuple)):
+        values = value
+    else:
+        values = [item.strip() for item in value.split(",") if item.strip()]
+    path_type = click.Path(exists=True, dir_okay=False, path_type=Path)
+    return [path_type.convert(item, param, ctx) for item in values]
 
 
 @contextmanager
@@ -323,6 +342,7 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
             ctx.params["list_only"],
             ignore_addons,
             ctx.params["only_compute_hashes"],
+            ctx.params["pre_update_scripts"],
         )
     finally:
         if watcher:
@@ -383,6 +403,20 @@ def OdooEnvironmentWithUpdate(database, ctx, **kwargs):
         "and you don't want to run `click-odoo-update --update-all`."
     ),
 )
+@click.option(
+    "--pre-update-scripts",
+    callback=_parse_pre_update_scripts,
+    help=(
+        "Comma-separated list of Python scripts to run before updating the database. "
+        "This is useful for performing custom pre-update tasks, before the Odoo update "
+        "process starts."
+        "The scripts will be executed in the order they are provided. "
+        "Note: these scripts only run if at least one addon is actually updated. "
+        "If no addon checksum changed, click-odoo-update exits early and the "
+        "scripts are not executed, even though they were provided. Use "
+        "--update-all to guarantee they always run."
+    ),
+)
 def main(
     env,
     i18n_overwrite,
@@ -393,6 +427,7 @@ def main(
     ignore_addons,
     ignore_core_addons,
     only_compute_hashes,
+    pre_update_scripts,
 ):
     """Update an Odoo database (odoo -u), automatically detecting
     addons to update based on a hash of their file content, compared
@@ -414,6 +449,11 @@ def main(
             return
         else:
             raise click.ClickException(msg)
+    if pre_update_scripts:
+        _logger.info(
+            "Pre-update scripts: %s",
+            ", ".join(str(path) for path in pre_update_scripts),
+        )
     # TODO: warn if modules to upgrade ?
 
 

@@ -316,6 +316,15 @@ click-odoo-update (stable)
     --only-compute-hashes        Initialise hash values of installed addons.
                                  Use this when you are sure all your addons are up-to-date
                                  and you don't want to run `click-odoo-update --update-all`.
+    --pre-update-scripts PATHS   Comma-separated list of Python scripts to run
+                                 before updating the database. This is useful for
+                                 performing custom pre-update tasks, before the Odoo
+                                 update process starts. The scripts will be executed
+                                 in the order they are provided. Note: these scripts
+                                 only run if at least one addon is actually updated;
+                                 if no addon checksum changed, click-odoo-update exits
+                                 early and the scripts are not executed. Use
+                                 --update-all to guarantee they always run.
     --help                       Show this message and exit.
 
 Useful links
