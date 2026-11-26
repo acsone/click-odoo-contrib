@@ -255,6 +255,21 @@ click-odoo-listdb (beta)
     --logfile FILE     Specify the log file.
     --help             Show this message and exit.
 
+click-odoo-install (beta)
+-------------------------
+
+.. code::
+
+  Usage: click-odoo-install [OPTIONS]
+
+  Options:
+    -c, --config PATH    ...
+    -d, --database TEXT  ...
+    ...
+    -m, --modules TEXT   Comma-separated list of modules to install
+                         [required]
+    --help               Show this message and exit.
+
 click-odoo-uninstall (stable)
 -----------------------------
 

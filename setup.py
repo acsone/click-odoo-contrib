@@ -45,6 +45,7 @@ setup(
     ],
     entry_points="""
         [console_scripts]
+        click-odoo-install=click_odoo_contrib.install:main
         click-odoo-uninstall=click_odoo_contrib.uninstall:main
         click-odoo-update=click_odoo_contrib.update:main
         click-odoo-copydb=click_odoo_contrib.copydb:main
